@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasboek Debutade</title>
+    <link rel="icon" href="{{ url_for('static', filename='icon.ico') }}" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-1: #0f1b2b;
+            --bg-2: #142235;
+            --bg-3: #101a26;
+            --accent: #f3b860;
+            --accent-2: #3cc6a8;
+            --text: #eef3f7;
+            --muted: #b9c7d6;
+            --surface: #ffffff;
+            --surface-2: #f3f6fb;
+            --surface-3: #eaf0f7;
+            --border: #d6dee8;
+            --shadow: 0 14px 30px rgba(5, 10, 20, 0.12);
+            --text-dark: #1a2433;
+            --danger: #f05d5e;
+        }
+        
+        body {
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #1b2b45 0%, var(--bg-1) 45%, var(--bg-3) 100%);
+            padding: 24px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 18px 40px rgba(5, 10, 20, 0.18);
+        }
+
+        .hero-banner {
+            position: relative;
+            margin: -10px -10px 20px -10px;
+            padding: 36px 30px;
+            border-radius: 14px;
+            overflow: hidden;
+            text-align: center;
+            background: linear-gradient(120deg, rgba(15, 27, 43, 0.85), rgba(20, 34, 53, 0.75)),
+                        url("{{ url_for('static', filename='Header Debutade.jpg') }}") center/cover no-repeat;
+        }
+
+        .hero-banner h1 {
+            color: var(--text);
+            margin: 0 0 6px 0;
+            font-size: 28px;
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        }
+
+        .hero-banner p {
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        .hero-banner .user-info {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: normal;
+        }
+
+        .hero-banner .nav-buttons {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .hero-banner .nav-buttons a,
+        .hero-banner .nav-buttons button {
+            font-size: 12px;
+            padding: 6px 12px;
+            background-color: var(--accent);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .hero-banner .nav-buttons a:hover,
+        .hero-banner .nav-buttons button:hover {
+            background-color: #f5a54f;
+        }
+
+        .hero-banner .nav-buttons .btn-quit {
+            background-color: #f05d5e;
+            border-radius: 999px;
+            padding: 8px 14px;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .hero-banner .nav-buttons .btn-quit:hover {
+            transform: translateY(-1px);
+            background-color: #e04849;
+        }
+
+        .hero-banner .nav-buttons .btn-quit:active {
+            transform: translateY(0);
+            background-color: #d93c3d;
+        }
+
+        .page-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #e1e6ed;
+            font-size: 12px;
+            color: #8a96a6;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .header-info {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+        }
+        
+        .total-amount {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #8A2E1E;
+            border-radius: 5px;
+        }
+        
+        .form-section {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .form-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0;
+            font-weight: normal;
+        }
+        
+        input[type="date"],
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            background-color: #ffffff;
+            font-family: inherit;
+        }
+        
+        input[type="date"]:focus,
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(243, 184, 96, 0.2);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+        
+        button {
+            background-color: #1b2b45;
+            color: #eef3f7;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #162338;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        .transactions-section {
+            margin-top: 40px;
+            border-top: 2px solid #ecf0f1;
+            padding-top: 30px;
+        }
+        
+        .transactions-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        th {
+            background-color: #33ABD5;
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .amount-positive {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .amount-negative {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .settings-link {
+            text-align: right;
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .settings-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .settings-link a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-quit {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .btn-quit:hover {
+            transform: translateY(-1px);
+            background-color: #e04849;
+        }
+
+        .btn-quit:active {
+            transform: translateY(0);
+            background-color: #d93c3d;
+        }
+        
+        .message {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .history-section {
+            margin-top: 40px;
+            border-top: 2px solid #ecf0f1;
+            padding-top: 30px;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #9b59b6;
+        }
+        
+        .history-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .history-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .filter-group select {
+            padding: 8px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+        }
+        
+        .btn-export {
+            background-color: #9b59b6;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-export:hover {
+            background-color: #8e44ad;
+        }
+        
+        #historyContainer {
+            max-height: 600px;
+            overflow-y: auto;
+            background-color: white;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+        }
+        
+        .history-table thead {
+            position: sticky;
+            top: 0;
+            background-color: #33ABD5;
+            z-index: 1;
+        }
+        
+        .history-table th {
+            padding: 12px;
+            text-align: left;
+            color: white;
+            font-weight: bold;
+            border-bottom: 2px solid #2c3e50;
+        }
+        
+        .history-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .history-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #e74c3c;
+        }
+        
+        .transaction-row-in {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .transaction-row-out {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .tag-badge {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            .history-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .autocomplete-container {
+            position: relative;
+        }
+        
+        .autocomplete-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .autocomplete-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #bdc3c7;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .autocomplete-list.active {
+            display: block;
+        }
+        
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        
+        .autocomplete-item:hover,
+        .autocomplete-item.selected {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .recommendation-box {
+            margin-top: 10px;
+            padding: 12px;
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .recommendation-box.active {
+            display: block;
+        }
+        
+        .recommendation-box h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        .recommendation-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .recommendation-item {
+            background-color: white;
+            border: 1px solid #3498db;
+            padding: 6px 12px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #2c3e50;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .recommendation-item:hover {
+            background-color: #3498db;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .recommendation-score {
+            font-size: 11px;
+            opacity: 0.7;
+            font-weight: bold;
+        }
+        
+        .recommendation-loading {
+            font-size: 13px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .no-match {
+            padding: 10px;
+            color: #7f8c8d;
+            text-align: center;
+        }
+
+        /* Theme overrides */
+        .container {
+            border: 1px solid #e8eef5;
+            box-shadow: var(--shadow);
+        }
+
+        .total-amount {
+            background: linear-gradient(120deg, #1b2b45, #243a55);
+            border: 1px solid rgba(243, 184, 96, 0.35);
+            border-radius: 12px;
+        }
+
+        .form-section {
+            background-color: var(--surface-2);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .form-section h2,
+        .transactions-section h2,
+        .history-section h2 {
+            color: var(--text-dark);
+            font-size: 16px;
+        }
+
+        label {
+            color: #2b3445;
+        }
+
+        input[type="date"],
+        input[type="text"],
+        input[type="number"],
+        select {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background-color: #ffffff;
+            font-family: inherit;
+        }
+
+        input[type="date"]:focus,
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(243, 184, 96, 0.2);
+        }
+
+        button {
+            background-color: var(--accent);
+            color: #1a1a1a;
+            border-radius: 999px;
+        }
+
+        button:hover {
+            background-color: #f5a54f;
+        }
+
+        .btn-quit {
+            background-color: var(--danger);
+            border-radius: 999px;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .btn-quit:hover {
+            transform: translateY(-1px);
+            background-color: #e04849;
+        }
+
+        .btn-quit:active {
+            transform: translateY(0);
+            background-color: #d93c3d;
+        }
+
+        .btn-export {
+            background-color: var(--accent-2);
+            color: #0f1b2b;
+            border-radius: 999px;
+        }
+
+        .btn-export:hover {
+            background-color: #2fb195;
+        }
+
+        .settings-link a {
+            color: #1b2b45;
+            font-weight: 600;
+        }
+
+        .transactions-section,
+        .history-section {
+            border-top: none;
+            background-color: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        .history-section {
+            border-left: 4px solid var(--accent-2);
+        }
+
+        .transactions-section {
+            border-left: 4px solid var(--accent);
+        }
+
+        #historyContainer {
+            background-color: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .history-controls {
+            background-color: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .filter-group select {
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background-color: #ffffff;
+            font-family: inherit;
+        }
+
+        .message.success {
+            background-color: #eaf7f3;
+            color: #1b6b5b;
+            border: 1px solid #bfe9dd;
+        }
+
+        .message.error {
+            background-color: #fde9ea;
+            color: #8f2c32;
+            border: 1px solid #f3c2c6;
+        }
+
+        .message {
+            border-radius: 10px;
+        }
+
+        .btn-primary {
+            background-color: #1b2b45;
+            color: #eef3f7;
+            border-radius: 999px;
+        }
+
+        .btn-primary:hover {
+            background-color: #162338;
+        }
+
+        .btn-ai {
+            background-color: var(--accent-2);
+            color: #0f1b2b;
+            border-radius: 999px;
+        }
+
+        .btn-ai:hover {
+            background-color: #2fb195;
+        }
+
+        .btn-export {
+            background-color: var(--accent-2);
+            color: #0f1b2b;
+            border-radius: 999px;
+        }
+
+        .btn-export:hover {
+            background-color: #2fb195;
+        }
+
+        table,
+        .history-table {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            font-size: 12px;
+        }
+
+        th,
+        .history-table thead {
+            background-color: #1b2b45;
+            color: #eef3f7;
+        }
+
+        tr:hover,
+        .history-table tr:hover {
+            background-color: #f3f6fb;
+        }
+
+        .tag-badge {
+            background-color: #1b2b45;
+        }
+
+        .autocomplete-input {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background-color: #ffffff;
+            font-family: inherit;
+            padding: 10px 12px;
+        }
+
+        .autocomplete-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(243, 184, 96, 0.2);
+        }
+
+        .autocomplete-list {
+            border: 1px solid var(--border);
+            background-color: #ffffff;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.selected {
+            background-color: #1b2b45;
+            color: #eef3f7;
+        }
+
+        .recommendation-box {
+            background-color: #fff7e8;
+            border-left: 4px solid var(--accent);
+            border-radius: 12px;
+        }
+
+        .recommendation-box h4 {
+            color: var(--text-dark);
+        }
+
+        .recommendation-item {
+            border: 1px solid var(--accent);
+            color: var(--text-dark);
+            border-radius: 999px;
+        }
+
+        .recommendation-item:hover {
+            background-color: #1b2b45;
+            color: #eef3f7;
+            box-shadow: 0 6px 12px rgba(5, 10, 20, 0.2);
+        }
+
+        .no-data {
+            color: var(--danger);
+        }
+
+        .form-section,
+        .transactions-section,
+        .history-section {
+            margin: 24px 0;
+        }
+
+        .transactions-section h2,
+        .history-section h2,
+        .form-section h2 {
+            margin-bottom: 16px;
+        }
+
+        table {
+            margin-top: 16px;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            font-size: 12px;
+        }
+
+        .date-col {
+            white-space: nowrap;
+            width: 120px;
+        }
+
+        .amount-col {
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 10px 12px;
+        }
+
+        .settings-link {
+            margin-top: 20px;
+        }
+
+        table tbody tr {
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+
+        table tbody tr:hover {
+            transform: translateY(-1px);
+        }
+
+        .form-section,
+        .transactions-section,
+        .history-section,
+        table {
+            animation: fadeInUp 0.45s ease both;
+        }
+
+        .transactions-section {
+            animation-delay: 60ms;
+        }
+
+        .history-section {
+            animation-delay: 120ms;
+        }
+
+        table {
+            animation-delay: 140ms;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero-banner">
+            <div class="nav-buttons">
+                <button id="quitBtn" class="btn-quit">🚪 Afsluiten</button>
+            </div>
+            <div class="user-info">Vandaag: {{ current_date }} | Gebruiker: {{ current_user }}</div>
+            <h1>Kasboek Debutade</h1>
+            <p>Financiële transactie beheerder</p>
+        </div>
+        
+        <div class="total-amount">
+            Totaal Kassaldo: €{{ "%.2f"|format(total_amount) }}
+        </div>
+        
+        <div class="form-section">
+            <h2>Nieuwe Transactie Toevoegen</h2>
+            <form id="transactionForm" method="POST" action="/add_transaction">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="datum">Datum *</label>
+                        <input type="date" id="datum" name="datum" value="{{ today }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bedrag">Bedrag (€) *</label>
+                        <input type="number" id="bedrag" name="bedrag" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Af of Bij *</label>
+                        <div class="radio-group">
+                            <label for="af_bij_bij">
+                                <input type="radio" id="af_bij_bij" name="af_bij" value="Bij" checked>
+                                Bij
+                            </label>
+                            <label for="af_bij_af">
+                                <input type="radio" id="af_bij_af" name="af_bij" value="Af">
+                                Af
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label for="mededelingen">Mededeling *</label>
+                        <input type="text" id="mededelingen" name="mededelingen" placeholder="Mededeling van de transactie" required>
+                        <div id="recommendationBox" class="recommendation-box">
+                            <h4>💡 Aanbevolen categorieën:</h4>
+                            <div id="recommendationItems" class="recommendation-items">
+                                <div class="recommendation-loading">Type om aanbevelingen te zien...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="rekening">Rekening</label>
+                        <input type="text" id="rekening" name="rekening" placeholder="Rekeningnummer (optioneel)">
+                    </div>
+                    <div class="form-group">
+                        <label for="tag">Categorie *</label>
+                        <div class="autocomplete-container">
+                            <input type="text" id="tag" name="tag" class="autocomplete-input" 
+                                   placeholder="Typ een categorie..." required autocomplete="off">
+                            <div id="tagList" class="autocomplete-list">
+                            </div>
+                            <input type="hidden" id="tag_hidden" name="tag_hidden" value="">
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit">Transactie Toevoegen</button>
+            </form>
+        </div>
+        
+        <div class="history-section">
+            <h2>📊 Transacties in deze sessie</h2>
+            <div id="historyContainer">
+                <div class="no-data">Nog geen transacties toegevoegd in deze sessie</div>
+            </div>
+        </div>
+
+        {% if recent_transactions %}
+        <div class="transactions-section">
+            <h2>Recente Transacties</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="date-col">Datum</th>
+                        <th>Mededeling</th>
+                        <th>Categorie</th>
+                        <th class="amount-col">Bedrag</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in recent_transactions %}
+                    <tr>
+                        <td class="date-col">{{ transaction.datum }}</td>
+                        <td>{{ transaction.mededelingen }}</td>
+                        <td>{{ transaction.tag }}</td>
+                        <td class="amount-col">
+                            {% set bedrag_class = 'amount-positive' if transaction.af_bij == 'Bij' else 'amount-negative' %}
+                            {% set bedrag_prefix = '+' if transaction.af_bij == 'Bij' else '-' %}
+                            <span class="{{ bedrag_class }}">€ {{ bedrag_prefix }}{{ transaction.bedrag }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+        <div class="page-footer">
+            Kasboek Debutade v2.0 - Web Applicatie
+        </div>
+    </div>
+    
+    <script>
+        let sessionTransactions = [];
+        const availableTags = {{ (tags|default([]))|tojson|safe }};
+        let selectedTagIndex = -1;
+        
+        // Init bij pagina laden
+        document.addEventListener('DOMContentLoaded', function() {
+            renderSessionTransactions();
+            setupAutocomplete();
+            setupCategoryRecommendations();
+        });
+        
+        let recommendationTimeout = null;
+        
+        function setupCategoryRecommendations() {
+            const mededelingenInput = document.getElementById('mededelingen');
+            const recommendationBox = document.getElementById('recommendationBox');
+            const recommendationItems = document.getElementById('recommendationItems');
+            
+            mededelingenInput.addEventListener('input', function() {
+                const description = this.value.trim();
+                
+                // Clear previous timeout
+                if (recommendationTimeout) {
+                    clearTimeout(recommendationTimeout);
+                }
+                
+                // Hide recommendations if input is too short
+                if (description.length < 3) {
+                    recommendationBox.classList.remove('active');
+                    return;
+                }
+                
+                // Show loading state
+                recommendationBox.classList.add('active');
+                recommendationItems.innerHTML = '<div class="recommendation-loading">Aanbevelingen laden...</div>';
+                
+                // Debounce API call
+                recommendationTimeout = setTimeout(() => {
+                    fetch('/api/recommend-category', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ description: description })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.recommendations && data.recommendations.length > 0) {
+                            // Show recommendations
+                            recommendationItems.innerHTML = data.recommendations.map(rec => {
+                                const scorePercent = Math.round(rec.score * 100);
+                                return `<div class="recommendation-item" onclick="selectRecommendedCategory('${rec.category.replace(/'/g, "\\'")}')">
+                                    <span>${rec.category}</span>
+                                    <span class="recommendation-score">${scorePercent}%</span>
+                                </div>`;
+                            }).join('');
+                        } else {
+                            recommendationItems.innerHTML = '<div class="recommendation-loading">Geen aanbevelingen gevonden</div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching recommendations:', error);
+                        recommendationItems.innerHTML = '<div class="recommendation-loading">Fout bij laden aanbevelingen</div>';
+                    });
+                }, 500); // Wait 500ms after user stops typing
+            });
+            
+            // Hide recommendations when clicking outside
+            document.addEventListener('click', function(e) {
+                if (e.target !== mededelingenInput && !recommendationBox.contains(e.target)) {
+                    // Don't hide immediately to allow clicking on recommendations
+                    // recommendationBox.classList.remove('active');
+                }
+            });
+        }
+        
+        function selectRecommendedCategory(category) {
+            document.getElementById('tag').value = category;
+            document.getElementById('tag_hidden').value = category;
+            document.getElementById('recommendationBox').classList.remove('active');
+            // Focus on the tag field to show the selected value
+            document.getElementById('tag').focus();
+        }
+        
+        function setupAutocomplete() {
+            const tagInput = document.getElementById('tag');
+            const tagList = document.getElementById('tagList');
+            
+            // Toon volledige lijst bij focus
+            tagInput.addEventListener('focus', function() {
+                selectedTagIndex = -1;
+                tagList.innerHTML = availableTags.map((tag, index) => 
+                    `<div class="autocomplete-item" data-value="${tag}" data-index="${index}">${tag}</div>`
+                ).join('');
+                tagList.classList.add('active');
+                
+                // Voeg click handlers toe
+                document.querySelectorAll('.autocomplete-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        selectTag(this.dataset.value);
+                    });
+                });
+            });
+            
+            tagInput.addEventListener('input', function() {
+                const value = this.value.toLowerCase().trim();
+                selectedTagIndex = -1;
+                
+                if (value.length === 0) {
+                    // Bij lege input, toon alle categorieën
+                    tagList.innerHTML = availableTags.map((tag, index) => 
+                        `<div class="autocomplete-item" data-value="${tag}" data-index="${index}">${tag}</div>`
+                    ).join('');
+                    tagList.classList.add('active');
+                    document.querySelectorAll('.autocomplete-item').forEach(item => {
+                        item.addEventListener('click', function() {
+                            selectTag(this.dataset.value);
+                        });
+                    });
+                    return;
+                }
+                
+                // Filter categorieën
+                const filtered = availableTags.filter(tag => 
+                    tag.toLowerCase().includes(value)
+                );
+                
+                if (filtered.length === 0) {
+                    tagList.innerHTML = '<div class="no-match">Geen match gevonden</div>';
+                    tagList.classList.add('active');
+                    return;
+                }
+                
+                // Toon gefilterde resultaten
+                tagList.innerHTML = filtered.map((tag, index) => 
+                    `<div class="autocomplete-item" data-value="${tag}" data-index="${index}">${tag}</div>`
+                ).join('');
+                
+                tagList.classList.add('active');
+                
+                // Voeg click handlers toe
+                document.querySelectorAll('.autocomplete-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        selectTag(this.dataset.value);
+                    });
+                });
+            });
+            
+            tagInput.addEventListener('keydown', function(e) {
+                const items = document.querySelectorAll('.autocomplete-item');
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedTagIndex = Math.min(selectedTagIndex + 1, items.length - 1);
+                    updateSelection(items);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedTagIndex = Math.max(selectedTagIndex - 1, -1);
+                    updateSelection(items);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (selectedTagIndex >= 0 && items[selectedTagIndex]) {
+                        selectTag(items[selectedTagIndex].dataset.value);
+                    }
+                } else if (e.key === 'Escape') {
+                    tagList.classList.remove('active');
+                }
+            });
+            
+            // Sluit dropdown bij klik buiten
+            document.addEventListener('click', function(e) {
+                if (e.target !== tagInput) {
+                    tagList.classList.remove('active');
+                }
+            });
+        }
+        
+        function updateSelection(items) {
+            items.forEach((item, index) => {
+                if (index === selectedTagIndex) {
+                    item.classList.add('selected');
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+        
+        function selectTag(tag) {
+            document.getElementById('tag').value = tag;
+            document.getElementById('tag_hidden').value = tag;
+            document.getElementById('tagList').classList.remove('active');
+        }
+        
+        function renderSessionTransactions() {
+            if (!sessionTransactions.length) {
+                document.getElementById('historyContainer').innerHTML = '<div class="no-data">Nog geen transacties toegevoegd in deze sessie</div>';
+                return;
+            }
+
+            let html = '<table class="history-table"><thead><tr>' +
+                       '<th class="date-col">Datum</th>' +
+                       '<th>Mededeling</th>' +
+                       '<th>Categorie</th>' +
+                       '<th class="amount-col">Bedrag</th>' +
+                       '<th class="amount-col">Nieuw saldo (€)</th>' +
+                       '</tr></thead><tbody>';
+
+            sessionTransactions.forEach(t => {
+                const afBijClass = t.afBij === 'Bij' ? 'amount-positive' : 'amount-negative';
+                const bedragPrefix = t.afBij === 'Bij' ? '+' : '-';
+                html += `<tr>
+                    <td class="date-col">${t.datum}</td>
+                    <td>${t.mededelingen}</td>
+                    <td>${t.tag || '-'}</td>
+                    <td class="amount-col"><span class="${afBijClass}">€ ${bedragPrefix}${t.bedrag}</span></td>
+                    <td class="amount-col">${t.nieuwSaldo}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('historyContainer').innerHTML = html;
+        }
+        
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Update hidden tag field
+            document.getElementById('tag_hidden').value = document.getElementById('tag').value;
+            
+            const formData = new FormData(this);
+            
+            fetch('/add_transaction', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Transactie succesvol toegevoegd!');
+                    const datum = formData.get('datum');
+                    const mededelingen = formData.get('mededelingen');
+                    const bedragRaw = parseFloat((formData.get('bedrag') || '0').replace(',', '.')) || 0;
+                    const afBij = formData.get('af_bij') || 'Bij';
+                    const tag = formData.get('tag') || '-';
+                    const bedragDisplay = `€ ${Math.abs(bedragRaw).toFixed(2)}`;
+
+                    const newTotalNumber = Number(data.new_total);
+                    let nieuwSaldo = '-';
+                    if (Number.isFinite(newTotalNumber)) {
+                        nieuwSaldo = `€ ${newTotalNumber.toFixed(2)}`;
+                    } else {
+                        // Fallback: bereken lokaal op basis van laatst bekende saldo in sessie
+                        const lastSaldo = sessionTransactions.length
+                            ? parseFloat(String(sessionTransactions[0].nieuwSaldo).replace(/[^0-9.-]/g, ''))
+                            : null;
+                        if (Number.isFinite(lastSaldo)) {
+                            const signedAmount = afBij === 'Af' ? -Math.abs(bedragRaw) : Math.abs(bedragRaw);
+                            const calcSaldo = lastSaldo + signedAmount;
+                            nieuwSaldo = `€ ${calcSaldo.toFixed(2)}`;
+                        }
+                    }
+
+                    sessionTransactions.unshift({
+                        datum,
+                        mededelingen,
+                        afBij,
+                        tag,
+                        bedrag: bedragDisplay,
+                        nieuwSaldo
+                    });
+
+                    renderSessionTransactions();
+
+                    if (typeof data.new_total === 'number') {
+                        const totalEl = document.querySelector('.total-amount');
+                        if (totalEl) {
+                            totalEl.textContent = `Totaal Kassaldo: €${data.new_total.toFixed(2)}`;
+                        }
+                    }
+
+                    this.reset();
+                    document.getElementById('datum').value = new Date().toISOString().split('T')[0];
+                    const defaultBij = document.querySelector('input[name="af_bij"][value="Bij"]');
+                    if (defaultBij) {
+                        defaultBij.checked = true;
+                    }
+                } else {
+                    alert('Fout: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Er is een fout opgetreden');
+            });
+        });
+
+        // Quit button handler
+        const MAIN_APP_URL = "{{ main_app_url|default('') }}";
+        let sessionStartTime = new Date();
+        
+        document.getElementById('quitBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Bereken sessieduur
+            const sessionEndTime = new Date();
+            const durationMs = sessionEndTime - sessionStartTime;
+            const durationMinutes = Math.floor(durationMs / 60000);
+            const durationSeconds = Math.floor((durationMs % 60000) / 1000);
+            const durationStr = durationMinutes > 0 
+                ? `${durationMinutes}m ${durationSeconds}s`
+                : `${durationSeconds}s`;
+            
+            // Bevestiging vragen
+            const confirmed = confirm(`Sessie duur: ${durationStr}\n\nWeet je zeker dat je wil afsluiten?`);
+            
+            if (confirmed) {
+                // Stuur quit request naar server
+                fetch('/quit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        duration: durationStr
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (MAIN_APP_URL) {
+                            window.location.href = MAIN_APP_URL;
+                            return;
+                        }
+                        alert('Applicatie sluit af. Tot ziens!');
+                        // Wacht een moment voor de server shutdown
+                        setTimeout(() => {
+                            // Sluit het browservenster
+                            window.close();
+                            
+                            // Fallback: als window.close() niet werkt, navigeer weg
+                            setTimeout(() => {
+                                window.location.href = 'about:blank';
+                            }, 500);
+                        }, 1500);
+                    } else {
+                        alert('Fout bij afsluiten: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    if (MAIN_APP_URL) {
+                        window.location.href = MAIN_APP_URL;
+                        return;
+                    }
+                    // Toch proberen af te sluiten ondanks error
+                    setTimeout(() => {
+                        window.close();
+                        setTimeout(() => {
+                            window.location.href = 'about:blank';
+                        }, 500);
+                    }, 1000);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

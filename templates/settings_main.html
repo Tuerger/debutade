@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Debutade - Instellingen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-1: #0f1b2b;
+            --bg-2: #142235;
+            --bg-3: #101a26;
+            --accent: #f3b860;
+            --accent-2: #3cc6a8;
+            --text: #eef3f7;
+            --muted: #b9c7d6;
+            --card: rgba(20, 32, 49, 0.88);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --shadow: 0 20px 60px rgba(5, 10, 20, 0.45);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top left, #1b2b45 0%, var(--bg-1) 45%, var(--bg-3) 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+        }
+
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            font-size: clamp(26px, 4vw, 38px);
+            margin: 0;
+        }
+
+        .subtle {
+            color: var(--muted);
+            margin: 6px 0 0;
+        }
+
+        .actions {
+            margin-left: auto;
+            display: inline-flex;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(120deg, var(--accent), #f59f60);
+            color: #1a1a1a;
+            border: none;
+            font-weight: 700;
+        }
+
+        .alert {
+            background: rgba(252, 91, 91, 0.12);
+            border: 1px solid rgba(252, 91, 91, 0.4);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: rgba(60, 198, 168, 0.12);
+            border: 1px solid rgba(60, 198, 168, 0.35);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: var(--shadow);
+            margin-bottom: 22px;
+        }
+
+        .card h2 {
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            font-size: 20px;
+            margin: 0 0 12px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: var(--muted);
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(9, 14, 22, 0.6);
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .footer-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>Instellingen</h1>
+                <p class="subtle">Beheer alle configuratie in een centraal bestand.</p>
+            </div>
+            <div class="actions">
+                <a class="btn" href="/">Terug</a>
+                <button class="btn btn-primary" type="submit" form="settingsForm">Opslaan</button>
+            </div>
+        </header>
+
+        {% if errors %}
+        <div class="alert">
+            <div>Controleer de volgende punten:</div>
+            <ul>
+                {% for item in errors %}
+                <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if saved %}
+        <div class="success">Instellingen opgeslagen. Herstart eventueel de apps om wijzigingen direct te zien.</div>
+        {% endif %}
+
+            <div class="card">
+                <h2>Contributie</h2>
+                <div class="grid">
+                    <div>
+                        <label for="contrib_ledenbestand_path">Ledenbestand pad</label>
+                        <input id="contrib_ledenbestand_path" name="contrib_ledenbestand_path" type="text" value="{{ config_data.get('contributie', {}).get('ledenbestand_path', '') }}" />
+                    </div>
+                    <div>
+                        <label for="contrib_leden_sheet_personen">Tab personen</label>
+                        <input id="contrib_leden_sheet_personen" name="contrib_leden_sheet_personen" type="text" value="{{ config_data.get('contributie', {}).get('leden_sheet_personen', '') }}" />
+                    </div>
+                    <div>
+                        <label for="contrib_leden_sheet_betaald">Tab betaald</label>
+                        <input id="contrib_leden_sheet_betaald" name="contrib_leden_sheet_betaald" type="text" value="{{ config_data.get('contributie', {}).get('leden_sheet_betaald', '') }}" />
+                    </div>
+                    <div>
+                        <label for="contrib_target_8000">Contributie bedrag 8000 (volwassenen)</label>
+                        <input id="contrib_target_8000" name="contrib_target_8000" type="number" step="0.01" value="{{ config_data.get('contributie', {}).get('tag_targets', {}).get('8000', '') }}" />
+                    </div>
+                    <div>
+                        <label for="contrib_target_8001">Contributie bedrag 8001 (jeugd)</label>
+                        <input id="contrib_target_8001" name="contrib_target_8001" type="number" step="0.01" value="{{ config_data.get('contributie', {}).get('tag_targets', {}).get('8001', '') }}" />
+                    </div>
+                    <div>
+                        <label for="contrib_bank_excel_file_name">Bank Excel bestandsnaam</label>
+                        <input id="contrib_bank_excel_file_name" name="contrib_bank_excel_file_name" type="text" value="{{ config_data.get('contributie', {}).get('bank_excel_file_name', '') }}" />
+                    </div>
+                    <div>
+                        <label for="contrib_bank_sheet_name">Bank sheet naam</label>
+                        <input id="contrib_bank_sheet_name" name="contrib_bank_sheet_name" type="text" value="{{ config_data.get('contributie', {}).get('bank_sheet_name', '') }}" />
+                    </div>
+                    <div>
+                        <label for="contrib_tags">Contributie tags (1 per regel)</label>
+                        <textarea id="contrib_tags" name="contrib_tags">{{ config_data.get('contributie', {}).get('tags', []) | join('\n') }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+        <form id="settingsForm" method="post">
+            <div class="card">
+                <h2>Algemeen</h2>
+                <div class="grid">
+                    <div>
+                        <label for="shared_grootboek_directory">Grootboek directory</label>
+                        <input id="shared_grootboek_directory" name="shared_grootboek_directory" type="text" value="{{ config_data.get('shared', {}).get('grootboek_directory', '') }}" />
+                    </div>
+                    <div>
+                        <label for="shared_backup_directory">Backup directory</label>
+                        <input id="shared_backup_directory" name="shared_backup_directory" type="text" value="{{ config_data.get('shared', {}).get('backup_directory', '') }}" />
+                    </div>
+                    <div>
+                        <label for="shared_log_directory">Log directory</label>
+                        <input id="shared_log_directory" name="shared_log_directory" type="text" value="{{ config_data.get('shared', {}).get('log_directory', '') }}" />
+                    </div>
+                    <div>
+                        <label for="shared_resources">Resources pad</label>
+                        <input id="shared_resources" name="shared_resources" type="text" value="{{ config_data.get('shared', {}).get('resources', '') }}" />
+                    </div>
+                    <div>
+                        <label for="shared_log_level">Log level</label>
+                        <select id="shared_log_level" name="shared_log_level">
+                            {% set level = config_data.get('shared', {}).get('log_level', 'INFO')|upper %}
+                            {% for opt in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'] %}
+                            <option value="{{ opt }}" {% if level == opt %}selected{% endif %}>{{ opt }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="shared_tags">Tags (1 per regel)</label>
+                        <textarea id="shared_tags" name="shared_tags">{{ config_data.get('shared', {}).get('tags', []) | join('\n') }}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Bankrekening</h2>
+                <div class="grid">
+                    <div>
+                        <label for="bank_excel_file_name">Excel bestandsnaam</label>
+                        <input id="bank_excel_file_name" name="bank_excel_file_name" type="text" value="{{ config_data.get('bankrekening', {}).get('excel_file_name', '') }}" />
+                    </div>
+                    <div>
+                        <label for="bank_excel_sheet_name">Excel sheet naam</label>
+                        <input id="bank_excel_sheet_name" name="bank_excel_sheet_name" type="text" value="{{ config_data.get('bankrekening', {}).get('excel_sheet_name', '') }}" />
+                    </div>
+                    <div>
+                        <label for="bank_required_sheets">Vereiste sheets (1 per regel)</label>
+                        <textarea id="bank_required_sheets" name="bank_required_sheets">{{ config_data.get('bankrekening', {}).get('required_sheets', []) | join('\n') }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Kasboek</h2>
+                <div class="grid">
+                    <div>
+                        <label for="kas_excel_file_name">Excel bestandsnaam</label>
+                        <input id="kas_excel_file_name" name="kas_excel_file_name" type="text" value="{{ config_data.get('kasboek', {}).get('excel_file_name', '') }}" />
+                    </div>
+                    <div>
+                        <label for="kas_excel_sheet_name">Excel sheet naam</label>
+                        <input id="kas_excel_sheet_name" name="kas_excel_sheet_name" type="text" value="{{ config_data.get('kasboek', {}).get('excel_sheet_name', '') }}" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Voeg Bon Toe</h2>
+                <div class="grid">
+                    <div>
+                        <label for="bon_bank_excel_file_name">Bankrekening Excel bestandsnaam</label>
+                        <input id="bon_bank_excel_file_name" name="bon_bank_excel_file_name" type="text" value="{{ config_data.get('bontoevoegen', {}).get('bank_excel_file_name', '') }}" />
+                    </div>
+                    <div>
+                        <label for="bon_kas_excel_file_name">Kasboek Excel bestandsnaam</label>
+                        <input id="bon_kas_excel_file_name" name="bon_kas_excel_file_name" type="text" value="{{ config_data.get('bontoevoegen', {}).get('kas_excel_file_name', '') }}" />
+                    </div>
+                    <div>
+                        <label for="bon_sharepoint_tenant">SharePoint tenant</label>
+                        <input id="bon_sharepoint_tenant" name="bon_sharepoint_tenant" type="text" value="{{ config_data.get('bontoevoegen', {}).get('sharepoint_tenant', '') }}" />
+                        <div class="hint">Bijv. debutabe voor https://debutabe.sharepoint.com</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Show rapport</h2>
+                <div class="grid">
+                    <div>
+                        <label for="showreport_report_title">Rapport titel</label>
+                        <input id="showreport_report_title" name="showreport_report_title" type="text" value="{{ config_data.get('showreport', {}).get('report_title', '') }}" />
+                    </div>
+                    <div>
+                        <label for="showreport_report_url">Power BI URL</label>
+                        <input id="showreport_report_url" name="showreport_report_url" type="text" value="{{ config_data.get('showreport', {}).get('report_url', '') }}" />
+                        <div class="hint">Gebruik een embed- of publish-to-web URL.</div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

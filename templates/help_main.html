@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Debutade - Uitleg</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-1: #0f1b2b;
+            --bg-2: #142235;
+            --bg-3: #101a26;
+            --accent: #f3b860;
+            --accent-2: #3cc6a8;
+            --text: #eef3f7;
+            --muted: #b9c7d6;
+            --card: rgba(20, 32, 49, 0.88);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --shadow: 0 20px 60px rgba(5, 10, 20, 0.45);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top left, #1b2b45 0%, var(--bg-1) 45%, var(--bg-3) 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+        }
+
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            font-size: clamp(26px, 4vw, 38px);
+            margin: 0;
+        }
+
+        .subtle {
+            color: var(--muted);
+            margin: 6px 0 0;
+        }
+
+        .actions {
+            margin-left: auto;
+            display: inline-flex;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: var(--shadow);
+            margin-bottom: 18px;
+        }
+
+        .card h2 {
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            font-size: 20px;
+            margin: 0 0 12px;
+        }
+
+        .card p {
+            color: var(--muted);
+            margin: 0 0 10px;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 18px;
+            color: var(--text);
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .highlight {
+            color: var(--accent-2);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>Uitleg (basis)</h1>
+                <p class="subtle">Korte uitleg over de hoofdapp en de subapps.</p>
+            </div>
+            <div class="actions">
+                <a class="btn" href="/">Terug</a>
+            </div>
+        </header>
+
+        <div class="card">
+            <h2>Hoofdapp (startscherm)</h2>
+            <p>Dit is het scherm waar je alle subapps ziet.</p>
+            <ul>
+                <li>Klik op <span class="highlight">Open applicatie</span> om een subapp te starten.</li>
+                <li>Je komt altijd terug naar dit scherm als je een subapp afsluit.</li>
+                <li>Met <span class="highlight">Stop app</span> sluit je de subapp als die vastloopt.</li>
+                <li>Via <span class="highlight">Instellingen</span> pas je paden en algemene opties aan.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Bankrekening</h2>
+            <p>Voor het bijhouden van bank- en spaarrekening transacties.</p>
+            <ul>
+                <li>Voeg een tag toe aan een transactie en sla dit direct op.</li>
+                <li>Je kunt eventueel gebruik maken van de "<span class="highlight">AI Suggestie</span> knop".</li>
+                <li>Je ziet dan direct de suggesties bij de transacties op basis van het AI algoritme.</li>
+                <li>Gebruik dit vooral voor alles wat via de bank loopt.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Kasboek</h2>
+            <p>Voor het invoeren van kastransacties en het bekijken van het kassaldo.</p>
+            <ul>
+                <li>Gebruik dit voor contante uitgaven en inkomsten.</li>
+                <li>Na opslaan zie je de nieuwe regel direct terug.</li>
+                <li>Het totale kassaldo wordt automatisch bijgewerkt.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Bon toevoegen</h2>
+            <p>Voor het koppelen van bonnen of SharePoint links aan transacties.</p>
+            <ul>
+                <li>Kies een transactie en plak een link naar de bon.</li>
+                <li>De link naar de bon, kun je vinden in de SharePoint bibliotheek.</li>
+                <li>Gebruik dit om bewijsstukken compleet te maken.</li>
+                <li>Je ziet meteen of een bon al is toegevoegd.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Show rapport</h2>
+            <p>Toont het Power BI rapport in een vast scherm.</p>
+            <ul>
+                <li>Handig om snel overzicht en grafieken te bekijken.</li>
+                <li>Je hoeft hier niets in te voeren of op te slaan.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Contributie overzicht</h2>
+            <p>Koppelt contributies aan leden en toont betaalstatus.</p>
+            <ul>
+                <li>Leest het ledenbestand en banktransacties.</li>
+                <li>Toont per lid het betaalde bedrag en een statusbalk.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

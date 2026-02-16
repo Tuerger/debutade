@@ -1,0 +1,17 @@
+# Bankrekening Debutade - Web Applicatie
+# Requirements voor Python packages
+
+# Flask web framework
+Flask==3.0.0
+Werkzeug==3.0.1
+
+# Excel file handling
+openpyxl==3.1.2
+
+# Additional utilities
+python-dateutil==2.8.2
+
+# ML model for tag recommendation (with improved features)
+scikit-learn>=1.5.0
+numpy>=1.24.0
+scipy>=1.12.0

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report_title }}</title>
+    <link rel="icon" href="{{ url_for('static', filename='icon.ico') }}" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-1: #0f1b2b;
+            --bg-2: #142235;
+            --bg-3: #101a26;
+            --accent: #f3b860;
+            --accent-2: #3cc6a8;
+            --text: #eef3f7;
+            --muted: #b9c7d6;
+            --surface: #ffffff;
+            --surface-2: #f3f6fb;
+            --surface-3: #eaf0f7;
+            --border: #d6dee8;
+            --shadow: 0 14px 30px rgba(5, 10, 20, 0.12);
+            --text-dark: #1a2433;
+            --danger: #f05d5e;
+        }
+
+        body {
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #1b2b45 0%, var(--bg-1) 45%, var(--bg-3) 100%);
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 18px 40px rgba(5, 10, 20, 0.18);
+        }
+
+        .hero-banner {
+            position: relative;
+            margin: -10px -10px 20px -10px;
+            padding: 36px 30px;
+            border-radius: 14px;
+            overflow: hidden;
+            text-align: center;
+            background: linear-gradient(120deg, rgba(15, 27, 43, 0.85), rgba(20, 34, 53, 0.75)),
+                        url("{{ url_for('static', filename='Header Debutade.jpg') }}") center/cover no-repeat;
+        }
+
+        .hero-banner h1 {
+            color: var(--text);
+            margin: 0 0 6px 0;
+            font-size: 28px;
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        }
+
+        .hero-banner p {
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        .hero-banner .user-info {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: normal;
+        }
+
+        .hero-banner .nav-buttons {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .hero-banner .nav-buttons a,
+        .hero-banner .nav-buttons button {
+            font-size: 12px;
+            padding: 6px 12px;
+            background-color: var(--accent);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .hero-banner .nav-buttons a:hover,
+        .hero-banner .nav-buttons button:hover {
+            background-color: #f5a54f;
+        }
+
+        .hero-banner .nav-buttons .btn-quit {
+            background-color: var(--danger);
+            border-radius: 999px;
+            padding: 8px 14px;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .hero-banner .nav-buttons .btn-quit:hover {
+            transform: translateY(-1px);
+            background-color: #e04849;
+        }
+
+        .hero-banner .nav-buttons .btn-quit:active {
+            transform: translateY(0);
+            background-color: #d93c3d;
+        }
+
+        .report-shell {
+            background-color: var(--surface-2);
+            border-radius: 12px;
+            padding: 18px;
+            border: 1px solid var(--border);
+        }
+
+        .report-embed {
+            width: 100%;
+            height: 72vh;
+            border: 0;
+            border-radius: 10px;
+            background-color: #ffffff;
+        }
+
+        .report-placeholder {
+            background-color: #fff3cd;
+            border: 1px solid #ffecb5;
+            color: #7c5b12;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .page-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #e1e6ed;
+            font-size: 12px;
+            color: #8a96a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero-banner">
+            <div class="nav-buttons">
+                <button id="quitBtn" class="btn-quit">Afsluiten</button>
+            </div>
+            <div class="user-info">{{ current_user }} | {{ current_date }}</div>
+            <h1>{{ report_title }}</h1>
+            <p>Power BI rapportage</p>
+        </div>
+
+        <div class="report-shell">
+            {% if report_url %}
+            <iframe class="report-embed" src="{{ report_url }}" title="{{ report_title }}" allowfullscreen></iframe>
+            <div class="page-footer" style="margin-top: 12px; border-top: none;">
+                <a href="{{ report_url }}" target="_blank" rel="noreferrer" style="color: #1b2b45; text-decoration: underline;">Open rapport in nieuw tabblad</a>
+            </div>
+            {% else %}
+            <div id="reportStatus" class="report-placeholder" style="display:none"></div>
+            <div id="reportContainer" class="report-embed" style="display:none"></div>
+            {% endif %}
+        </div>
+
+        <div class="page-footer">
+            Debutade - Power BI Rapportage
+        </div>
+    </div>
+
+    <script>
+        const MAIN_APP_URL = "{{ main_app_url|default('') }}";
+        const sessionStartTime = new Date();
+        const quitBtn = document.getElementById('quitBtn');
+        if (quitBtn) {
+            quitBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sessionEndTime = new Date();
+                const durationMs = sessionEndTime - sessionStartTime;
+                const durationMinutes = Math.floor(durationMs / 60000);
+                const durationSeconds = Math.floor((durationMs % 60000) / 1000);
+                const durationStr = durationMinutes > 0 ? `${durationMinutes}m ${durationSeconds}s` : `${durationSeconds}s`;
+
+                const confirmed = confirm(`Sessie duur: ${durationStr}\n\nWeet je zeker dat je wil afsluiten?`);
+                if (!confirmed) return;
+
+                fetch('/quit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ duration: durationStr })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (MAIN_APP_URL) {
+                            window.location.href = MAIN_APP_URL;
+                            return;
+                        }
+                        alert('Applicatie sluit af. Tot ziens!');
+                        setTimeout(() => {
+                            window.close();
+                            setTimeout(() => { window.location.href = 'about:blank'; }, 500);
+                        }, 1500);
+                    } else {
+                        alert('Fout bij afsluiten: ' + (data.message || 'Onbekende fout'));
+                    }
+                })
+                .catch(() => {
+                    if (MAIN_APP_URL) {
+                        window.location.href = MAIN_APP_URL;
+                        return;
+                    }
+                    setTimeout(() => {
+                        window.close();
+                        setTimeout(() => { window.location.href = 'about:blank'; }, 500);
+                    }, 1000);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

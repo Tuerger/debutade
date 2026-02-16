@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Debutade - Start</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-1: #0f1b2b;
+            --bg-2: #142235;
+            --bg-3: #101a26;
+            --accent: #f3b860;
+            --accent-2: #3cc6a8;
+            --text: #eef3f7;
+            --muted: #b9c7d6;
+            --card: rgba(20, 32, 49, 0.88);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --shadow: 0 20px 60px rgba(5, 10, 20, 0.45);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top left, #1b2b45 0%, var(--bg-1) 45%, var(--bg-3) 100%);
+            min-height: 100vh;
+        }
+
+        body.launching {
+            cursor: wait;
+        }
+
+        body.launching * {
+            cursor: wait;
+        }
+
+        .bg-shape {
+            position: fixed;
+            inset: auto 5% 10% auto;
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, rgba(243, 184, 96, 0.15) 0%, rgba(243, 184, 96, 0) 70%);
+            filter: blur(0px);
+            pointer-events: none;
+            z-index: 0;
+            animation: drift 8s ease-in-out infinite;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+            animation: fadeInUp 0.6s ease both;
+        }
+
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 36px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .brand img {
+            width: 120px;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .brand-title {
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            font-size: clamp(28px, 4vw, 42px);
+            margin: 0;
+        }
+
+        .brand-subtitle {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 16px;
+        }
+
+        .meta {
+            margin-left: auto;
+            text-align: right;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .meta-actions {
+            margin-top: 8px;
+            display: inline-flex;
+            gap: 10px;
+        }
+
+        .settings-btn {
+            background: #bfe3ff;
+            border: none;
+            color: #0f1b2b;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            text-decoration: none;
+        }
+
+        .settings-btn:hover {
+            transform: translateY(-1px);
+            background-color: #a6d5ff;
+        }
+
+        .settings-btn:active {
+            transform: translateY(0);
+            background-color: #8fc7ff;
+        }
+
+        .help-btn {
+            background: #3cc6a8;
+            border: none;
+            color: #0f1b2b;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            text-decoration: none;
+        }
+
+        .help-btn:hover {
+            transform: translateY(-1px);
+            background-color: #2fb195;
+        }
+
+        .help-btn:active {
+            transform: translateY(0);
+            background-color: #27a58c;
+        }
+
+        .exit-btn {
+            background: #f05d5e;
+            border: none;
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .exit-btn:hover {
+            transform: translateY(-1px);
+            background-color: #e04849;
+        }
+
+        .exit-btn:active {
+            transform: translateY(0);
+            background-color: #d93c3d;
+        }
+
+        .alert {
+            background: rgba(252, 91, 91, 0.12);
+            border: 1px solid rgba(252, 91, 91, 0.4);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            color: inherit;
+            padding: 20px 18px;
+            border-radius: 18px;
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            animation: cardIn 0.5s ease both;
+            animation-delay: calc(var(--i) * 80ms);
+            will-change: transform;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(243, 184, 96, 0.6);
+        }
+
+        .card-title {
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .card-desc {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .card-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--accent-2);
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: #808a99;
+            box-shadow: 0 0 0 4px rgba(128, 138, 153, 0.15);
+        }
+
+        .status-dot.running {
+            background: #3cc6a8;
+            box-shadow: 0 0 0 4px rgba(60, 198, 168, 0.2);
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(120deg, var(--accent), #f59f60);
+            color: #1a1a1a;
+            padding: 10px 14px;
+            border-radius: 999px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(5, 10, 20, 0.25);
+        }
+
+        .stop-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .stop-btn:hover {
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.32);
+        }
+
+        .stop-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hint {
+            margin-top: 30px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes drift {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-12px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 720px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .meta {
+                margin-left: 0;
+                text-align: left;
+            }
+
+            .brand img {
+                width: 96px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shape"></div>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <img src="{{ url_for('static', filename='Header Debutade.jpg') }}" alt="Debutade" />
+                <div>
+                    <h1 class="brand-title">Debutade Start</h1>
+                    <p class="brand-subtitle">Kies een applicatie om te openen in hetzelfde venster.</p>
+                </div>
+            </div>
+            <div class="meta">
+                <div>Hoofdapp: {{ main_url }}</div>
+                <div>Datum: {{ today }}</div>
+                <div class="meta-actions">
+                    <a class="settings-btn" href="/settings">Instellingen</a>
+                    <a class="help-btn" href="/help">Uitleg</a>
+                    <button class="exit-btn" type="button" id="exitMainBtn">Venster sluiten</button>
+                </div>
+            </div>
+        </header>
+
+        {% if error %}
+        <div class="alert">{{ error }}</div>
+        {% endif %}
+
+        <div class="grid">
+            {% for app in apps %}
+            <div class="card" data-app-id="{{ app.id }}" style="--i: {{ loop.index0 }};">
+                <h2 class="card-title">{{ app.name }}</h2>
+                <div class="card-desc">{{ app.description }}</div>
+                <div class="card-meta">Poort {{ app.port }}</div>
+                <div class="status">
+                    <span class="status-dot"></span>
+                    <span class="status-label">Status controleren...</span>
+                </div>
+                <div class="actions">
+                    <a class="cta" href="{{ url_for('launch', app_id=app.id) }}">Open applicatie</a>
+                    <button class="stop-btn" type="button" data-stop>Stop app</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="hint">Als je een app afsluit, kom je automatisch terug naar dit startscherm.</div>
+    </div>
+
+    <script>
+        const statusUrl = "{{ url_for('status') }}";
+        const quitUrl = "{{ url_for('quit_app') }}";
+
+        async function refreshStatus() {
+            try {
+                const response = await fetch(statusUrl, { cache: "no-store" });
+                const data = await response.json();
+
+                document.querySelectorAll(".card[data-app-id]").forEach(card => {
+                    const appId = card.getAttribute("data-app-id");
+                    const status = data[appId];
+                    const dot = card.querySelector(".status-dot");
+                    const label = card.querySelector(".status-label");
+                    const stopBtn = card.querySelector("[data-stop]");
+
+                    if (!status) {
+                        label.textContent = "Status onbekend";
+                        dot.classList.remove("running");
+                        stopBtn.disabled = true;
+                        return;
+                    }
+
+                    if (status.running) {
+                        dot.classList.add("running");
+                        label.textContent = `Actief op poort ${status.port}`;
+                        stopBtn.disabled = false;
+                    } else {
+                        dot.classList.remove("running");
+                        label.textContent = "Gestopt";
+                        stopBtn.disabled = true;
+                    }
+                });
+            } catch (error) {
+                console.error("Status ophalen mislukt", error);
+            }
+        }
+
+        async function stopApp(appId, button) {
+            button.disabled = true;
+            try {
+                const response = await fetch(`/stop/${appId}`, { method: "POST" });
+                if (!response.ok) {
+                    const body = await response.json();
+                    alert(body.message || "Stoppen mislukt");
+                }
+            } catch (error) {
+                console.error("Stoppen mislukt", error);
+            } finally {
+                refreshStatus();
+            }
+        }
+
+        document.addEventListener("click", event => {
+            const stopBtn = event.target.closest("[data-stop]");
+            if (!stopBtn) return;
+
+            const card = stopBtn.closest(".card[data-app-id]");
+            if (!card) return;
+
+            const appId = card.getAttribute("data-app-id");
+            stopApp(appId, stopBtn);
+        });
+
+        document.querySelectorAll(".cta").forEach(button => {
+            button.addEventListener("click", () => {
+                document.body.classList.add("launching");
+            });
+        });
+
+        const exitMainBtn = document.getElementById("exitMainBtn");
+        if (exitMainBtn) {
+            exitMainBtn.addEventListener("click", async () => {
+                const confirmed = confirm("Weet je zeker dat je dit venster wilt sluiten?");
+                if (!confirmed) return;
+                try {
+                    await fetch(quitUrl, { method: "POST" });
+                } catch (error) {
+                    console.error("Afsluiten mislukt", error);
+                }
+                window.close();
+                setTimeout(() => {
+                    window.location.href = "about:blank";
+                }, 300);
+            });
+        }
+
+        refreshStatus();
+        setInterval(refreshStatus, 5000);
+    </script>
+</body>
+</html>

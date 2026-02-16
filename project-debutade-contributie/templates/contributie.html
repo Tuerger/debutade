@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contributie Overzicht - Debutade</title>
+    <link rel="icon" href="{{ url_for('static', filename='icon.ico') }}" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-1: #0f1b2b;
+            --bg-2: #142235;
+            --bg-3: #101a26;
+            --accent: #f3b860;
+            --accent-2: #3cc6a8;
+            --text: #eef3f7;
+            --muted: #b9c7d6;
+            --surface: #ffffff;
+            --surface-2: #f3f6fb;
+            --surface-3: #eaf0f7;
+            --border: #d6dee8;
+            --shadow: 0 14px 30px rgba(5, 10, 20, 0.12);
+            --text-dark: #1a2433;
+            --danger: #f05d5e;
+        }
+
+        body {
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #1b2b45 0%, var(--bg-1) 45%, var(--bg-3) 100%);
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 18px 40px rgba(5, 10, 20, 0.18);
+        }
+
+        .hero-banner {
+            position: relative;
+            margin: -10px -10px 20px -10px;
+            padding: 36px 30px;
+            border-radius: 14px;
+            overflow: hidden;
+            text-align: center;
+            background: linear-gradient(120deg, rgba(15, 27, 43, 0.85), rgba(20, 34, 53, 0.75)),
+                        url("{{ url_for('static', filename='Header Debutade.jpg') }}") center/cover no-repeat;
+        }
+
+        .hero-banner h1 {
+            color: var(--text);
+            margin: 0 0 6px 0;
+            font-size: 28px;
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        }
+
+        .hero-banner p {
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        .hero-banner .user-info {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: normal;
+        }
+
+        .hero-banner .nav-buttons {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .hero-banner .nav-buttons a,
+        .hero-banner .nav-buttons button {
+            font-size: 12px;
+            padding: 6px 12px;
+            background-color: var(--accent);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .hero-banner .nav-buttons a:hover,
+        .hero-banner .nav-buttons button:hover {
+            background-color: #f5a54f;
+        }
+
+        .page-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #e1e6ed;
+            font-size: 12px;
+            color: #8a96a6;
+        }
+
+        .info-section {
+            background-color: #f3f6fb;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #33ABD5;
+        }
+
+        .info-section p {
+            margin: 6px 0;
+            font-size: 13px;
+            color: #2c3e50;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .stat-card {
+            background-color: #ffffff;
+            border: 1px solid #e1e6ed;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .stat-card span {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a2433;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 12px;
+        }
+
+        th {
+            background-color: #33ABD5;
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .amount {
+            font-weight: 600;
+            color: #1b2b45;
+        }
+
+        .amount.zero {
+            color: #9aa7b2;
+        }
+
+        .bar-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 220px;
+        }
+
+        .bar-row {
+            display: grid;
+            grid-template-columns: 40px 1fr;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bar-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #1b2b45;
+        }
+
+        .bar-track {
+            position: relative;
+            height: 10px;
+            background-color: #1e3a8a;
+            border-radius: 999px;
+            overflow: visible;
+        }
+
+        .bar-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background-color: #2ecc71;
+            border-radius: 999px;
+        }
+
+        .bar-overflow {
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            width: 10px;
+            height: 10px;
+            transform: translateY(-50%);
+            background-color: #ef4444;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px #ffffff;
+        }
+
+        .bar-meta {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .message {
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-swatch {
+            width: 14px;
+            height: 8px;
+            border-radius: 999px;
+        }
+
+        .legend-paid {
+            background-color: #2ecc71;
+        }
+
+        .legend-remaining {
+            background-color: #1e3a8a;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            background-color: #ffffff;
+        }
+
+        .summary-table th,
+        .summary-table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #e1e6ed;
+            font-size: 12px;
+        }
+
+        .summary-table th {
+            background-color: #1b2b45;
+            color: #ffffff;
+        }
+
+        .summary-row-volwassenen {
+            background-color: #fff7ed;
+        }
+
+        .summary-row-jeugd {
+            background-color: #ecfeff;
+        }
+
+        .summary-bar {
+            position: relative;
+            height: 12px;
+            border-radius: 999px;
+            background: #1e3a8a;
+            overflow: hidden;
+        }
+
+        .summary-bar-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #10b981);
+        }
+
+        .summary-bar-label {
+            font-size: 10px;
+            color: #475569;
+            margin-top: 4px;
+        }
+
+        .records-count {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+
+        @media (max-width: 768px) {
+            .hero-banner .user-info,
+            .hero-banner .nav-buttons {
+                position: static;
+                margin-top: 10px;
+                justify-content: center;
+            }
+
+            .hero-banner {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <section class="hero-banner">
+            <div class="nav-buttons">
+                <button onclick="quitApp()">🔴 Afsluiten</button>
+            </div>
+            <div class="user-info">{{ current_user }} | {{ current_date }}</div>
+            <h1>Contributie Overzicht</h1>
+            <p>Contributies uit bankrekening en ledenbestand</p>
+        </section>
+
+        {% if errors %}
+            {% for error in errors %}
+                <div class="message error">{{ error }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="info-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Totaal</h3>
+                    <span>{{ stats.total }}</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Met betaling</h3>
+                    <span>{{ stats.with_payment }}</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Zonder betaling</h3>
+                    <span>{{ stats.without_payment }}</span>
+                </div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item"><span class="legend-swatch legend-paid"></span>Betaald (groen)</div>
+                <div class="legend-item"><span class="legend-swatch legend-remaining"></span>Nog te betalen (donkerblauw)</div>
+                <div class="legend-item">8000 = Volwassenen</div>
+                <div class="legend-item">8001 = Jeugd</div>
+            </div>
+
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>Categorie</th>
+                        <th>Aantal leden</th>
+                        <th>Ontvangen</th>
+                        <th>Maximaal</th>
+                        <th>Verschil</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set volwassenen = summary.get('volwassenen', {}) %}
+                    {% set jeugd = summary.get('jeugd', {}) %}
+                    <tr class="summary-row-volwassenen">
+                        <td>Volwassenen (8000)</td>
+                        <td>{{ volwassenen.get('count', 0) }}</td>
+                        <td>€ {{ "%.2f"|format(volwassenen.get('received', 0)) }}</td>
+                        <td>€ {{ "%.2f"|format(volwassenen.get('max', 0)) }}</td>
+                        <td>€ {{ "%.2f"|format(volwassenen.get('max', 0) - volwassenen.get('received', 0)) }}</td>
+                        <td>
+                            {% set v_max = volwassenen.get('max', 0) %}
+                            {% set v_received = volwassenen.get('received', 0) %}
+                            {% set v_percent = (v_received / v_max * 100) if v_max else 0 %}
+                            <div class="summary-bar">
+                                <div class="summary-bar-fill" style="width: {{ [v_percent, 100]|min }}%;"></div>
+                            </div>
+                            <div class="summary-bar-label">{{ "%.0f"|format(v_percent) }}%</div>
+                        </td>
+                    </tr>
+                    <tr class="summary-row-jeugd">
+                        <td>Jeugd (8001)</td>
+                        <td>{{ jeugd.get('count', 0) }}</td>
+                        <td>€ {{ "%.2f"|format(jeugd.get('received', 0)) }}</td>
+                        <td>€ {{ "%.2f"|format(jeugd.get('max', 0)) }}</td>
+                        <td>€ {{ "%.2f"|format(jeugd.get('max', 0) - jeugd.get('received', 0)) }}</td>
+                        <td>
+                            {% set j_max = jeugd.get('max', 0) %}
+                            {% set j_received = jeugd.get('received', 0) %}
+                            {% set j_percent = (j_received / j_max * 100) if j_max else 0 %}
+                            <div class="summary-bar">
+                                <div class="summary-bar-fill" style="width: {{ [j_percent, 100]|min }}%;"></div>
+                            </div>
+                            <div class="summary-bar-label">{{ "%.0f"|format(j_percent) }}%</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="records-count">Aantal records: {{ records|length }}</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID-lid/ID</th>
+                    <th>Achternaam</th>
+                    <th>Rekening</th>
+                    <th>Hoeveel betaald</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.member_id }}</td>
+                    <td>{{ record.achternaam }}</td>
+                    <td>{{ record.rekening }}</td>
+                    <td class="amount {% if record.paid == 0 %}zero{% endif %}">€ {{ "%.2f"|format(record.paid) }}</td>
+                    <td>
+                        <div class="bar-stack">
+                            {% for item in record.bar_items %}
+                            <div>
+                                <div class="bar-row">
+                                    <div class="bar-label">{{ item.tag }}</div>
+                                    <div class="bar-track">
+                                        <div class="bar-fill" style="width: {{ item.bar_width }}%;"></div>
+                                        {% if item.overflow %}
+                                        <div class="bar-overflow" title="Meer dan het maximum"></div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="bar-meta">€ {{ "%.2f"|format(item.paid) }} / € {{ "%.2f"|format(item.target) }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="page-footer">Debutade contributies | lokaal overzicht</div>
+    </div>
+    <script>
+        const MAIN_APP_URL = "{{ main_app_url|default('') }}";
+
+        function quitApp() {
+            if (confirm('Weet je zeker dat je de applicatie wilt afsluiten?')) {
+                fetch('/quit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(() => {
+                        if (MAIN_APP_URL) {
+                            window.location.href = MAIN_APP_URL;
+                            return;
+                        }
+                        document.body.innerHTML = '<div style="text-align:center; padding:50px;"><h1>Applicatie afgesloten</h1><p>Je kunt dit venster nu sluiten.</p></div>';
+                    })
+                    .catch(() => {
+                        if (MAIN_APP_URL) {
+                            window.location.href = MAIN_APP_URL;
+                            return;
+                        }
+                        alert('Afsluiten mislukt. Sluit het venster handmatig.');
+                    });
+            }
+        }
+    </script>
+</body>
+</html>

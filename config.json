@@ -1,0 +1,87 @@
+{
+    "shared": {
+        "grootboek_directory": "C:\\Users\\ericg\\OneDrive - Vereniging met volledige rechtsbevoegdheid\\SharePoint Debutade - Documenten\\04. Penningmeester\\01 - Grootboek\\2026",
+        "backup_directory": "C:\\Users\\ericg\\OneDrive - Vereniging met volledige rechtsbevoegdheid\\SharePoint Debutade - Documenten\\04. Penningmeester\\01 - Grootboek\\2026\\backup",
+        "log_directory": "C:\\Users\\ericg\\OneDrive - Vereniging met volledige rechtsbevoegdheid\\SharePoint Debutade - Documenten\\04. Penningmeester\\01 - Grootboek\\2026\\log",
+        "resources": "C:\\Users\\ericg\\OneDrive - Vereniging met volledige rechtsbevoegdheid\\SharePoint Debutabe - Documenten\\04. Penningmeester\\04 - Code\\kasboek_debutabe\\resources",
+        "log_level": "INFO",
+        "tags": [
+            "500;Vermogen Debutade",
+            "510;Reserveringen",
+            "1000;Kas",
+            "1120;ING Bankrekening",
+            "1160;ING Spaarrekening",
+            "1298;Kruisposten",
+            "1310;Te ontvangen bedragen",
+            "1320;Borg Huur Pand",
+            "2100;Tussenrekening balans",
+            "4050;Begeleiding",
+            "4100;Reiskostenvergoedingen",
+            "4500;Huur gebouw",
+            "4520;Gas, Water, Electra",
+            "4570;Klein Onderhoud",
+            "4580;Huish.artikelen div.",
+            "4590;Overige Huisvestingskosten",
+            "4591;Verzekeringen",
+            "4600;Interieur aanschafkosten",
+            "4710;Advertentiekosten",
+            "4730;Exposities  en Kunstmarkt etc.",
+            "4740;Attenties",
+            "4750;Jaarvergadering/ Kerstborrel/ Ledenbijeenkomsten",
+            "4790;Bestuurskosten",
+            "4900;Aankoop tekenmaterialen",
+            "4910;Onderhouds abonnementen",
+            "4920;Website kosten",
+            "4930;Kantoorartikelen",
+            "4940;Contributies Kunst en Cultuur",
+            "4980;Bankkosten",
+            "8000;Contributies - Volwassenen",
+            "8001;Contributies - Jeugd",
+            "8010;Workshops",
+            "8210;Lente-abonnement / Winter-abonnement/ Kennismakingsabonnement",
+            "8350;Donaties",
+            "8351;Clubacties",
+            "8360;Vrienden West Fries Museum",
+            "8700;Koffie",
+            "9010;Rente bank",
+            "9990;Memoriaal"
+        ]
+    },
+    "bankrekening": {
+        "excel_file_name": "Debutade boekjaar bank 2026.xlsx",
+        "excel_sheet_name": "Bankrekening",
+        "required_sheets": [
+            "Bankrekening",
+            "Spaarrekening 1",
+            "Spaarrekening 2"
+        ]
+    },
+    "kasboek": {
+        "excel_file_name": "Debutade boekjaar kas 2026.xlsx",
+        "excel_sheet_name": "Kas"
+    },
+    "bontoevoegen": {
+        "bank_excel_file_name": "Debutade boekjaar bank 2026.xlsx",
+        "kas_excel_file_name": "Debutade boekjaar kas 2026.xlsx",
+        "sharepoint_tenant": "debutabe"
+    },
+    "showreport": {
+        "report_url": "https://app.powerbi.com/reportEmbed?reportId=025c3e0f-ac55-43e3-a2f6-d01bfb41b443&autoAuth=true&ctid=edd6765e-96d3-4d90-be2c-4af904697688",
+        "report_title": "Grootboek 2026"
+    },
+    "contributie": {
+        "ledenbestand_path": "C:\\Users\\ericg\\OneDrive - Vereniging met volledige rechtsbevoegdheid\\SharePoint Debutade - Documenten\\03. Secretaris\\ledenadministratie\\Ledenbestand.xlsx",
+        "leden_sheet_personen": "personen",
+        "leden_sheet_betaald": "betaald",
+        "bank_excel_file_name": "Debutade boekjaar bank 2026.xlsx",
+        "bank_sheet_name": "Bankrekening",
+        "tags": [
+            "8000",
+            "8001"
+        ],
+        "tag_targets": {
+            "8000": 290,
+            "8001": 185
+        }
+    }
+}

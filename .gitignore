@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+.venv/
+.venv*/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs
+logs/
+*.log
+
+# Cache
+cache/
+*.cache
+
+# Temp files
+*.tmp
+*.bak
+*.backup
+
+# Excel temp files
+~$*.xlsx
+~$*.xls
+
+# PyInstaller
+*.manifest
+*.spec
+!dpi-aware.manifest
+
+# IDEs
+.vscode/
+!.vscode/
+!.vscode/tasks.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

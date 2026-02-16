@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voeg Bon Toe - Debutade</title>
+    <link rel="icon" href="{{ url_for('static', filename='icon.ico') }}" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-1: #0f1b2b;
+            --bg-2: #142235;
+            --bg-3: #101a26;
+            --accent: #f3b860;
+            --accent-2: #3cc6a8;
+            --text: #eef3f7;
+            --muted: #b9c7d6;
+            --surface: #ffffff;
+            --surface-2: #f3f6fb;
+            --surface-3: #eaf0f7;
+            --border: #d6dee8;
+            --shadow: 0 14px 30px rgba(5, 10, 20, 0.12);
+            --text-dark: #1a2433;
+            --danger: #f05d5e;
+        }
+        
+        body {
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #1b2b45 0%, var(--bg-1) 45%, var(--bg-3) 100%);
+            padding: 24px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 18px 40px rgba(5, 10, 20, 0.18);
+        }
+
+        .hero-banner {
+            position: relative;
+            margin: -10px -10px 20px -10px;
+            padding: 36px 30px;
+            border-radius: 14px;
+            overflow: hidden;
+            text-align: center;
+            background: linear-gradient(120deg, rgba(15, 27, 43, 0.85), rgba(20, 34, 53, 0.75)),
+                        url("{{ url_for('static', filename='Header Debutade.jpg') }}") center/cover no-repeat;
+        }
+
+        .hero-banner h1 {
+            color: var(--text);
+            margin: 0 0 6px 0;
+            font-size: 28px;
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        }
+
+        .hero-banner p {
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        .hero-banner .user-info {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: normal;
+        }
+
+        .hero-banner .nav-buttons {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .hero-banner .nav-buttons button {
+            font-size: 12px;
+            padding: 6px 12px;
+            background-color: var(--accent);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .hero-banner .nav-buttons button:hover {
+            background-color: #f5a54f;
+        }
+
+        .hero-banner .nav-buttons .btn-settings {
+            background-color: #3cc6a8;
+            color: #0f1b2b;
+        }
+
+        .hero-banner .nav-buttons .btn-settings:hover {
+            background-color: #2fb195;
+        }
+
+        .page-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #e1e6ed;
+            font-size: 12px;
+            color: #8a96a6;
+        }
+
+        .info-section {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .info-section p {
+            margin: 5px 0;
+            font-size: 13px;
+            color: #2c3e50;
+        }
+
+        .info-section strong {
+            color: #16a085;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 12px;
+        }
+        
+        th {
+            background-color: #33ABD5;
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .bron-kasboek {
+            background-color: #fff3cd;
+        }
+
+        .bron-bank {
+            background-color: #d1ecf1;
+        }
+
+        .btn-bon {
+            background-color: #3498db;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-right: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-bon:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-bewaar {
+            background-color: #27ae60;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-bewaar[data-action="vervang"] {
+            background-color: #3498db;
+        }
+
+        .btn-bewaar:hover {
+            background-color: #229954;
+        }
+
+        .btn-bewaar[data-action="vervang"]:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-bewaar:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-bewaar[data-action="bewaar"]:disabled {
+            background-color: #27ae60;
+        }
+
+        .btn-bewaar[data-action="vervang"]:disabled {
+            background-color: #3498db;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+            background-color: #f0f8ff;
+        }
+
+        .url-input::placeholder {
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        .bon-cell {
+            max-width: 200px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .bon-link {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 11px;
+        }
+
+        .no-bon {
+            color: #3b82f6;
+            font-style: italic;
+            font-weight: 600;
+        }
+
+        .bon-link:hover {
+            text-decoration: underline;
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .drop-zone {
+            border: 2px dashed #95a5a6;
+            border-radius: 4px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: #f0f0f0;
+        }
+
+        .drop-zone:hover {
+            border-color: #3498db;
+            background-color: #ecf0f1;
+        }
+
+        .drop-zone.dragover {
+            border-color: #27ae60;
+            background-color: #d5f4e6;
+            border-width: 2px;
+        }
+
+        .drop-zone p {
+            margin: 0;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .drop-zone em {
+            font-size: 11px;
+            color: #95a5a6;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .records-count {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        .filter-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .filter-section label {
+            margin-right: 10px;
+            font-size: 13px;
+        }
+
+        .filter-section select {
+            padding: 5px 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        .stats-summary {
+            background-color: #f9f9f9;
+            border-left: 4px solid #33ABD5;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .stats-summary h3 {
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            background-color: white;
+        }
+
+        .stats-table th,
+        .stats-table td {
+            padding: 8px 10px;
+            text-align: center;
+            border: 1px solid #ecf0f1;
+        }
+
+        .stats-table th {
+            background-color: #33ABD5;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-table th:first-child,
+        .stats-table td:first-child {
+            text-align: left;
+        }
+
+        .stats-table tr:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+
+        .stats-with-bon {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .stats-without-bon {
+            color: #3b82f6;
+            font-weight: bold;
+        }
+
+        /* Settings Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .modal-header {
+            padding: 20px;
+            background-color: #33ABD5;
+            color: white;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #ecf0f1;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .settings-group {
+            margin-bottom: 25px;
+        }
+
+        .settings-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .settings-group input[type="text"],
+        .settings-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: Arial, sans-serif;
+        }
+
+        .settings-group input[type="text"]:focus,
+        .settings-group select:focus {
+            outline: none;
+            border-color: #33ABD5;
+            box-shadow: 0 0 5px rgba(51, 171, 213, 0.3);
+        }
+
+        .settings-group small {
+            display: block;
+            margin-top: 5px;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+
+        .modal-footer {
+            padding: 20px 30px;
+            background-color: #ecf0f1;
+            border-radius: 0 0 8px 8px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-save-settings {
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-save-settings:hover {
+            background-color: #229954;
+        }
+
+        .btn-cancel {
+            background-color: #95a5a6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background-color: #7f8c8d;
+        }
+
+        /* Theme overrides */
+        .container {
+            border: 1px solid #e8eef5;
+            box-shadow: var(--shadow);
+        }
+
+        .info-section {
+            background-color: var(--surface-2);
+            border-left: 4px solid var(--accent);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .info-section p {
+            color: var(--text-dark);
+        }
+
+        .info-section strong {
+            color: var(--accent-2);
+        }
+
+        table,
+        .stats-table {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th,
+        .stats-table th {
+            background-color: #1b2b45;
+            color: #eef3f7;
+        }
+
+        tr:hover,
+        .stats-table tr:nth-child(even) {
+            background-color: #f3f6fb;
+        }
+
+        .bron-kasboek {
+            background-color: #fff7e8;
+        }
+
+        .bron-bank {
+            background-color: #eaf7f3;
+        }
+
+        .btn-bon {
+            background-color: var(--accent);
+            color: #1a1a1a;
+            border-radius: 999px;
+        }
+
+        .btn-bon:hover {
+            background-color: #f5a54f;
+        }
+
+        .btn-bewaar {
+            background-color: var(--accent-2);
+            color: #0f1b2b;
+            border-radius: 999px;
+        }
+
+        .btn-bewaar[data-action="vervang"] {
+            background-color: #1b2b45;
+            color: #eef3f7;
+        }
+
+        .btn-bewaar:hover {
+            background-color: #2fb195;
+        }
+
+        .btn-bewaar[data-action="vervang"]:hover {
+            background-color: #162338;
+        }
+
+        .btn-bewaar[data-action="bewaar"]:disabled {
+            background-color: var(--accent-2);
+        }
+
+        .btn-bewaar[data-action="vervang"]:disabled {
+            background-color: #1b2b45;
+        }
+
+        .url-input {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background-color: #ffffff;
+            font-family: inherit;
+        }
+
+        .url-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(243, 184, 96, 0.2);
+            background-color: #ffffff;
+        }
+
+        .bon-link {
+            color: #1b2b45;
+        }
+
+        .message.success {
+            background-color: #eaf7f3;
+            color: #1b6b5b;
+            border: 1px solid #bfe9dd;
+        }
+
+        .message.error {
+            background-color: #fde9ea;
+            color: #8f2c32;
+            border: 1px solid #f3c2c6;
+        }
+
+        .drop-zone {
+            border: 2px dashed #b7c4d6;
+            background-color: var(--surface-2);
+        }
+
+        .drop-zone:hover {
+            border-color: var(--accent);
+            background-color: #fff7e8;
+        }
+
+        .drop-zone.dragover {
+            border-color: var(--accent-2);
+            background-color: #eaf7f3;
+        }
+
+        .drop-zone p {
+            color: #334155;
+        }
+
+        .drop-zone em {
+            color: #7b8794;
+        }
+
+        .records-count {
+            color: #7b8794;
+        }
+
+        .filter-section {
+            background-color: var(--surface-2);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .filter-section label {
+            color: #334155;
+        }
+
+        .filter-section select {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background-color: #ffffff;
+            font-family: inherit;
+        }
+
+        .stats-summary {
+            background-color: var(--surface-2);
+            border-left: 4px solid var(--accent-2);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .stats-summary h3 {
+            color: var(--text-dark);
+        }
+
+        .stats-table th {
+            background-color: #1b2b45;
+        }
+
+        .stats-with-bon {
+            color: var(--accent-2);
+        }
+
+        .stats-without-bon {
+            color: #3b82f6;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        .modal-header {
+            background-color: #1b2b45;
+            color: #eef3f7;
+        }
+
+        .close {
+            color: #eef3f7;
+        }
+
+        .modal-body {
+            background-color: #ffffff;
+        }
+
+        .settings-group label {
+            color: var(--text-dark);
+        }
+
+        .settings-group input[type="text"],
+        .settings-group select {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: inherit;
+        }
+
+        .settings-group input[type="text"]:focus,
+        .settings-group select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(243, 184, 96, 0.2);
+        }
+
+        .modal-footer {
+            background-color: var(--surface-2);
+        }
+
+        .btn-save-settings {
+            background-color: var(--accent-2);
+            color: #0f1b2b;
+            border-radius: 999px;
+        }
+
+        .btn-save-settings:hover {
+            background-color: #2fb195;
+        }
+
+        .btn-cancel {
+            background-color: #5c6b7a;
+            border-radius: 999px;
+        }
+
+        .btn-cancel:hover {
+            background-color: #4b5967;
+        }
+
+        .info-section,
+        .stats-summary,
+        .filter-section,
+        #records-table {
+            margin-top: 24px;
+            margin-bottom: 24px;
+        }
+
+        .stats-summary h3 {
+            margin-bottom: 14px;
+        }
+
+        table {
+            margin-top: 16px;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+        }
+
+        .action-buttons {
+            gap: 8px;
+        }
+
+        .records-count {
+            margin: 16px 0;
+        }
+
+        table tbody tr {
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+
+        table tbody tr:hover {
+            transform: translateY(-1px);
+        }
+
+        .info-section,
+        .stats-summary,
+        .filter-section,
+        #records-table,
+        .modal-content {
+            animation: fadeInUp 0.45s ease both;
+        }
+
+        .stats-summary {
+            animation-delay: 60ms;
+        }
+
+        .filter-section {
+            animation-delay: 120ms;
+        }
+
+        #records-table {
+            animation-delay: 140ms;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero-banner">
+            <div class="nav-buttons">
+                <button onclick="quitApp()">🔴 Afsluiten</button>
+            </div>
+            <div class="user-info">Vandaag: {{ current_date }} | Gebruiker: {{ current_user }}</div>
+            <h1>🧾 Voeg Bon Toe</h1>
+            <p>Financiële Transactie Bonbeheer</p>
+        </div>
+
+        <div class="info-section">
+            <p><strong>Instructies:</strong> Plak een SharePoint URL van de bon (PDF of JPG/JPEG) in het invoerveld en klik op "Bewaar".</p>
+        </div>
+
+        <div class="stats-summary">
+            <h3>📊 Bon-Status Overzicht per Tab</h3>
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>Tab</th>
+                        <th>Totaal</th>
+                        <th class="stats-with-bon">✅ Met Bon</th>
+                        <th class="stats-without-bon">🔵 Zonder Bon</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tab, stats in stats_by_tab.items()|sort %}
+                    <tr>
+                        <td><strong>{{ tab }}</strong></td>
+                        <td>{{ stats.total }}</td>
+                        <td class="stats-with-bon">{{ stats.with_bon }}</td>
+                        <td class="stats-without-bon">{{ stats.without_bon }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="filter-section">
+            <label for="filter-bron">Filter op bron:</label>
+            <select id="filter-bron" onchange="filterRecords()">
+                <option value="alle">Alle</option>
+                <option value="Kasboek">Alleen Kasboek</option>
+                <option value="Bankrekening">Alleen Bankrekening</option>
+            </select>
+
+            <label for="filter-tab" style="margin-left: 20px;">Filter op tab:</label>
+            <select id="filter-tab" onchange="filterRecords()">
+                <option value="alle">Alle tabs</option>
+            </select>
+        </div>
+
+        <div id="message-container"></div>
+
+        <div class="loading" id="loading">
+            <p>⏳ Bezig met opslaan...</p>
+        </div>
+
+        <div class="records-count">
+            Totaal <span id="record-count">{{ records|length }}</span> records
+        </div>
+
+        <table id="records-table">
+            <thead>
+                <tr>
+                    <th>Bron</th>
+                    <th>Tab</th>
+                    <th>Rij</th>
+                    <th>Datum</th>
+                    <th>Mededelingen</th>
+                    <th>Naam / Omschrijving</th>
+                    <th>Bedrag (EUR)</th>
+                    <th>Bon</th>
+                    <th>Acties</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr class="record-row bron-{{ record.bron|replace(' ', '-')|lower }}" 
+                    data-bron="{{ record.bron }}" 
+                    data-tab="{{ record.tab }}"
+                    data-file="{{ record.file_path }}"
+                    data-row="{{ record.row_index }}">
+                    <td>{{ record.bron }}</td>
+                    <td>{{ record.tab }}</td>
+                    <td>{{ record.row_index }}</td>
+                        <td>
+                            {% if record['Datum'] %}
+                                {% if record['Datum'].__class__.__name__ == 'datetime' %}
+                                    {{ record['Datum'].strftime('%d-%m-%Y') }}
+                                {% else %}
+                                    {{ record['Datum'][:10] }}
+                                {% endif %}
+                            {% else %}
+                            
+                            {% endif %}
+                        </td>
+                    <td>{{ record['Mededelingen'] if record.get('Mededelingen') else '' }}</td>
+                    <td>{{ record['Naam / Omschrijving'] if record['Naam / Omschrijving'] else '' }}</td>
+                    <td>{% if record['Bedrag (EUR)'] %}€ {{ "%.2f"|format(record['Bedrag (EUR)']) }}{% else %}-{% endif %}</td>
+                    <td class="bon-cell">
+                        {% if record.get('Bon') %}
+                            <a href="{{ record['Bon'] }}" target="_blank" class="bon-link">{{ record['Bon'][:50] }}...</a>
+                        {% else %}
+                            <em class="no-bon">Geen bon</em>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-bewaar" onclick="saveBonUrl(this)" disabled data-action="{% if record.get('Bon') %}vervang{% else %}bewaar{% endif %}">
+                                💾 {% if record.get('Bon') %}Vervang{% else %}Bewaar{% endif %}
+                            </button>
+                        </div>
+                        <input type="text" class="url-input" placeholder="Plak hier de SharePoint URL van de bon (PDF, JPG of JPEG)" 
+                               oninput="toggleSaveButton(this)">
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="page-footer">
+            Debutade Voeg Bon Toe © 2026 | Bonbeheer Systeem
+        </div>
+    </div>
+
+    <script>
+        // Verzamel alle unieke tabs voor filter
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabFilter = document.getElementById('filter-tab');
+            const rows = document.querySelectorAll('.record-row');
+            const tabs = new Set();
+            
+            rows.forEach(row => {
+                tabs.add(row.dataset.tab);
+            });
+            
+            Array.from(tabs).sort().forEach(tab => {
+                const option = document.createElement('option');
+                option.value = tab;
+                option.textContent = tab;
+                tabFilter.appendChild(option);
+            });
+        });
+
+        function filterRecords() {
+            const bronFilter = document.getElementById('filter-bron').value;
+            const tabFilter = document.getElementById('filter-tab').value;
+            const rows = document.querySelectorAll('.record-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const bron = row.dataset.bron;
+                const tab = row.dataset.tab;
+                
+                const bronMatch = bronFilter === 'alle' || bron === bronFilter;
+                const tabMatch = tabFilter === 'alle' || tab === tabFilter;
+                
+                if (bronMatch && tabMatch) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            document.getElementById('record-count').textContent = visibleCount;
+        }
+
+        let currentBonButton = null;
+
+        function handleDragOver(event, dropZone) {
+            event.preventDefault();
+            event.stopPropagation();
+            dropZone.classList.add('dragover');
+        }
+
+        function handleDragLeave(event, dropZone) {
+            event.preventDefault();
+            event.stopPropagation();
+            dropZone.classList.remove('dragover');
+        }
+
+        function handleDrop(event, dropZone) {
+            event.preventDefault();
+            event.stopPropagation();
+            dropZone.classList.remove('dragover');
+
+            const row = dropZone.closest('tr');
+            const urlInput = row.querySelector('.url-input');
+
+            // Probeer URL uit drag & drop data (tekst/link)
+            let url = event.dataTransfer.getData('text/uri-list') || 
+                      event.dataTransfer.getData('text/plain') ||
+                      event.dataTransfer.getData('text/html');
+
+            if (url && url.trim()) {
+                // Extraheer URL uit HTML tags als nodig
+                if (url.includes('<')) {
+                    const urlMatch = url.match(/href=["']([^"']+)["']/);
+                    if (urlMatch) {
+                        url = urlMatch[1];
+                    }
+                }
+                
+                url = url.split('?')[0].trim(); // Verwijder query params
+                
+                // Check of het een SharePoint/OneDrive URL is
+                if (url.includes('sharepoint') || url.includes('onedrive') || url.includes('microsoft')) {
+                    urlInput.classList.add('url-input-visible');
+                    urlInput.value = url;
+                    urlInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    urlInput.focus();
+                    
+                    showMessage('✅ SharePoint koppeling ingevuld!', 'success');
+                    return;
+                }
+            }
+
+            // Fallback: lokale bestanden
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                const fileName = file.name.toLowerCase();
+
+                if (!fileName.endsWith('.pdf') && !fileName.endsWith('.jpg') && !fileName.endsWith('.jpeg')) {
+                    showMessage('❌ Alleen PDF en JPG/JPEG bestanden zijn toegestaan', 'error');
+                    return;
+                }
+
+                urlInput.classList.add('url-input-visible');
+                urlInput.value = '';
+                urlInput.placeholder = `📋 Plak SharePoint URL voor: ${file.name}`;
+                urlInput.focus();
+                urlInput.dispatchEvent(new Event('input', { bubbles: true }));
+                urlInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+                showMessage(
+                    `✅ Bestand herkend: ${file.name}\n\n` +
+                    `📋 Volgende stap:\n` +
+                    `1. Ga naar SharePoint\n` +
+                    `2. Rechtsklik bestand → "Koppeling kopieren"\n` +
+                    `3. Plak in het gele veld boven`,
+                    'info'
+                );
+                return;
+            }
+
+            showMessage(
+                `⚠️ Geen bestand of link gedetecteerd\n\n` +
+                `Volgende opties:\n` +
+                `1️⃣ Sleep een bestand van je computer\n` +
+                `2️⃣ Of rechtsklik in SharePoint:\n` +
+                `   "Koppeling kopieren" → Plak hierna`,
+                'error'
+            );
+        }
+
+        function toggleSaveButton(input) {
+            const row = input.closest('tr');
+            const saveButton = row.querySelector('.btn-bewaar');
+            
+            if (input.value.trim()) {
+                saveButton.disabled = false;
+            } else {
+                saveButton.disabled = true;
+            }
+        }
+
+        async function saveBonUrl(button) {
+            const row = button.closest('tr');
+            const urlInput = row.querySelector('.url-input');
+            const bonUrl = urlInput.value.trim();
+            
+            console.log('saveBonUrl gestart');
+            
+            if (!bonUrl) {
+                showMessage('❌ Voer eerst een URL in', 'error');
+                return;
+            }
+
+            // Valideer SharePoint URL
+            if (!bonUrl.toLowerCase().includes('sharepoint')) {
+                console.log('Ongeldige URL gedetecteerd - veld wordt leeggemaakt');
+                showMessage('❌ Alleen SharePoint URLs zijn toegestaan', 'error');
+                urlInput.value = '';
+                urlInput.focus();
+                button.disabled = true;
+                return;
+            }
+
+            const filePath = row.dataset.file;
+            const tab = row.dataset.tab;
+            const rowIndex = parseInt(row.dataset.row);
+
+            console.log('Data verzameld:', { filePath, tab, rowIndex });
+
+            // Toon loading indicator met waarschuwing over OneDrive sync
+            const loadingElement = document.getElementById('loading');
+            const loadingText = loadingElement.querySelector('p');
+            if (loadingText) {
+                loadingText.textContent = '⏳ Bezig met opslaan naar OneDrive... Dit kan 30-90 seconden duren.';
+            }
+            loadingElement.classList.add('active');
+            button.disabled = true;
+
+            // Timeout controller voor fetch (90 seconden voor OneDrive sync)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => {
+                controller.abort();
+                console.error('Fetch timeout na 90 seconden');
+            }, 90000);
+
+            try {
+                console.log('Starten fetch naar /save_bon_url...');
+                const response = await fetch('/save_bon_url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        file_path: filePath,
+                        tab: tab,
+                        row_index: rowIndex,
+                        bon_url: bonUrl
+                    }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                console.log('Response ontvangen, status:', response.status);
+
+                let result;
+                try {
+                    result = await response.json();
+                } catch (jsonError) {
+                    throw new Error('Ongeldige response van server');
+                }
+
+                // Controleer of response OK is en toon specifieke foutmelding van server
+                if (!response.ok) {
+                    const errorMsg = (result && result.message) ? result.message : `Serverfout: ${response.status} ${response.statusText}`;
+                    throw new Error(errorMsg);
+                }
+
+                if (result && result.success) {
+                    const action = button.textContent.includes('Vervang') ? 'vervangen' : 'opgeslagen';
+                    showMessage(`✅ Bon URL succesvol ${action}!`, 'success');
+                    
+                    // Update de bon kolom in de tabel
+                    const bonCell = row.querySelector('.bon-cell');
+                    if (bonCell) {
+                        bonCell.innerHTML = `<a href="${bonUrl}" target="_blank" class="bon-link">${bonUrl.substring(0, 50)}...</a>`;
+                    }
+                    
+                    // Verberg input en reset
+                    urlInput.style.display = 'none';
+                    urlInput.value = '';
+                    button.disabled = true;
+                } else {
+                    const errorMsg = (result && result.message) ? result.message : 'Onbekende fout';
+                    showMessage('❌ Fout: ' + errorMsg, 'error');
+                    
+                    // Maak invoerveld leeg bij validatiefouten (URL bestaat niet, etc.)
+                    urlInput.value = '';
+                    button.disabled = true;
+                }
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error('Fout bij opslaan bon URL:', error);
+                
+                // Check of het een timeout was
+                if (error.name === 'AbortError') {
+                    showMessage('❌ Opslaan duurt te lang (timeout na 90 sec). OneDrive sync kan traag zijn. Controleer handmatig of de bon is opgeslagen of probeer opnieuw.', 'error');
+                } else {
+                    showMessage('❌ Fout bij opslaan: ' + error.message, 'error');
+                }
+                
+                // Maak invoerveld leeg bij alle fouten
+                console.log('Fout opgetreden - veld wordt leeggemaakt');
+                urlInput.value = '';
+                button.disabled = true;
+            } finally {
+                // Zorg ervoor dat loading indicator altijd wordt verwijderd
+                if (loadingElement) {
+                    loadingElement.classList.remove('active');
+                    const loadingText = loadingElement.querySelector('p');
+                    if (loadingText) {
+                        loadingText.textContent = '⏳ Bezig met opslaan...';
+                    }
+                }
+                console.log('saveBonUrl afgerond');
+            }
+        }
+
+        function showMessage(text, type) {
+            const container = document.getElementById('message-container');
+            const message = document.createElement('div');
+            message.className = 'message ' + type;
+            message.textContent = text;
+            
+            container.innerHTML = '';
+            container.appendChild(message);
+            
+            // Auto-hide na 5 seconden
+            setTimeout(() => {
+                message.remove();
+            }, 5000);
+        }
+
+        const MAIN_APP_URL = "{{ main_app_url|default('') }}";
+
+        function quitApp() {
+            if (confirm('Weet je zeker dat je de applicatie wilt afsluiten?')) {
+                fetch('/quit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (MAIN_APP_URL) {
+                            window.location.href = MAIN_APP_URL;
+                            return;
+                        }
+                        document.body.innerHTML = '<div style="text-align:center; padding:50px;"><h1>Applicatie afgesloten</h1><p>Je kunt dit venster nu sluiten.</p></div>';
+                    })
+                    .catch(() => {
+                        if (MAIN_APP_URL) {
+                            window.location.href = MAIN_APP_URL;
+                            return;
+                        }
+                        // Zelfs bij een error is de server waarschijnlijk gestopt
+                        document.body.innerHTML = '<div style="text-align:center; padding:50px;"><h1>Applicatie afgesloten</h1><p>Je kunt dit venster nu sluiten.</p></div>';
+                    });
+            }
+        }
+
+    </script>
+</body>
+</html>

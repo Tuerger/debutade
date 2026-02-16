@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bankrekening Debutade</title>
+    <link rel="icon" href="{{ url_for('static', filename='icon.ico') }}" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-1: #0f1b2b;
+            --bg-2: #142235;
+            --bg-3: #101a26;
+            --accent: #f3b860;
+            --accent-2: #3cc6a8;
+            --text: #eef3f7;
+            --muted: #b9c7d6;
+            --surface: #ffffff;
+            --surface-2: #f3f6fb;
+            --surface-3: #eaf0f7;
+            --border: #d6dee8;
+            --shadow: 0 14px 30px rgba(5, 10, 20, 0.12);
+            --text-dark: #1a2433;
+            --danger: #f05d5e;
+        }
+        
+        body {
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #1b2b45 0%, var(--bg-1) 45%, var(--bg-3) 100%);
+            padding: 24px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 18px 40px rgba(5, 10, 20, 0.18);
+        }
+
+        .hero-banner {
+            position: relative;
+            margin: -10px -10px 20px -10px;
+            padding: 36px 30px;
+            border-radius: 14px;
+            overflow: hidden;
+            text-align: center;
+            background: linear-gradient(120deg, rgba(15, 27, 43, 0.85), rgba(20, 34, 53, 0.75)),
+                        url("{{ url_for('static', filename='Header Debutade.jpg') }}") center/cover no-repeat;
+        }
+
+        .hero-banner h1 {
+            color: var(--text);
+            margin: 0 0 6px 0;
+            font-size: 28px;
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        }
+
+        .hero-banner p {
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        .hero-banner .user-info {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: normal;
+        }
+
+        .hero-banner .nav-buttons {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .hero-banner .nav-buttons a,
+        .hero-banner .nav-buttons button {
+            font-size: 12px;
+            padding: 6px 12px;
+            background-color: var(--accent);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .hero-banner .nav-buttons a:hover,
+        .hero-banner .nav-buttons button:hover {
+            background-color: #f5a54f;
+        }
+
+        .hero-banner .nav-buttons .btn-quit {
+            background-color: #f05d5e;
+            border-radius: 999px;
+            padding: 8px 14px;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .hero-banner .nav-buttons .btn-quit:hover {
+            transform: translateY(-1px);
+            background-color: #e04849;
+        }
+
+        .hero-banner .nav-buttons .btn-quit:active {
+            transform: translateY(0);
+            background-color: #d93c3d;
+        }
+
+        .page-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #e1e6ed;
+            font-size: 12px;
+            color: #8a96a6;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .header-info {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+        }
+        
+        .total-amount {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #8A2E1E;
+            border-radius: 5px;
+        }
+        
+        .form-section {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .form-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0;
+            font-weight: normal;
+        }
+        
+        input[type="date"],
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+        
+        input[type="date"]:focus,
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+        
+        button {
+            background-color: #27ae60;
+            color: white;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #229954;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: #7f8c8d;
+            color: white;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            display: block;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #707b7c;
+        }
+
+        .btn-delete {
+            background-color: #1b2b45;
+            color: white;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            display: block;
+            width: 100%;
+        }
+
+        .btn-delete:hover {
+            background-color: #c0392b;
+        }
+        
+        .transactions-section {
+            margin-top: 40px;
+            border-top: 2px solid #ecf0f1;
+            padding-top: 30px;
+        }
+        
+        .transactions-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+        }
+        
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 13px;
+        }
+        
+        th {
+            background-color: #33ABD5;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Vergroot de 'Tag' kolom (kolom 7) in beide tabellen */
+        table thead th:nth-child(7),
+        table tbody td:nth-child(7) {
+            min-width: 220px;
+            width: 220px;
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .amount-positive {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .amount-negative {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .settings-link {
+            text-align: right;
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .settings-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .settings-link a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-quit {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .btn-quit:hover {
+            transform: translateY(-1px);
+            background-color: #e04849;
+        }
+
+        .btn-quit:active {
+            transform: translateY(0);
+            background-color: #d93c3d;
+        }
+        
+        .message {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .history-section {
+            margin-top: 40px;
+            border-top: 2px solid #ecf0f1;
+            padding-top: 30px;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #9b59b6;
+        }
+        
+        .history-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .history-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .filter-group select {
+            padding: 8px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+        }
+        
+        .btn-export {
+            background-color: #9b59b6;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-export:hover {
+            background-color: #8e44ad;
+        }
+        
+        #historyContainer {
+            max-height: 600px;
+            overflow-y: auto;
+            background-color: white;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+        }
+        
+        .history-table thead {
+            position: sticky;
+            top: 0;
+            background-color: #33ABD5;
+            z-index: 1;
+        }
+        
+        .history-table th {
+            padding: 12px;
+            text-align: left;
+            color: white;
+            font-weight: bold;
+            border-bottom: 2px solid #2c3e50;
+        }
+        
+        .history-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .history-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #e74c3c;
+        }
+        
+        .transaction-row-in {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .transaction-row-out {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .tag-badge {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .suggestion-box {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #2c3e50;
+        }
+
+        .suggestion-chip {
+            display: inline-block;
+            background-color: #edf2ff;
+            color: #1f2d3d;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 6px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            border: 1px solid #d6e4ff;
+        }
+
+        .suggestion-chip:hover {
+            background-color: #d6e4ff;
+        }
+
+        .suggestion-error {
+            color: #c0392b;
+        }
+        
+        @media (max-width: 768px) {
+            .history-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .autocomplete-container {
+            position: relative;
+        }
+        
+        .autocomplete-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .autocomplete-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #bdc3c7;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .autocomplete-list.active {
+            display: block;
+        }
+        
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        
+        .autocomplete-item:hover,
+        .autocomplete-item.selected {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .no-match {
+            padding: 10px;
+            color: #7f8c8d;
+            text-align: center;
+        }
+
+        /* Theme overrides */
+        .container {
+            border: 1px solid #e8eef5;
+            box-shadow: var(--shadow);
+        }
+
+        .total-amount {
+            background: linear-gradient(120deg, #1b2b45, #243a55);
+            border: 1px solid rgba(243, 184, 96, 0.35);
+            border-radius: 12px;
+        }
+
+        .form-section {
+            background-color: var(--surface-2);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .form-section h2,
+        .transactions-section h2,
+        .history-section h2 {
+            color: var(--text-dark);
+            font-size: 16px;
+        }
+
+        label {
+            color: #2b3445;
+        }
+
+        input[type="date"],
+        input[type="text"],
+        input[type="number"],
+        select {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background-color: #ffffff;
+            font-family: inherit;
+            padding: 10px 12px;
+        }
+
+        input[type="date"]:focus,
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(243, 184, 96, 0.2);
+        }
+
+        button {
+            background-color: var(--accent);
+            color: #1a1a1a;
+            border-radius: 999px;
+        }
+
+        button:hover {
+            background-color: #f5a54f;
+        }
+
+        .btn-secondary {
+            background-color: #5c6b7a;
+            color: #eef3f7;
+            border-radius: 999px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4b5967;
+        }
+
+        .btn-delete {
+            background-color: var(--danger);
+            border-radius: 999px;
+        }
+
+        .btn-delete:hover {
+            background-color: #162338;
+        }
+
+        .btn-ai {
+            background-color: var(--accent-2);
+            color: #0f1b2b;
+            border-radius: 999px;
+        }
+
+        .btn-ai:hover {
+            background-color: #2fb195;
+        }
+
+        .btn-quit {
+            background-color: var(--danger);
+            border-radius: 999px;
+            padding: 8px 14px;
+            color: #ffffff;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .btn-quit:hover {
+            transform: translateY(-1px);
+            background-color: #e04849;
+        }
+
+        .btn-quit:active {
+            transform: translateY(0);
+            background-color: #d93c3d;
+        }
+
+        .settings-link a {
+            color: #1b2b45;
+            font-weight: 600;
+        }
+
+        .transactions-section,
+        .history-section {
+            border-top: none;
+            background-color: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        .history-section {
+            border-left: 4px solid var(--accent-2);
+        }
+
+        .transactions-section {
+            border-left: 4px solid var(--accent);
+        }
+
+        table,
+        .history-table {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            font-size: 12px;
+        }
+        #historyContainer {
+            background-color: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .history-controls {
+            background-color: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .filter-group select {
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background-color: #ffffff;
+            font-family: inherit;
+        }
+
+        .message.success {
+            background-color: #eaf7f3;
+            color: #1b6b5b;
+            border: 1px solid #bfe9dd;
+        }
+
+        .message.error {
+            background-color: #fde9ea;
+            color: #8f2c32;
+            border: 1px solid #f3c2c6;
+        }
+
+        .message {
+            border-radius: 10px;
+        }
+
+        .btn-primary {
+            background-color: #1b2b45;
+            color: #eef3f7;
+            border-radius: 999px;
+        }
+
+        .btn-primary:hover {
+            background-color: #162338;
+        }
+
+        .btn-export {
+            background-color: var(--accent-2);
+            color: #0f1b2b;
+            border-radius: 999px;
+        }
+
+        .btn-export:hover {
+            background-color: #2fb195;
+        }
+
+        th,
+        .history-table thead {
+            background-color: #1b2b45;
+            color: #eef3f7;
+        }
+
+        tr:hover,
+        .history-table tr:hover {
+            background-color: #f3f6fb;
+        }
+
+        .tag-badge {
+            background-color: #1b2b45;
+        }
+
+        .suggestion-chip {
+            background-color: #fff7e8;
+            border: 1px solid rgba(243, 184, 96, 0.6);
+            color: var(--text-dark);
+        }
+
+        .suggestion-chip:hover {
+            background-color: #ffe7c4;
+        }
+
+        .suggestion-error,
+        .no-data {
+            color: var(--danger);
+        }
+
+        .autocomplete-input {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background-color: #ffffff;
+            font-family: inherit;
+            padding: 10px 12px;
+        }
+
+        .autocomplete-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(243, 184, 96, 0.2);
+        }
+
+        .autocomplete-list {
+            border: 1px solid var(--border);
+            background-color: #ffffff;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.selected {
+            background-color: #1b2b45;
+            color: #eef3f7;
+        }
+
+        textarea {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background-color: #ffffff;
+            font-family: inherit;
+            padding: 10px 12px;
+        }
+
+        .form-section,
+        .transactions-section,
+        .history-section {
+            margin-top: 24px;
+            margin-bottom: 24px;
+        }
+            margin: 24px 0;
+
+        .transactions-section h2,
+        .history-section h2,
+        .form-section h2 {
+            margin-bottom: 16px;
+        }
+
+        table {
+            margin-top: 16px;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            font-size: 12px;
+        }
+
+        .date-col {
+            white-space: nowrap;
+            width: 120px;
+        }
+
+        .amount-col {
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 10px 12px;
+        }
+
+        .settings-link {
+            margin-top: 20px;
+        }
+
+        table tbody tr {
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+
+        table tbody tr:hover {
+            transform: translateY(-1px);
+        }
+
+        .form-section,
+        .transactions-section,
+        .history-section,
+        table {
+            animation: fadeInUp 0.45s ease both;
+        }
+
+        .transactions-section {
+            animation-delay: 60ms;
+        }
+
+        .history-section {
+            animation-delay: 120ms;
+        }
+
+        table {
+            animation-delay: 140ms;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero-banner">
+            <div class="nav-buttons">
+                <button id="quitBtn" class="btn-quit">🚪 Afsluiten</button>
+            </div>
+            <div class="user-info">Vandaag: {{ current_date }} | Gebruiker: {{ current_user }}</div>
+            <h1>Bankrekening Debutade</h1>
+            <p>Financiële transactie beheerder</p>
+        </div>
+        
+        
+        <div class="form-section">
+            <h2>Diagnose: Sheet statistieken</h2>
+            {% if sheet_stats %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tabblad</th>
+                        <th>Totaal rijen</th>
+                        <th>Untagged rijen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in sheet_stats %}
+                    <tr>
+                        <td>{{ s.sheet_name }}</td>
+                        <td>{{ s.total }}</td>
+                        <td>{{ s.untagged }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="message error">Geen statistieken beschikbaar. Controleer het Excel pad in de hoofdapp Instellingen.</div>
+            {% endif %}
+        </div>
+
+        <div class="transactions-section">
+            <h2>Transacties zonder Tag (alle tabbladen)</h2>
+            {% if untagged_transactions %}
+            <div style="margin-bottom: 15px;">
+                <button class="btn-ai" onclick="applyAISuggestionsToAll()" style="font-size: 14px; padding: 10px 20px;">🤖 AI Suggestie voor alle lege tags</button>
+                <span id="bulk-status" style="margin-left: 15px; font-style: italic; color: #7f8c8d;"></span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tabblad</th>
+                        <th class="date-col">Datum</th>
+                        <th>Mededeling</th>
+                        <th>Rekening</th>
+                        <th>Af/Bij</th>
+                        <th class="amount-col">Bedrag</th>
+                        <th>Tag</th>
+                        <th>Actie</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in untagged_transactions %}
+                    <tr id="row-{{ t.sheet_name }}-{{ t.row_index }}">
+                        <td>{{ t.sheet_name }}</td>
+                        <td class="date-col">{{ t.datum }}</td>
+                        <td>{{ t.mededelingen }}</td>
+                        <td>{{ t.rekening }}</td>
+                        <td>{{ t.af_bij }}</td>
+                        <td class="amount-col">€ {{ t.bedrag }}</td>
+                        <td>
+                            <div class="autocomplete-container">
+                                <input type="text" class="autocomplete-input" id="tagInput-{{ t.sheet_name }}-{{ t.row_index }}" placeholder="Zoek tag..." data-row="{{ t.sheet_name }}-{{ t.row_index }}">
+                                <div class="autocomplete-list" id="tagList-{{ t.sheet_name }}-{{ t.row_index }}">
+                                    {% for tag in tags %}
+                                    <div class="autocomplete-item" data-tag="{{ tag }}" data-sheet="{{ t.sheet_name }}" data-row="{{ t.row_index }}" onclick="selectTagFromItem(this)">{{ tag }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="suggestion-box" id="suggestions-{{ t.sheet_name }}-{{ t.row_index }}"></div>
+                        </td>
+                        <td>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <button class="btn-primary" data-sheet="{{ t.sheet_name }}" data-row="{{ t.row_index }}" onclick="updateTagFromButton(this)">Opslaan</button>
+                                <button class="btn-delete" data-sheet="{{ t.sheet_name }}" data-row="{{ t.row_index }}" onclick="clearTag(this)">Wissen</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="message success">Alle transacties hebben een Tag (gebaseerd op huidige data). 🎉</div>
+            {% endif %}
+        </div>
+
+        <div class="transactions-section">
+            <h2>Alle transacties (alle tabbladen)</h2>
+            {% if all_transactions %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tabblad</th>
+                        <th class="date-col">Datum</th>
+                        <th>Mededeling</th>
+                        <th>Rekening</th>
+                        <th>Af/Bij</th>
+                        <th class="amount-col">Bedrag</th>
+                        <th>Tag</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in all_transactions %}
+                    <tr>
+                        <td>{{ t.sheet_name }}</td>
+                        <td class="date-col">{{ t.datum }}</td>
+                        <td>{{ t.mededelingen }}</td>
+                        <td>{{ t.rekening }}</td>
+                        <td>{{ t.af_bij }}</td>
+                        <td class="amount-col">€ {{ t.bedrag }}</td>
+                        <td>{{ t.tag }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="message error">Geen transacties gevonden in de Excel.</div>
+            {% endif %}
+        </div>
+        
+        <div class="page-footer">
+            Bankrekening Debutade v2.0 - Web Applicatie
+        </div>
+    </div>
+    
+    <script>
+        // eslint-disable-next-line no-undef
+        // Tag list (passed from Flask template)
+        const tags = {{ tags|tojson }};
+        
+        // Tag autocomplete functionality
+        function initializeTagAutocomplete() {
+            const inputs = document.querySelectorAll('.autocomplete-input');
+            
+            inputs.forEach(input => {
+                let selectedIndex = -1;
+
+                input.addEventListener('focus', function() {
+                    const listId = this.id.replace('tagInput-', 'tagList-');
+                    const list = document.getElementById(listId);
+                    if (list) list.classList.add('active');
+                    selectedIndex = -1;
+                });
+                
+                input.addEventListener('input', function() {
+                    const query = this.value.toLowerCase();
+                    const listId = this.id.replace('tagInput-', 'tagList-');
+                    const list = document.getElementById(listId);
+                    if (!list) return;
+                    
+                    const items = list.querySelectorAll('.autocomplete-item');
+                    let hasMatch = false;
+                    
+                    items.forEach(item => {
+                        if (item.textContent.toLowerCase().includes(query)) {
+                            item.style.display = 'block';
+                            hasMatch = true;
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                    
+                    if (query === '') {
+                        list.classList.add('active');
+                    } else if (hasMatch) {
+                        list.classList.add('active');
+                    } else {
+                        list.classList.remove('active');
+                    }
+                    
+                    selectedIndex = -1;
+                });
+
+                input.addEventListener('keydown', function(e) {
+                    const listId = this.id.replace('tagInput-', 'tagList-');
+                    const list = document.getElementById(listId);
+                    if (!list || !list.classList.contains('active')) return;
+                    
+                    const items = Array.from(list.querySelectorAll('.autocomplete-item')).filter(item => item.style.display !== 'none');
+                    
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                        updateSelection(items, selectedIndex);
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        selectedIndex = Math.max(selectedIndex - 1, -1);
+                        updateSelection(items, selectedIndex);
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (selectedIndex >= 0 && selectedIndex < items.length) {
+                            const tag = items[selectedIndex].textContent;
+                            this.value = tag;
+                            list.classList.remove('active');
+                            selectedIndex = -1;
+                        }
+                    } else if (e.key === 'Escape') {
+                        list.classList.remove('active');
+                        selectedIndex = -1;
+                    }
+                });
+                
+                input.addEventListener('blur', function() {
+                    setTimeout(() => {
+                        const listId = this.id.replace('tagInput-', 'tagList-');
+                        const list = document.getElementById(listId);
+                        if (list) list.classList.remove('active');
+                        selectedIndex = -1;
+                    }, 200);
+                });
+            });
+        }
+
+        function updateSelection(items, index) {
+            items.forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        function selectTagFromItem(element) {
+            const tag = element.getAttribute('data-tag');
+            const sheet = element.getAttribute('data-sheet');
+            const row = element.getAttribute('data-row');
+            selectTag(sheet, row, tag);
+        }
+
+        function selectTag(sheetName, rowIndex, tag) {
+            const input = document.getElementById(`tagInput-${sheetName}-${rowIndex}`);
+            if (input) {
+                input.value = tag;
+            }
+        }
+
+        function useSuggestedTag(element) {
+            const tag = element.getAttribute('data-tag');
+            const sheet = element.getAttribute('data-sheet');
+            const row = element.getAttribute('data-row');
+            if (tag && sheet && row) {
+                selectTag(sheet, row, tag);
+            }
+        }
+
+        function renderSuggestions(sheetName, rowIndex, suggestions) {
+            const box = document.getElementById(`suggestions-${sheetName}-${rowIndex}`);
+            if (!box) return;
+            if (!suggestions || suggestions.length === 0) {
+                box.className = 'suggestion-box suggestion-error';
+                box.textContent = 'Geen suggesties beschikbaar.';
+                return;
+            }
+
+            box.className = 'suggestion-box';
+            // Toon altijd de top 3 suggesties met score als chips
+            const chips = suggestions.slice(0, 3).map((s, idx) => {
+                return `<span class="suggestion-chip" data-sheet="${sheetName}" data-row="${rowIndex}" data-tag="${s.tag}" title="Score: ${s.score}" onclick="useSuggestedTag(this)">${s.tag} <span style='color:#888;font-size:12px;'>(score: ${s.score})</span></span>`;
+            });
+            box.innerHTML = `<div style='margin-bottom:4px;font-weight:500;'>AI suggesties:</div>${chips.join(' ')}`;
+        }
+
+        function clearTag(button) {
+            const sheet = button.getAttribute('data-sheet');
+            const row = button.getAttribute('data-row');
+            const input = document.getElementById(`tagInput-${sheet}-${row}`);
+            const box = document.getElementById(`suggestions-${sheet}-${row}`);
+            
+            if (input) {
+                input.value = '';
+            }
+            if (box) {
+                box.className = 'suggestion-box';
+                box.innerHTML = '';
+            }
+        }
+
+        function applyAISuggestionsToAll() {
+            const statusEl = document.getElementById('bulk-status');
+            if (statusEl) {
+                statusEl.textContent = 'AI suggesties ophalen...';
+                statusEl.style.color = '#3498db';
+            }
+
+            fetch('/bulk_recommend_tags', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json().then(body => ({ status: res.status, body })))
+            .then(({ status, body }) => {
+                if (status === 200 && body.success) {
+                    const results = body.results || [];
+                    let applied = 0;
+                    
+                    // Toon per record direct de suggesties-box met chips en scores
+                    results.forEach(result => {
+                        if (result.success && result.suggestions && result.suggestions.length > 0) {
+                            renderSuggestions(result.sheet_name, result.row_index, result.suggestions);
+                            applied++;
+                        }
+                    });
+                    
+                    if (statusEl) {
+                        statusEl.textContent = `✓ ${applied} suggestie(s) toegepast`;
+                        statusEl.style.color = '#27ae60';
+                        setTimeout(() => { statusEl.textContent = ''; }, 5000);
+                    }
+                } else {
+                    if (statusEl) {
+                        statusEl.textContent = '✗ ' + (body.message || 'Fout bij ophalen suggesties');
+                        statusEl.style.color = '#e74c3c';
+                    }
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (statusEl) {
+                    statusEl.textContent = '✗ Fout bij ophalen suggesties';
+                    statusEl.style.color = '#e74c3c';
+                }
+            });
+        }
+
+        function updateTagFromButton(button) {
+            const sheet = button.getAttribute('data-sheet');
+            const row = button.getAttribute('data-row');
+            updateTag(sheet, row);
+        }
+
+        function updateTag(sheetName, rowIndex) {
+            const input = document.getElementById(`tagInput-${sheetName}-${rowIndex}`);
+            const tag = input ? input.value.trim() : '';
+            if (!tag) {
+                alert('Kies een Tag');
+                return;
+            }
+            fetch('/update_tag', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sheet_name: sheetName, row_index: rowIndex, tag })
+            })
+            .then(res => res.json().then(body => ({ status: res.status, body })))
+            .then(({ status, body }) => {
+                if (status === 200 && body.success) {
+                    const row = document.getElementById(`row-${sheetName}-${rowIndex}`);
+                    if (row) row.remove();
+                } else {
+                    alert(body.message || 'Bijwerken mislukt');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Fout bij bijwerken');
+            });
+        }
+
+        // Initialize autocomplete on page load
+        document.addEventListener('DOMContentLoaded', initializeTagAutocomplete);
+
+        // Quit button handler
+        const MAIN_APP_URL = "{{ main_app_url|default('') }}";
+        const sessionStartTime = new Date();
+        const quitBtn = document.getElementById('quitBtn');
+        if (quitBtn) {
+            quitBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sessionEndTime = new Date();
+                const durationMs = sessionEndTime - sessionStartTime;
+                const durationMinutes = Math.floor(durationMs / 60000);
+                const durationSeconds = Math.floor((durationMs % 60000) / 1000);
+                const durationStr = durationMinutes > 0 ? `${durationMinutes}m ${durationSeconds}s` : `${durationSeconds}s`;
+
+                const confirmed = confirm(`Sessie duur: ${durationStr}\n\nWeet je zeker dat je wil afsluiten?`);
+                if (!confirmed) return;
+
+                fetch('/quit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ duration: durationStr })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (MAIN_APP_URL) {
+                            window.location.href = MAIN_APP_URL;
+                            return;
+                        }
+                        alert('Applicatie sluit af. Tot ziens!');
+                        setTimeout(() => {
+                            window.close();
+                            setTimeout(() => { window.location.href = 'about:blank'; }, 500);
+                        }, 1500);
+                    } else {
+                        alert('Fout bij afsluiten: ' + (data.message || 'Onbekende fout'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    if (MAIN_APP_URL) {
+                        window.location.href = MAIN_APP_URL;
+                        return;
+                    }
+                    setTimeout(() => {
+                        window.close();
+                        setTimeout(() => { window.location.href = 'about:blank'; }, 500);
+                    }, 1000);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

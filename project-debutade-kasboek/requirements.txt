@@ -1,0 +1,12 @@
+# Kasboek Debutade - Web Applicatie
+# Requirements voor Python packages
+
+# Flask web framework
+Flask==3.0.0
+Werkzeug==3.0.1
+
+# Excel file handling
+openpyxl==3.1.2
+
+# Additional utilities
+python-dateutil==2.8.2
