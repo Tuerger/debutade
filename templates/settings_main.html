@@ -153,6 +153,20 @@
             margin-top: 6px;
         }
 
+        .tag-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent-2);
+            background: rgba(60, 198, 168, 0.15);
+            border: 1px solid rgba(60, 198, 168, 0.4);
+            border-radius: 999px;
+            padding: 4px 10px;
+        }
+
         .footer-actions {
             display: flex;
             justify-content: flex-end;
@@ -189,44 +203,6 @@
         <div class="success">Instellingen opgeslagen. Herstart eventueel de apps om wijzigingen direct te zien.</div>
         {% endif %}
 
-            <div class="card">
-                <h2>Contributie</h2>
-                <div class="grid">
-                    <div>
-                        <label for="contrib_ledenbestand_path">Ledenbestand pad</label>
-                        <input id="contrib_ledenbestand_path" name="contrib_ledenbestand_path" type="text" value="{{ config_data.get('contributie', {}).get('ledenbestand_path', '') }}" />
-                    </div>
-                    <div>
-                        <label for="contrib_leden_sheet_personen">Tab personen</label>
-                        <input id="contrib_leden_sheet_personen" name="contrib_leden_sheet_personen" type="text" value="{{ config_data.get('contributie', {}).get('leden_sheet_personen', '') }}" />
-                    </div>
-                    <div>
-                        <label for="contrib_leden_sheet_betaald">Tab betaald</label>
-                        <input id="contrib_leden_sheet_betaald" name="contrib_leden_sheet_betaald" type="text" value="{{ config_data.get('contributie', {}).get('leden_sheet_betaald', '') }}" />
-                    </div>
-                    <div>
-                        <label for="contrib_target_8000">Contributie bedrag 8000 (volwassenen)</label>
-                        <input id="contrib_target_8000" name="contrib_target_8000" type="number" step="0.01" value="{{ config_data.get('contributie', {}).get('tag_targets', {}).get('8000', '') }}" />
-                    </div>
-                    <div>
-                        <label for="contrib_target_8001">Contributie bedrag 8001 (jeugd)</label>
-                        <input id="contrib_target_8001" name="contrib_target_8001" type="number" step="0.01" value="{{ config_data.get('contributie', {}).get('tag_targets', {}).get('8001', '') }}" />
-                    </div>
-                    <div>
-                        <label for="contrib_bank_excel_file_name">Bank Excel bestandsnaam</label>
-                        <input id="contrib_bank_excel_file_name" name="contrib_bank_excel_file_name" type="text" value="{{ config_data.get('contributie', {}).get('bank_excel_file_name', '') }}" />
-                    </div>
-                    <div>
-                        <label for="contrib_bank_sheet_name">Bank sheet naam</label>
-                        <input id="contrib_bank_sheet_name" name="contrib_bank_sheet_name" type="text" value="{{ config_data.get('contributie', {}).get('bank_sheet_name', '') }}" />
-                    </div>
-                    <div>
-                        <label for="contrib_tags">Contributie tags (1 per regel)</label>
-                        <textarea id="contrib_tags" name="contrib_tags">{{ config_data.get('contributie', {}).get('tags', []) | join('\n') }}</textarea>
-                    </div>
-                </div>
-            </div>
-
         <form id="settingsForm" method="post">
             <div class="card">
                 <h2>Algemeen</h2>
@@ -234,6 +210,11 @@
                     <div>
                         <label for="shared_grootboek_directory">Grootboek directory</label>
                         <input id="shared_grootboek_directory" name="shared_grootboek_directory" type="text" value="{{ config_data.get('shared', {}).get('grootboek_directory', '') }}" />
+                    </div>
+                    <div>
+                        <label for="shared_bank_excel_file_name">Bank Excel bestandsnaam (gedeeld voor alle apps)</label>
+                        <input id="shared_bank_excel_file_name" name="shared_bank_excel_file_name" type="text" value="{{ config_data.get('shared', {}).get('bank_excel_file_name', '') }}" />
+                        <div class="hint">Geldig voor Bankrekening, Bon Toevoegen en Contributie.</div>
                     </div>
                     <div>
                         <label for="shared_backup_directory">Backup directory</label>
@@ -264,10 +245,12 @@
             </div>
             <div class="card">
                 <h2>Bankrekening</h2>
+                <div class="tag-badge">Gebruikt gedeelde bank Excel</div>
                 <div class="grid">
                     <div>
-                        <label for="bank_excel_file_name">Excel bestandsnaam</label>
-                        <input id="bank_excel_file_name" name="bank_excel_file_name" type="text" value="{{ config_data.get('bankrekening', {}).get('excel_file_name', '') }}" />
+                        <label for="bank_excel_file_name">Bank Excel bestandsnaam (beheer bij Algemeen)</label>
+                        <input id="bank_excel_file_name" type="text" value="{{ config_data.get('shared', {}).get('bank_excel_file_name', '') }}" disabled readonly />
+                        <div class="hint">Wijzig deze bestandsnaam bij Algemeen.</div>
                     </div>
                     <div>
                         <label for="bank_excel_sheet_name">Excel sheet naam</label>
@@ -296,10 +279,12 @@
 
             <div class="card">
                 <h2>Voeg Bon Toe</h2>
+                <div class="tag-badge">Gebruikt gedeelde bank Excel</div>
                 <div class="grid">
                     <div>
-                        <label for="bon_bank_excel_file_name">Bankrekening Excel bestandsnaam</label>
-                        <input id="bon_bank_excel_file_name" name="bon_bank_excel_file_name" type="text" value="{{ config_data.get('bontoevoegen', {}).get('bank_excel_file_name', '') }}" />
+                        <label for="bon_bank_excel_file_name">Bank Excel bestandsnaam (beheer bij Algemeen)</label>
+                        <input id="bon_bank_excel_file_name" type="text" value="{{ config_data.get('shared', {}).get('bank_excel_file_name', '') }}" disabled readonly />
+                        <div class="hint">Wijzig deze bestandsnaam bij Algemeen.</div>
                     </div>
                     <div>
                         <label for="bon_kas_excel_file_name">Kasboek Excel bestandsnaam</label>
@@ -309,6 +294,46 @@
                         <label for="bon_sharepoint_tenant">SharePoint tenant</label>
                         <input id="bon_sharepoint_tenant" name="bon_sharepoint_tenant" type="text" value="{{ config_data.get('bontoevoegen', {}).get('sharepoint_tenant', '') }}" />
                         <div class="hint">Bijv. debutabe voor https://debutabe.sharepoint.com</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Contributie</h2>
+                <div class="tag-badge">Gebruikt gedeelde bank Excel</div>
+                <div class="grid">
+                    <div>
+                        <label for="contrib_ledenbestand_path">Ledenbestand pad</label>
+                        <input id="contrib_ledenbestand_path" name="contrib_ledenbestand_path" type="text" value="{{ config_data.get('contributie', {}).get('ledenbestand_path', '') }}" />
+                    </div>
+                    <div>
+                        <label for="contrib_leden_sheet_personen">Tab personen</label>
+                        <input id="contrib_leden_sheet_personen" name="contrib_leden_sheet_personen" type="text" value="{{ config_data.get('contributie', {}).get('leden_sheet_personen', '') }}" />
+                    </div>
+                    <div>
+                        <label for="contrib_leden_sheet_betaald">Tab betaald</label>
+                        <input id="contrib_leden_sheet_betaald" name="contrib_leden_sheet_betaald" type="text" value="{{ config_data.get('contributie', {}).get('leden_sheet_betaald', '') }}" />
+                    </div>
+                    <div>
+                        <label for="contrib_target_8000">Contributie bedrag 8000 (volwassenen)</label>
+                        <input id="contrib_target_8000" name="contrib_target_8000" type="number" step="0.01" value="{{ config_data.get('contributie', {}).get('tag_targets', {}).get('8000', '') }}" />
+                    </div>
+                    <div>
+                        <label for="contrib_target_8001">Contributie bedrag 8001 (jeugd)</label>
+                        <input id="contrib_target_8001" name="contrib_target_8001" type="number" step="0.01" value="{{ config_data.get('contributie', {}).get('tag_targets', {}).get('8001', '') }}" />
+                    </div>
+                    <div>
+                        <label for="contrib_bank_excel_file_name">Bank Excel bestandsnaam (beheer bij Algemeen)</label>
+                        <input id="contrib_bank_excel_file_name" type="text" value="{{ config_data.get('shared', {}).get('bank_excel_file_name', '') }}" disabled readonly />
+                        <div class="hint">Wijzig deze bestandsnaam bij Algemeen.</div>
+                    </div>
+                    <div>
+                        <label for="contrib_bank_sheet_name">Bank sheet naam</label>
+                        <input id="contrib_bank_sheet_name" name="contrib_bank_sheet_name" type="text" value="{{ config_data.get('contributie', {}).get('bank_sheet_name', '') }}" />
+                    </div>
+                    <div>
+                        <label for="contrib_tags">Contributie tags (1 per regel)</label>
+                        <textarea id="contrib_tags" name="contrib_tags">{{ config_data.get('contributie', {}).get('tags', []) | join('\n') }}</textarea>
                     </div>
                 </div>
             </div>

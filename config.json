@@ -1,6 +1,7 @@
 {
     "shared": {
         "grootboek_directory": "C:\\Users\\ericg\\OneDrive - Vereniging met volledige rechtsbevoegdheid\\SharePoint Debutade - Documenten\\04. Penningmeester\\01 - Grootboek\\2026",
+        "bank_excel_file_name": "Debutade boekjaar bank 2026.xlsx",
         "backup_directory": "C:\\Users\\ericg\\OneDrive - Vereniging met volledige rechtsbevoegdheid\\SharePoint Debutade - Documenten\\04. Penningmeester\\01 - Grootboek\\2026\\backup",
         "log_directory": "C:\\Users\\ericg\\OneDrive - Vereniging met volledige rechtsbevoegdheid\\SharePoint Debutade - Documenten\\04. Penningmeester\\01 - Grootboek\\2026\\log",
         "resources": "C:\\Users\\ericg\\OneDrive - Vereniging met volledige rechtsbevoegdheid\\SharePoint Debutabe - Documenten\\04. Penningmeester\\04 - Code\\kasboek_debutabe\\resources",
@@ -48,7 +49,6 @@
         ]
     },
     "bankrekening": {
-        "excel_file_name": "Debutade boekjaar bank 2026.xlsx",
         "excel_sheet_name": "Bankrekening",
         "required_sheets": [
             "Bankrekening",
@@ -61,7 +61,6 @@
         "excel_sheet_name": "Kas"
     },
     "bontoevoegen": {
-        "bank_excel_file_name": "Debutade boekjaar bank 2026.xlsx",
         "kas_excel_file_name": "Debutade boekjaar kas 2026.xlsx",
         "sharepoint_tenant": "debutabe"
     },
@@ -73,7 +72,6 @@
         "ledenbestand_path": "C:\\Users\\ericg\\OneDrive - Vereniging met volledige rechtsbevoegdheid\\SharePoint Debutade - Documenten\\03. Secretaris\\ledenadministratie\\Ledenbestand.xlsx",
         "leden_sheet_personen": "personen",
         "leden_sheet_betaald": "betaald",
-        "bank_excel_file_name": "Debutade boekjaar bank 2026.xlsx",
         "bank_sheet_name": "Bankrekening",
         "tags": [
             "8000",

@@ -59,6 +59,8 @@ def load_config(config_path, section_key="contributie"):
     for key in ("backup_directory", "log_directory", "log_level"):
         if key in shared:
             config[key] = shared[key]
+    if shared.get("bank_excel_file_name") and not config.get("bank_excel_file_name"):
+        config["bank_excel_file_name"] = shared["bank_excel_file_name"]
 
     if shared.get("grootboek_directory") and config.get("bank_excel_file_name"):
         config["bank_excel_file_path"] = os.path.join(

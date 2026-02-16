@@ -123,6 +123,7 @@ def validate_workbook_tabs(file_path, required_sheets):
 def validate_main_config(config_data):
     errors = []
     shared = config_data.get("shared", {})
+    shared_bank_name = shared.get("bank_excel_file_name")
 
     grootboek_dir = shared.get("grootboek_directory")
     if not grootboek_dir:
@@ -152,9 +153,9 @@ def validate_main_config(config_data):
             return None
         return os.path.join(grootboek_dir, file_name)
 
-    bank_file_name = bank.get("excel_file_name")
+    bank_file_name = bank.get("excel_file_name") or shared_bank_name
     if not bank_file_name:
-        errors.append("Bankrekening Excel bestandsnaam is verplicht.")
+        errors.append("Bank Excel bestandsnaam (gedeeld) is verplicht.")
     bank_path = build_excel_path(bank_file_name)
     if bank_path and not os.path.exists(bank_path):
         errors.append(f"Bankrekening Excel bestand niet gevonden: {bank_path}")
@@ -178,9 +179,9 @@ def validate_main_config(config_data):
     elif kas_path:
         errors.extend(validate_workbook_tabs(kas_path, [kas_sheet]))
 
-    bon_bank_name = bon.get("bank_excel_file_name")
+    bon_bank_name = bon.get("bank_excel_file_name") or shared_bank_name
     if not bon_bank_name:
-        errors.append("Bon Toevoegen bank Excel bestandsnaam is verplicht.")
+        errors.append("Bon Toevoegen bank Excel bestandsnaam (gedeeld) is verplicht.")
     bon_bank_path = build_excel_path(bon_bank_name)
     if bon_bank_path and not os.path.exists(bon_bank_path):
         errors.append(f"Bon Toevoegen bank Excel bestand niet gevonden: {bon_bank_path}")
@@ -214,9 +215,9 @@ def validate_main_config(config_data):
             [contributie_personen, contributie_betaald],
         ))
 
-    contributie_bank_name = contributie.get("bank_excel_file_name")
+    contributie_bank_name = contributie.get("bank_excel_file_name") or shared_bank_name
     if not contributie_bank_name:
-        errors.append("Contributie bank Excel bestandsnaam is verplicht.")
+        errors.append("Contributie bank Excel bestandsnaam (gedeeld) is verplicht.")
     contributie_bank_path = build_excel_path(contributie_bank_name)
     if contributie_bank_path and not os.path.exists(contributie_bank_path):
         errors.append(f"Contributie bank Excel bestand niet gevonden: {contributie_bank_path}")
@@ -519,8 +520,19 @@ def settings_main():
         def form_value(key):
             return (request.form.get(key) or "").strip()
 
+        existing_config = config_data or {}
+        existing_shared = existing_config.get("shared", {})
+        existing_bank = existing_config.get("bankrekening", {})
+        existing_kas = existing_config.get("kasboek", {})
+        existing_bon = existing_config.get("bontoevoegen", {})
+        existing_showreport = existing_config.get("showreport", {})
+        existing_contributie = existing_config.get("contributie", {})
+
+        shared_bank_excel = form_value("shared_bank_excel_file_name") or existing_shared.get("bank_excel_file_name")
+
         shared_config = {
             "grootboek_directory": form_value("shared_grootboek_directory"),
+            "bank_excel_file_name": shared_bank_excel or "",
             "backup_directory": form_value("shared_backup_directory"),
             "log_directory": form_value("shared_log_directory"),
             "resources": form_value("shared_resources"),
@@ -529,35 +541,33 @@ def settings_main():
         }
 
         bank_config = {
-            "excel_file_name": form_value("bank_excel_file_name"),
+            "excel_file_name": form_value("bank_excel_file_name") or shared_bank_excel or existing_bank.get("excel_file_name"),
             "excel_sheet_name": form_value("bank_excel_sheet_name"),
             "required_sheets": split_lines(form_value("bank_required_sheets")),
         }
 
         kas_config = {
-            "excel_file_name": form_value("kas_excel_file_name"),
-            "excel_sheet_name": form_value("kas_excel_sheet_name"),
+            "excel_file_name": form_value("kas_excel_file_name") or existing_kas.get("excel_file_name"),
+            "excel_sheet_name": form_value("kas_excel_sheet_name") or existing_kas.get("excel_sheet_name"),
         }
 
         bon_config = {
-            "bank_excel_file_name": form_value("bon_bank_excel_file_name"),
-            "kas_excel_file_name": form_value("bon_kas_excel_file_name"),
-            "sharepoint_tenant": form_value("bon_sharepoint_tenant"),
+            "bank_excel_file_name": form_value("bon_bank_excel_file_name") or shared_bank_excel or existing_bon.get("bank_excel_file_name"),
+            "kas_excel_file_name": form_value("bon_kas_excel_file_name") or existing_bon.get("kas_excel_file_name"),
+            "sharepoint_tenant": form_value("bon_sharepoint_tenant") or existing_bon.get("sharepoint_tenant", ""),
         }
 
         showreport_config = {
-            "report_url": form_value("showreport_report_url"),
-            "report_title": form_value("showreport_report_title"),
+            "report_url": form_value("showreport_report_url") or existing_showreport.get("report_url", ""),
+            "report_title": form_value("showreport_report_title") or existing_showreport.get("report_title", ""),
         }
-
-        existing_contributie = (config_data or {}).get("contributie", {})
         contributie_config = dict(existing_contributie)
         contributie_config.update({
-            "ledenbestand_path": form_value("contrib_ledenbestand_path"),
-            "leden_sheet_personen": form_value("contrib_leden_sheet_personen"),
-            "leden_sheet_betaald": form_value("contrib_leden_sheet_betaald"),
-            "bank_excel_file_name": form_value("contrib_bank_excel_file_name") or existing_contributie.get("bank_excel_file_name"),
-            "bank_sheet_name": form_value("contrib_bank_sheet_name") or existing_contributie.get("bank_sheet_name"),
+            "ledenbestand_path": form_value("contrib_ledenbestand_path") or existing_contributie.get("ledenbestand_path", ""),
+            "leden_sheet_personen": form_value("contrib_leden_sheet_personen") or existing_contributie.get("leden_sheet_personen", ""),
+            "leden_sheet_betaald": form_value("contrib_leden_sheet_betaald") or existing_contributie.get("leden_sheet_betaald", ""),
+            "bank_excel_file_name": form_value("contrib_bank_excel_file_name") or shared_bank_excel or existing_contributie.get("bank_excel_file_name"),
+            "bank_sheet_name": form_value("contrib_bank_sheet_name") or existing_contributie.get("bank_sheet_name", ""),
             "tags": split_lines(form_value("contrib_tags")) or existing_contributie.get("tags", []),
             "tag_targets": {
                 "8000": form_value("contrib_target_8000") or existing_contributie.get("tag_targets", {}).get("8000", ""),

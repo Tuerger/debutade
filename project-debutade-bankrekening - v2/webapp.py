@@ -90,6 +90,8 @@ def load_config(config_path, section_key="bankrekening"):
     for key in ("backup_directory", "log_directory", "resources", "log_level", "tags"):
         if key in shared:
             config[key] = shared[key]
+    if shared.get("bank_excel_file_name") and not config.get("excel_file_name"):
+        config["excel_file_name"] = shared["bank_excel_file_name"]
     if shared.get("grootboek_directory") and config.get("excel_file_name"):
         config["excel_file_path"] = os.path.join(
             shared["grootboek_directory"],
@@ -499,6 +501,13 @@ def index():
     today = datetime.now().strftime('%Y-%m-%d')
     current_date_display = datetime.now().strftime('%d-%m-%Y')
     current_user = getpass.getuser()
+    ip_addr = request.headers.get('X-Forwarded-For') or request.remote_addr or 'onbekend'
+    logging.info(
+        "APP GEOPEND | Gebruiker: %s | IP: %s | Datum: %s",
+        current_user,
+        ip_addr,
+        current_date_display,
+    )
     
     return render_template('index.html', 
                          tags=TAGS,
