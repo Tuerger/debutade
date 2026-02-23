@@ -123,6 +123,10 @@
             gap: 14px 18px;
         }
 
+        .grid-wide {
+            grid-column: 1 / -1;
+        }
+
         label {
             display: block;
             font-size: 13px;
@@ -308,19 +312,7 @@
                     </div>
                     <div>
                         <label for="contrib_leden_sheet_personen">Tab personen</label>
-                        <input id="contrib_leden_sheet_personen" name="contrib_leden_sheet_personen" type="text" value="{{ config_data.get('contributie', {}).get('leden_sheet_personen', '') }}" />
-                    </div>
-                    <div>
-                        <label for="contrib_leden_sheet_betaald">Tab betaald</label>
-                        <input id="contrib_leden_sheet_betaald" name="contrib_leden_sheet_betaald" type="text" value="{{ config_data.get('contributie', {}).get('leden_sheet_betaald', '') }}" />
-                    </div>
-                    <div>
-                        <label for="contrib_target_8000">Contributie bedrag 8000 (volwassenen)</label>
-                        <input id="contrib_target_8000" name="contrib_target_8000" type="number" step="0.01" value="{{ config_data.get('contributie', {}).get('tag_targets', {}).get('8000', '') }}" />
-                    </div>
-                    <div>
-                        <label for="contrib_target_8001">Contributie bedrag 8001 (jeugd)</label>
-                        <input id="contrib_target_8001" name="contrib_target_8001" type="number" step="0.01" value="{{ config_data.get('contributie', {}).get('tag_targets', {}).get('8001', '') }}" />
+                        <input id="contrib_leden_sheet_personen" name="contrib_leden_sheet_personen" type="text" value="{{ config_data.get('contributie', {}).get('leden_sheet_personen', config_data.get('contributie', {}).get('leden_sheet_name', '')) }}" />
                     </div>
                     <div>
                         <label for="contrib_bank_excel_file_name">Bank Excel bestandsnaam (beheer bij Algemeen)</label>
@@ -331,24 +323,36 @@
                         <label for="contrib_bank_sheet_name">Bank sheet naam</label>
                         <input id="contrib_bank_sheet_name" name="contrib_bank_sheet_name" type="text" value="{{ config_data.get('contributie', {}).get('bank_sheet_name', '') }}" />
                     </div>
-                    <div>
-                        <label for="contrib_tags">Contributie tags (1 per regel)</label>
-                        <textarea id="contrib_tags" name="contrib_tags">{{ config_data.get('contributie', {}).get('tags', []) | join('\n') }}</textarea>
+                    <div class="grid-wide">
+                        <label for="contrib_manual_transaction_mappings">Handmatige toevoegingen:</label>
+                        <textarea id="contrib_manual_transaction_mappings" name="contrib_manual_transaction_mappings">{% for member_id, fragment in config_data.get('contributie', {}).get('manual_transaction_mappings', {}).items() %}{{ member_id }}: {{ fragment }}{% if not loop.last %}
+{% endif %}{% endfor %}</textarea>
+                        <div class="hint">Formaat: lidnummer: tekstfragment (1 per regel).</div>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <h2>Show rapport</h2>
+                <h2>Rapporten</h2>
+                <div class="tag-badge">Gebruikt gedeelde bank Excel en kasboek instellingen</div>
                 <div class="grid">
                     <div>
-                        <label for="showreport_report_title">Rapport titel</label>
-                        <input id="showreport_report_title" name="showreport_report_title" type="text" value="{{ config_data.get('showreport', {}).get('report_title', '') }}" />
+                        <label for="rapporten_bank_excel_file_name">Bank Excel bestandsnaam (optioneel, beheer bij Algemeen)</label>
+                        <input id="rapporten_bank_excel_file_name" name="rapporten_bank_excel_file_name" type="text" value="{{ config_data.get('rapporten', {}).get('bank_excel_file_name', config_data.get('shared', {}).get('bank_excel_file_name', '')) }}" />
+                        <div class="hint">Leeg laten gebruikt gedeelde bank Excel bestandsnaam.</div>
                     </div>
                     <div>
-                        <label for="showreport_report_url">Power BI URL</label>
-                        <input id="showreport_report_url" name="showreport_report_url" type="text" value="{{ config_data.get('showreport', {}).get('report_url', '') }}" />
-                        <div class="hint">Gebruik een embed- of publish-to-web URL.</div>
+                        <label for="rapporten_kas_excel_file_name">Kas Excel bestandsnaam (optioneel)</label>
+                        <input id="rapporten_kas_excel_file_name" name="rapporten_kas_excel_file_name" type="text" value="{{ config_data.get('rapporten', {}).get('kas_excel_file_name', config_data.get('kasboek', {}).get('excel_file_name', '')) }}" />
+                        <div class="hint">Leeg laten gebruikt kasboek bestandsnaam.</div>
+                    </div>
+                    <div>
+                        <label for="rapporten_bank_sheets">Bank sheets voor rapporten (1 per regel)</label>
+                        <textarea id="rapporten_bank_sheets" name="rapporten_bank_sheets">{{ config_data.get('rapporten', {}).get('bank_sheets', config_data.get('bankrekening', {}).get('required_sheets', [])) | join('\n') }}</textarea>
+                    </div>
+                    <div>
+                        <label for="rapporten_kas_sheet_name">Kas sheet naam voor rapporten</label>
+                        <input id="rapporten_kas_sheet_name" name="rapporten_kas_sheet_name" type="text" value="{{ config_data.get('rapporten', {}).get('kas_sheet_name', config_data.get('kasboek', {}).get('excel_sheet_name', '')) }}" />
                     </div>
                 </div>
             </div>

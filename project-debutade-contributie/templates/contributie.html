@@ -185,6 +185,26 @@
             background-color: #f5f5f5;
         }
 
+        .record-unpaid {
+            background-color: #fde2e2;
+            color: #8b1e1e;
+        }
+
+        .record-unpaid .amount {
+            color: #8b1e1e;
+        }
+
+        .name-match-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background-color: #fde68a;
+            color: #7a4a00;
+            font-size: 10px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
         .amount {
             font-weight: 600;
             color: #1b2b45;
@@ -349,6 +369,55 @@
             color: #7f8c8d;
         }
 
+        .status-icon {
+            font-size: 18px;
+            line-height: 1;
+            display: inline-block;
+        }
+
+        .status-ok {
+            color: #16a34a;
+        }
+
+        .status-partial {
+            color: #2563eb;
+        }
+
+        .status-none {
+            color: #dc2626;
+        }
+
+        .status-neutral {
+            color: #7c3aed;
+        }
+
+        .insight-details {
+            margin-top: 8px;
+            font-size: 10px;
+            color: inherit;
+        }
+
+        .insight-details summary {
+            cursor: pointer;
+            font-weight: 600;
+            list-style: none;
+        }
+
+        .insight-details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .insight-details summary::before {
+            content: "▶";
+            display: inline-block;
+            margin-right: 6px;
+            font-size: 9px;
+        }
+
+        .insight-details[open] summary::before {
+            content: "▼";
+        }
+
         @media (max-width: 768px) {
             .hero-banner .user-info,
             .hero-banner .nav-buttons {
@@ -383,74 +452,44 @@
         <div class="info-section">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h3>Totaal</h3>
-                    <span>{{ stats.total }}</span>
+                    <h3>Totaal leden</h3>
+                    <span>{{ stats.get('total', 0) }}</span>
                 </div>
                 <div class="stat-card">
-                    <h3>Met betaling</h3>
-                    <span>{{ stats.with_payment }}</span>
+                    <h3>✅ Volledig</h3>
+                    <span>{{ stats.get('exact', 0) }}</span>
                 </div>
                 <div class="stat-card">
-                    <h3>Zonder betaling</h3>
-                    <span>{{ stats.without_payment }}</span>
+                    <h3>🔵 Gedeeltelijk</h3>
+                    <span>{{ stats.get('partial', 0) }}</span>
+                </div>
+                <div class="stat-card">
+                    <h3>❌ Nog niets</h3>
+                    <span>{{ stats.get('none', 0) }}</span>
+                </div>
+                <div class="stat-card">
+                    <h3>🟣 N.v.t. (0/0)</h3>
+                    <span>{{ stats.get('neutral', 0) }}</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Totaal te innen</h3>
+                    <span>€ {{ "%.2f"|format(stats.get('total_due', 0)) }}</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Totaal ontvangen</h3>
+                    <span>€ {{ "%.2f"|format(stats.get('total_received', 0)) }}</span>
                 </div>
             </div>
 
-            <div class="legend">
-                <div class="legend-item"><span class="legend-swatch legend-paid"></span>Betaald (groen)</div>
-                <div class="legend-item"><span class="legend-swatch legend-remaining"></span>Nog te betalen (donkerblauw)</div>
-                <div class="legend-item">8000 = Volwassenen</div>
-                <div class="legend-item">8001 = Jeugd</div>
+            <div class="legend" style="margin-top: 14px;">
+                <div class="legend-item">✅ Volledig ontvangen</div>
+                <div class="legend-item">🔵 Gedeeltelijk ontvangen</div>
+                <div class="legend-item">❌ Nog niets ontvangen</div>
+                <div class="legend-item">🟣 Niet van toepassing (te innen 0 en ontvangen 0)</div>
             </div>
-
-            <table class="summary-table">
-                <thead>
-                    <tr>
-                        <th>Categorie</th>
-                        <th>Aantal leden</th>
-                        <th>Ontvangen</th>
-                        <th>Maximaal</th>
-                        <th>Verschil</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% set volwassenen = summary.get('volwassenen', {}) %}
-                    {% set jeugd = summary.get('jeugd', {}) %}
-                    <tr class="summary-row-volwassenen">
-                        <td>Volwassenen (8000)</td>
-                        <td>{{ volwassenen.get('count', 0) }}</td>
-                        <td>€ {{ "%.2f"|format(volwassenen.get('received', 0)) }}</td>
-                        <td>€ {{ "%.2f"|format(volwassenen.get('max', 0)) }}</td>
-                        <td>€ {{ "%.2f"|format(volwassenen.get('max', 0) - volwassenen.get('received', 0)) }}</td>
-                        <td>
-                            {% set v_max = volwassenen.get('max', 0) %}
-                            {% set v_received = volwassenen.get('received', 0) %}
-                            {% set v_percent = (v_received / v_max * 100) if v_max else 0 %}
-                            <div class="summary-bar">
-                                <div class="summary-bar-fill" style="width: {{ [v_percent, 100]|min }}%;"></div>
-                            </div>
-                            <div class="summary-bar-label">{{ "%.0f"|format(v_percent) }}%</div>
-                        </td>
-                    </tr>
-                    <tr class="summary-row-jeugd">
-                        <td>Jeugd (8001)</td>
-                        <td>{{ jeugd.get('count', 0) }}</td>
-                        <td>€ {{ "%.2f"|format(jeugd.get('received', 0)) }}</td>
-                        <td>€ {{ "%.2f"|format(jeugd.get('max', 0)) }}</td>
-                        <td>€ {{ "%.2f"|format(jeugd.get('max', 0) - jeugd.get('received', 0)) }}</td>
-                        <td>
-                            {% set j_max = jeugd.get('max', 0) %}
-                            {% set j_received = jeugd.get('received', 0) %}
-                            {% set j_percent = (j_received / j_max * 100) if j_max else 0 %}
-                            <div class="summary-bar">
-                                <div class="summary-bar-fill" style="width: {{ [j_percent, 100]|min }}%;"></div>
-                            </div>
-                            <div class="summary-bar-label">{{ "%.0f"|format(j_percent) }}%</div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <p style="margin-top: 8px; font-size: 12px; color: #475569;">
+                Alleen transacties met tag 8000;Contributies - Volwassenen of 8001;Contributies - Jeugd worden verwerkt.
+            </p>
         </div>
 
         <div class="records-count">Aantal records: {{ records|length }}</div>
@@ -458,10 +497,12 @@
         <table>
             <thead>
                 <tr>
-                    <th>ID-lid/ID</th>
+                    <th>ID-lid</th>
                     <th>Achternaam</th>
-                    <th>Rekening</th>
-                    <th>Hoeveel betaald</th>
+                    <th>Email</th>
+                    <th>Te innen bedrag</th>
+                    <th>Ontvangen bedrag</th>
+                    <th>Opmerking</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -470,35 +511,120 @@
                 <tr>
                     <td>{{ record.member_id }}</td>
                     <td>{{ record.achternaam }}</td>
-                    <td>{{ record.rekening }}</td>
-                    <td class="amount {% if record.paid == 0 %}zero{% endif %}">€ {{ "%.2f"|format(record.paid) }}</td>
-                    <td>
-                        <div class="bar-stack">
-                            {% for item in record.bar_items %}
-                            <div>
-                                <div class="bar-row">
-                                    <div class="bar-label">{{ item.tag }}</div>
-                                    <div class="bar-track">
-                                        <div class="bar-fill" style="width: {{ item.bar_width }}%;"></div>
-                                        {% if item.overflow %}
-                                        <div class="bar-overflow" title="Meer dan het maximum"></div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="bar-meta">€ {{ "%.2f"|format(item.paid) }} / € {{ "%.2f"|format(item.target) }}</div>
-                            </div>
-                            {% endfor %}
-                        </div>
+                    <td>{{ record.email }}</td>
+                    <td class="amount">€ {{ "%.2f"|format(record.due_amount) }}</td>
+                    <td class="amount {% if record.received_amount == 0 %}zero{% endif %}">€ {{ "%.2f"|format(record.received_amount) }}</td>
+                    <td>{{ record.opmerking }}</td>
+                    <td title="{{ record.status_label }}">
+                        <span class="status-icon {{ record.status_class }}">{{ record.status_icon }}</span>
+                        <span>{{ record.status_label }}</span>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
+        {% if unmatched_transactions %}
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e1e6ed;">
+            <h3 style="font-size: 16px; color: #1a2433; margin-bottom: 12px;">💬 Niet gematchte transacties ({{ unmatched_transactions|length }})</h3>
+            <p style="font-size: 12px; color: #7f8c8d; margin-bottom: 12px;">
+                Transacties met tag 8000/8001 die niet aan een lid konden worden gekoppeld. Voer het lid nummer in en klik Opslaan:
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bedrag</th>
+                        <th>Mededelingen</th>
+                        <th style="width: 150px;">Lid nummer</th>
+                        <th style="width: 80px;">Actie</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in unmatched_transactions %}
+                    <tr>
+                        <td style="text-align: right; font-weight: 600;">€ {{ "%.2f"|format(tx.amount) }}</td>
+                        <td style="font-size: 11px; color: #475569;">{{ tx.mededelingen }}</td>
+                        <td>
+                            <input type="text" 
+                                   id="member_id_{{ loop.index0 }}" 
+                                   class="manual-member-id-input"
+                                   placeholder="bijv. 1074"
+                                   maxlength="10"
+                                   data-mededelingen="{{ tx.mededelingen }}"
+                                   style="width: 120px; padding: 6px; font-size: 13px; border: 1px solid #d0d7e0; border-radius: 4px;">
+                        </td>
+                        <td>
+                            <button type="button" 
+                                    class="save-mapping-btn"
+                                    data-index="{{ loop.index0 }}"
+                                    data-mededelingen="{{ tx.mededelingen }}"
+                                    onclick="saveMemberMapping(this)"
+                                    style="padding: 6px 12px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500;">
+                                Opslaan
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p style="margin-top: 8px; font-size: 12px; color: #7f8c8d;">
+                Totaal niet gematcht: <strong>€ {{ "%.2f"|format(stats.get('unmatched_total', 0)) }}</strong>
+            </p>
+        </div>
+        {% endif %}
+
         <div class="page-footer">Debutade contributies | lokaal overzicht</div>
     </div>
     <script>
         const MAIN_APP_URL = "{{ main_app_url|default('') }}";
+
+        function saveMemberMapping(button) {
+            const index = button.dataset.index;
+            const mededelingen = button.dataset.mededelingen;
+            const inputId = `member_id_${index}`;
+            const memberIdInput = document.getElementById(inputId);
+            const memberId = memberIdInput.value.trim();
+
+            if (!memberId) {
+                alert('Voer alstublieft een lid nummer in.');
+                memberIdInput.focus();
+                return;
+            }
+
+            // Disable button during save
+            button.disabled = true;
+            button.textContent = 'Bezig...';
+
+            fetch('/save_manual_mapping', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    member_id: memberId,
+                    mededelingen: mededelingen
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Mapping opgeslagen! Ververs de pagina om de wijzigingen te zien.');
+                        memberIdInput.style.backgroundColor = '#d4edda';
+                        button.textContent = '✓ Opgeslagen';
+                        button.style.backgroundColor = '#28a745';
+                    } else {
+                        alert('Fout: ' + (data.error || 'Onbekende fout'));
+                        button.disabled = false;
+                        button.textContent = 'Opslaan';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Fout bij opslaan: ' + error.message);
+                    button.disabled = false;
+                    button.textContent = 'Opslaan';
+                });
+        }
 
         function quitApp() {
             if (confirm('Weet je zeker dat je de applicatie wilt afsluiten?')) {

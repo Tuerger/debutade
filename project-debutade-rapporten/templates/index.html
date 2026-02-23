@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debutade Rapporten</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-1: #0f1b2b;
+            --bg-2: #142235;
+            --bg-3: #101a26;
+            --accent: #f3b860;
+            --accent-2: #3cc6a8;
+            --text: #eef3f7;
+            --muted: #b9c7d6;
+            --surface: #ffffff;
+            --surface-alt: #f4f7fb;
+            --border: #d6dee8;
+            --danger: #f05d5e;
+            --good: #2fa889;
+            --shadow: 0 18px 38px rgba(5, 10, 20, 0.16);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #1b2b45 0%, var(--bg-1) 45%, var(--bg-3) 100%);
+            color: #1a2433;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1460px;
+            margin: 0 auto;
+            background: var(--surface);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .hero {
+            position: relative;
+            padding: 30px;
+            color: var(--text);
+            text-align: center;
+            background: linear-gradient(120deg, rgba(15, 27, 43, 0.9), rgba(20, 34, 53, 0.82));
+        }
+
+        .hero h1 {
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            font-size: 30px;
+            margin-bottom: 6px;
+        }
+
+        .hero p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .hero-meta {
+            position: absolute;
+            top: 24px;
+            right: 30px;
+            text-align: right;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .hero-actions {
+            position: absolute;
+            top: 24px;
+            left: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .hero-actions a,
+        .hero-actions button {
+            font-size: 12px;
+            padding: 6px 12px;
+            background-color: var(--accent);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .hero-actions a:hover,
+        .hero-actions button:hover {
+            background-color: #f5a54f;
+        }
+
+        .hero-actions button {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        main {
+            padding: 26px;
+            background: var(--surface-alt);
+        }
+
+        .warning-box {
+            display: none;
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(240, 93, 94, 0.35);
+            background: rgba(240, 93, 94, 0.1);
+            color: #7a2324;
+            font-size: 13px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .cards.beginsaldo {
+            margin-top: -6px;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .card-title {
+            font-size: 13px;
+            color: #5c6f86;
+            margin-bottom: 8px;
+        }
+
+        .card-title .period-label {
+            font-weight: 700;
+            color: #1d2f45;
+        }
+
+        .card-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #122234;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: 180px 240px 220px 1fr;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .filter {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #5c6f86;
+        }
+
+        .filter select,
+        .filter input {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 9px 10px;
+            font-size: 14px;
+            font-family: inherit;
+            background: #fff;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: 1.45fr 0.9fr;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .chart-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            min-height: 420px;
+            height: 420px;
+            overflow: auto;
+            position: relative;
+        }
+
+        .chart-card canvas {
+            width: 100% !important;
+            height: 360px !important;
+            max-height: 360px !important;
+        }
+
+        .tag-chart-card {
+            min-height: 470px;
+            height: 470px;
+        }
+
+        .tag-chart-card #tagChart {
+            height: 410px !important;
+            max-height: 410px !important;
+        }
+
+        .chart-card h3 {
+            font-size: 15px;
+            margin-bottom: 10px;
+            color: #1d2f45;
+        }
+
+        .table-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead th {
+            text-align: left;
+            background: #eef3f8;
+            color: #41566f;
+            padding: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        tbody td {
+            padding: 8px;
+            border-top: 1px solid #edf2f7;
+            vertical-align: top;
+        }
+
+        th.col-date,
+        td.col-date {
+            width: 110px;
+            min-width: 110px;
+            white-space: nowrap;
+        }
+
+        th.col-bon,
+        td.col-bon {
+            width: 56px;
+            min-width: 56px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .bon-link {
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .amount-pos {
+            color: var(--good);
+            font-weight: 700;
+        }
+
+        .amount-neg {
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .table-wrapper {
+            max-height: 320px;
+            overflow: auto;
+            border: 1px solid #edf2f7;
+            border-radius: 10px;
+        }
+
+        .footer-note {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #6d7f95;
+        }
+
+        @media (max-width: 1180px) {
+            .cards {
+                grid-template-columns: repeat(2, minmax(200px, 1fr));
+            }
+
+            .filters {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .charts {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .hero-meta,
+            .hero-actions {
+                position: static;
+                margin-top: 10px;
+                text-align: left;
+            }
+
+            .hero-actions {
+                flex-wrap: wrap;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="hero">
+        <div class="hero-actions">
+            <button type="button" id="quitBtn">🔴 Afsluiten</button>
+        </div>
+        <h1>Rapportage Kasboek &amp; Bankrekening</h1>
+        <p>Overzicht op bron, maand, tag en mededelingen.</p>
+        <div class="hero-meta">
+            <div>Gebruiker: {{ current_user }}</div>
+            <div>Datum: {{ current_date }}</div>
+        </div>
+    </header>
+
+    <main>
+        <div id="warningBox" class="warning-box"></div>
+
+        <section class="cards">
+            <article class="card">
+                <div class="card-title" id="saldoSpaar1Title">Eindsaldo Spaarrekening 1</div>
+                <div class="card-value" id="saldoSpaar1">€ 0,00</div>
+            </article>
+            <article class="card">
+                <div class="card-title" id="saldoSpaar2Title">Eindsaldo Spaarrekening 2</div>
+                <div class="card-value" id="saldoSpaar2">€ 0,00</div>
+            </article>
+            <article class="card">
+                <div class="card-title" id="saldoKasTitle">Eindsaldo Kas</div>
+                <div class="card-value" id="saldoKas">€ 0,00</div>
+            </article>
+            <article class="card">
+                <div class="card-title" id="saldoBankTitle">Eindsaldo Bankrekening</div>
+                <div class="card-value" id="saldoBank">€ 0,00</div>
+            </article>
+        </section>
+
+        <section class="cards beginsaldo">
+            <article class="card">
+                <div class="card-title" id="beginSaldoSpaar1Title">Beginsaldo Spaarrekening 1</div>
+                <div class="card-value" id="beginSaldoSpaar1">€ 0,00</div>
+            </article>
+            <article class="card">
+                <div class="card-title" id="beginSaldoSpaar2Title">Beginsaldo Spaarrekening 2</div>
+                <div class="card-value" id="beginSaldoSpaar2">€ 0,00</div>
+            </article>
+            <article class="card">
+                <div class="card-title" id="beginSaldoKasTitle">Beginsaldo Kas</div>
+                <div class="card-value" id="beginSaldoKas">€ 0,00</div>
+            </article>
+            <article class="card">
+                <div class="card-title" id="beginSaldoBankTitle">Beginsaldo Bankrekening</div>
+                <div class="card-value" id="beginSaldoBank">€ 0,00</div>
+            </article>
+        </section>
+
+        <section class="filters">
+            <div class="filter">
+                <label for="monthFilter">Maand</label>
+                <select id="monthFilter">
+                    <option value="">Alle maanden</option>
+                </select>
+            </div>
+            <div class="filter">
+                <label for="tagFilter">Tag</label>
+                <select id="tagFilter">
+                    <option value="">Alle tags</option>
+                </select>
+            </div>
+            <div class="filter">
+                <label for="sourceFilter">Bron</label>
+                <select id="sourceFilter">
+                    <option value="">Alle bronnen</option>
+                </select>
+            </div>
+            <div class="filter">
+                <label for="mededelingenFilter">Zoeken in mededelingen</label>
+                <input type="text" id="mededelingenFilter" placeholder="Bijv. contributie of huur" />
+            </div>
+        </section>
+
+        <section class="charts">
+            <article class="chart-card tag-chart-card">
+                <h3>Per tag: totaal positief en negatief</h3>
+                <canvas id="tagChart"></canvas>
+            </article>
+            <article class="chart-card">
+                <h3>Per maand: positieve en negatieve mutaties</h3>
+                <canvas id="monthChart"></canvas>
+            </article>
+        </section>
+
+        <section class="table-card">
+            <h3>Transacties</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-date">Datum</th>
+                            <th>Bron</th>
+                            <th>Af/Bij</th>
+                            <th>Bedrag</th>
+                            <th>Tag</th>
+                            <th>Omschrijving</th>
+                            <th>Mededelingen</th>
+                            <th class="col-bon">Bon</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsBody"></tbody>
+                </table>
+            </div>
+            <div class="footer-note" id="rowCount">0 transacties</div>
+        </section>
+    </main>
+</div>
+
+<script>
+    const monthFilter = document.getElementById("monthFilter");
+    const tagFilter = document.getElementById("tagFilter");
+    const sourceFilter = document.getElementById("sourceFilter");
+    const mededelingenFilter = document.getElementById("mededelingenFilter");
+    const transactionsBody = document.getElementById("transactionsBody");
+    const rowCount = document.getElementById("rowCount");
+    const warningBox = document.getElementById("warningBox");
+
+    const saldoSpaar1 = document.getElementById("saldoSpaar1");
+    const saldoSpaar2 = document.getElementById("saldoSpaar2");
+    const saldoKas = document.getElementById("saldoKas");
+    const saldoBank = document.getElementById("saldoBank");
+    const beginSaldoSpaar1 = document.getElementById("beginSaldoSpaar1");
+    const beginSaldoSpaar2 = document.getElementById("beginSaldoSpaar2");
+    const beginSaldoKas = document.getElementById("beginSaldoKas");
+    const beginSaldoBank = document.getElementById("beginSaldoBank");
+    const saldoSpaar1Title = document.getElementById("saldoSpaar1Title");
+    const saldoSpaar2Title = document.getElementById("saldoSpaar2Title");
+    const saldoKasTitle = document.getElementById("saldoKasTitle");
+    const saldoBankTitle = document.getElementById("saldoBankTitle");
+    const beginSaldoSpaar1Title = document.getElementById("beginSaldoSpaar1Title");
+    const beginSaldoSpaar2Title = document.getElementById("beginSaldoSpaar2Title");
+    const beginSaldoKasTitle = document.getElementById("beginSaldoKasTitle");
+    const beginSaldoBankTitle = document.getElementById("beginSaldoBankTitle");
+
+    let allTransactions = [];
+    let tagChart;
+    let monthChart;
+
+    function compactEuroTick(value) {
+        return new Intl.NumberFormat("nl-NL", {
+            notation: "compact",
+            maximumFractionDigits: 1,
+        }).format(value || 0);
+    }
+
+    function buildNiceNumericScale(...series) {
+        const values = series.flat().map(v => Number(v || 0));
+        if (values.length === 0) {
+            return { min: -100, max: 100, stepSize: 50 };
+        }
+
+        const minValue = Math.min(...values, 0);
+        const maxValue = Math.max(...values, 0);
+        const absMax = Math.max(Math.abs(minValue), Math.abs(maxValue));
+
+        if (absMax === 0) {
+            return { min: -100, max: 100, stepSize: 50 };
+        }
+
+        const paddedAbsMax = absMax * 1.12;
+        const roughStep = paddedAbsMax / 4;
+        const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+        const normalized = roughStep / magnitude;
+
+        let stepBase = 1;
+        if (normalized > 1 && normalized <= 2) {
+            stepBase = 2;
+        } else if (normalized > 2 && normalized <= 5) {
+            stepBase = 5;
+        } else if (normalized > 5) {
+            stepBase = 10;
+        }
+
+        const stepSize = stepBase * magnitude;
+        const max = Math.ceil(maxValue / stepSize) * stepSize;
+        const min = Math.floor(minValue / stepSize) * stepSize;
+
+        return { min, max, stepSize };
+    }
+
+    function toEuro(value) {
+        return new Intl.NumberFormat("nl-NL", {
+            style: "currency",
+            currency: "EUR",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(value || 0);
+    }
+
+    function monthLabel(monthKey) {
+        if (!monthKey || monthKey === "Onbekend") {
+            return "Onbekend";
+        }
+        const [year, month] = monthKey.split("-");
+        return `${month}-${year}`;
+    }
+
+    function getPeriodLabel() {
+        const month = monthFilter.value;
+        if (month) {
+            return monthLabel(month);
+        }
+
+        const latestWithDate = allTransactions.find(tx => String(tx.date || "").length >= 4);
+        if (latestWithDate) {
+            return String(latestWithDate.date).slice(0, 4);
+        }
+
+        return String(new Date().getFullYear());
+    }
+
+    function updateCardTitles() {
+        const periodLabel = getPeriodLabel();
+        const periodHtml = `<span class="period-label">(${periodLabel})</span>`;
+
+        saldoSpaar1Title.innerHTML = `Eindsaldo Spaarrekening 1 ${periodHtml}`;
+        saldoSpaar2Title.innerHTML = `Eindsaldo Spaarrekening 2 ${periodHtml}`;
+        saldoKasTitle.innerHTML = `Eindsaldo Kas ${periodHtml}`;
+        saldoBankTitle.innerHTML = `Eindsaldo Bankrekening ${periodHtml}`;
+
+        beginSaldoSpaar1Title.innerHTML = `Beginsaldo Spaarrekening 1 ${periodHtml}`;
+        beginSaldoSpaar2Title.innerHTML = `Beginsaldo Spaarrekening 2 ${periodHtml}`;
+        beginSaldoKasTitle.innerHTML = `Beginsaldo Kas ${periodHtml}`;
+        beginSaldoBankTitle.innerHTML = `Beginsaldo Bankrekening ${periodHtml}`;
+    }
+
+    function escapeHtml(value) {
+        return String(value || "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
+    function normalizeUrl(urlValue) {
+        const raw = String(urlValue || "").trim();
+        if (!raw) {
+            return "";
+        }
+        if (/^https?:\/\//i.test(raw)) {
+            return raw;
+        }
+
+        const match = raw.match(/https?:\/\/[^\s"')]+/i);
+        return match ? match[0] : "";
+    }
+
+    function fillSelect(selectElement, values) {
+        const currentValue = selectElement.value;
+        const firstOption = selectElement.options[0]?.outerHTML || "";
+        selectElement.innerHTML = firstOption;
+
+        values.forEach(value => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = value.startsWith("20") && value.length === 7 ? monthLabel(value) : value;
+            selectElement.appendChild(option);
+        });
+
+        if ([...selectElement.options].some(option => option.value === currentValue)) {
+            selectElement.value = currentValue;
+        }
+    }
+
+    function getFilteredTransactions() {
+        const month = monthFilter.value;
+        const tag = tagFilter.value;
+        const source = sourceFilter.value;
+        const mededelingenSearch = mededelingenFilter.value.trim().toLowerCase();
+
+        return allTransactions.filter(tx => {
+            if (month && tx.month !== month) return false;
+            if (tag && tx.tag !== tag) return false;
+            if (source && tx.source !== source) return false;
+            if (mededelingenSearch && !String(tx.mededelingen || "").toLowerCase().includes(mededelingenSearch)) return false;
+            return true;
+        });
+    }
+
+    function getDateRangeForPeriod() {
+        const month = monthFilter.value;
+        if (month) {
+            const [year, monthNumber] = month.split("-").map(Number);
+            const monthEndDate = new Date(year, monthNumber, 0);
+            return {
+                start: `${year}-${String(monthNumber).padStart(2, "0")}-01`,
+                end: `${year}-${String(monthNumber).padStart(2, "0")}-${String(monthEndDate.getDate()).padStart(2, "0")}`,
+            };
+        }
+
+        const periodYear = Number(getPeriodLabel()) || new Date().getFullYear();
+        return {
+            start: `${periodYear}-01-01`,
+            end: `${periodYear}-12-31`,
+        };
+    }
+
+    function isOpeningBalanceTransaction(tx) {
+        const tagValue = String(tx.tag || "").trim().toLowerCase();
+        const descriptionValue = String(tx.description || "").trim().toLowerCase();
+        const mededelingenValue = String(tx.mededelingen || "").trim().toLowerCase();
+        const combined = `${tagValue} ${descriptionValue} ${mededelingenValue}`;
+
+        return /begin\s*saldo|beginsaldi?|start\s*saldo|startsaldi?/.test(combined);
+    }
+
+    function sumBySourceBeforeDate(sourceName, boundaryDateExclusive) {
+        return allTransactions
+            .filter(tx => tx.source === sourceName && tx.date && tx.date < boundaryDateExclusive)
+            .reduce((sum, tx) => sum + Number(tx.signed_amount || 0), 0);
+    }
+
+    function sumBySourceThroughDate(sourceName, boundaryDateInclusive) {
+        return allTransactions
+            .filter(tx => tx.source === sourceName && tx.date && tx.date <= boundaryDateInclusive)
+            .reduce((sum, tx) => sum + Number(tx.signed_amount || 0), 0);
+    }
+
+    function getTransactionsInDateRange(startDate, endDate) {
+        return allTransactions.filter(tx => tx.date && tx.date >= startDate && tx.date <= endDate);
+    }
+
+    function sumOpeningBalanceBySource(transactions, sourceName) {
+        return transactions
+            .filter(tx => tx.source === sourceName && isOpeningBalanceTransaction(tx))
+            .reduce((sum, tx) => sum + Number(tx.signed_amount || 0), 0);
+    }
+
+    function updateBalanceCards() {
+        const { start, end } = getDateRangeForPeriod();
+        const month = monthFilter.value;
+        const useOpeningTagFallback = !month || month.endsWith("-01");
+        const periodTransactions = getTransactionsInDateRange(start, end);
+
+        function beginValueForSource(sourceName) {
+            let beginValue = sumBySourceBeforeDate(sourceName, start);
+
+            if (useOpeningTagFallback && Math.abs(beginValue) < 0.000001) {
+                beginValue = sumOpeningBalanceBySource(periodTransactions, sourceName);
+            }
+
+            return beginValue;
+        }
+
+        beginSaldoSpaar1.textContent = toEuro(beginValueForSource("Spaarrekening 1"));
+        beginSaldoSpaar2.textContent = toEuro(beginValueForSource("Spaarrekening 2"));
+        beginSaldoKas.textContent = toEuro(beginValueForSource("Kas"));
+        beginSaldoBank.textContent = toEuro(beginValueForSource("Bankrekening"));
+
+        saldoSpaar1.textContent = toEuro(sumBySourceThroughDate("Spaarrekening 1", end));
+        saldoSpaar2.textContent = toEuro(sumBySourceThroughDate("Spaarrekening 2", end));
+        saldoKas.textContent = toEuro(sumBySourceThroughDate("Kas", end));
+        saldoBank.textContent = toEuro(sumBySourceThroughDate("Bankrekening", end));
+    }
+
+    function shouldSkipChartTransaction(tx, excludeNoTag = false) {
+        const tagRaw = String(tx.tag || "").trim();
+        const tagValue = tagRaw.toLowerCase();
+
+        if (isOpeningBalanceTransaction(tx)) {
+            return true;
+        }
+
+        if (!excludeNoTag) {
+            return false;
+        }
+
+        return !tagRaw || tagValue === "(geen tag)" || tagValue === "geen tag";
+    }
+
+    function buildTagAggregation(filtered) {
+        const map = new Map();
+
+        filtered.forEach(tx => {
+            if (shouldSkipChartTransaction(tx, true)) {
+                return;
+            }
+
+            const tag = String(tx.tag || "").trim();
+            if (!map.has(tag)) {
+                map.set(tag, { positive: 0, negative: 0 });
+            }
+            const item = map.get(tag);
+            const amount = Number(tx.signed_amount || 0);
+            if (amount >= 0) {
+                item.positive += amount;
+            } else {
+                item.negative += amount;
+            }
+        });
+
+        const sortedEntries = [...map.entries()]
+            .map(([label, totals]) => {
+                const positive = Number(totals.positive.toFixed(2));
+                const negative = Number(totals.negative.toFixed(2));
+                const impact = Math.abs(positive) + Math.abs(negative);
+                return { label, positive, negative, impact };
+            })
+            .sort((a, b) => {
+                if (b.impact !== a.impact) {
+                    return b.impact - a.impact;
+                }
+                return a.label.localeCompare(b.label, "nl");
+            });
+
+        const labels = sortedEntries.map(item => item.label);
+        const positive = sortedEntries.map(item => item.positive);
+        const negative = sortedEntries.map(item => item.negative);
+
+        return { labels, positive, negative };
+    }
+
+    function buildMonthAggregation(filtered) {
+        const map = new Map();
+
+        filtered.forEach(tx => {
+            if (shouldSkipChartTransaction(tx, true)) {
+                return;
+            }
+
+            const month = tx.month || "Onbekend";
+            if (!map.has(month)) {
+                map.set(month, { positive: 0, negative: 0 });
+            }
+            const item = map.get(month);
+            const amount = Number(tx.signed_amount || 0);
+            if (amount >= 0) {
+                item.positive += amount;
+            } else {
+                item.negative += amount;
+            }
+        });
+
+        const sortedMonths = [...map.keys()].sort();
+        const labels = sortedMonths.map(monthLabel);
+        const positive = sortedMonths.map(key => Number(map.get(key).positive.toFixed(2)));
+        const negative = sortedMonths.map(key => Number(map.get(key).negative.toFixed(2)));
+
+        return { labels, positive, negative };
+    }
+
+    const valueLabelsPlugin = {
+        id: "valueLabels",
+        afterDatasetsDraw(chart, args, pluginOptions) {
+            if (!pluginOptions || pluginOptions.enabled === false) {
+                return;
+            }
+
+            const { ctx } = chart;
+            const options = {
+                color: pluginOptions.color || "#ffffff",
+                font: pluginOptions.font || "600 11px DM Sans",
+                padding: Number(pluginOptions.padding || 8)
+            };
+
+            ctx.save();
+            ctx.fillStyle = options.color;
+            ctx.font = options.font;
+            ctx.textBaseline = "middle";
+
+            chart.data.datasets.forEach((dataset, datasetIndex) => {
+                const meta = chart.getDatasetMeta(datasetIndex);
+                if (meta.hidden) {
+                    return;
+                }
+
+                meta.data.forEach((barElement, pointIndex) => {
+                    const value = Number(dataset.data[pointIndex] || 0);
+                    if (!Number.isFinite(value) || value === 0) {
+                        return;
+                    }
+
+                    const label = toEuro(value);
+                    const isHorizontal = chart.options.indexAxis === "y";
+                    const center = barElement.tooltipPosition();
+
+                    let x = center.x;
+                    let y = center.y;
+                    let align = "center";
+
+                    if (isHorizontal) {
+                        const baseX = barElement.base;
+                        const valueX = barElement.x;
+                        const barWidth = Math.abs(valueX - baseX);
+                        const textWidth = ctx.measureText(label).width;
+                        const minX = chart.chartArea.left + options.padding;
+                        const maxX = chart.chartArea.right - options.padding;
+
+                        if (barWidth < textWidth + options.padding * 2) {
+                            if (value >= 0) {
+                                x = Math.min(valueX + options.padding, maxX - textWidth);
+                                align = "left";
+                            } else {
+                                x = Math.max(valueX - options.padding, minX + textWidth);
+                                align = "right";
+                            }
+                        }
+
+                        if (x <= minX || x >= maxX) {
+                            return;
+                        }
+                    } else {
+                        const baseY = barElement.base;
+                        const valueY = barElement.y;
+                        const barHeight = Math.abs(baseY - valueY);
+
+                        if (barHeight < 20) {
+                            y = value >= 0 ? valueY - 10 : valueY + 10;
+                        }
+                    }
+
+                    ctx.textAlign = align;
+                    ctx.fillText(label, x, y);
+                });
+            });
+
+            ctx.restore();
+        }
+    };
+
+    Chart.register(valueLabelsPlugin);
+
+    function renderTagChart(filtered) {
+        const { labels, positive, negative } = buildTagAggregation(filtered);
+        const ctx = document.getElementById("tagChart");
+        const scale = buildNiceNumericScale(positive, negative);
+
+        if (tagChart) {
+            tagChart.destroy();
+        }
+
+        tagChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: "Totaal positief",
+                        data: positive,
+                        backgroundColor: "rgba(60, 198, 168, 0.75)",
+                        borderColor: "rgba(60, 198, 168, 1)",
+                        borderWidth: 1,
+                        maxBarThickness: 34,
+                        categoryPercentage: 0.72,
+                        barPercentage: 0.86,
+                    },
+                    {
+                        label: "Totaal negatief",
+                        data: negative,
+                        backgroundColor: "rgba(240, 93, 94, 0.72)",
+                        borderColor: "rgba(240, 93, 94, 1)",
+                        borderWidth: 1,
+                        maxBarThickness: 34,
+                        categoryPercentage: 0.72,
+                        barPercentage: 0.86,
+                    }
+                ]
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                resizeDelay: 150,
+                plugins: {
+                    valueLabels: {
+                        enabled: true,
+                        color: "#0f1b2b",
+                        font: "700 10px DM Sans",
+                        padding: 8
+                    }
+                },
+                scales: {
+                    x: {
+                        min: scale.min,
+                        max: scale.max,
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: "Bedrag (EUR)"
+                        },
+                        ticks: {
+                            stepSize: scale.stepSize,
+                            maxTicksLimit: 7,
+                            callback: value => compactEuroTick(value)
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: "Tag"
+                        },
+                        ticks: {
+                            autoSkip: false,
+                            padding: 10,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderMonthChart(filtered) {
+        const { labels, positive, negative } = buildMonthAggregation(filtered);
+        const ctx = document.getElementById("monthChart");
+        const scale = buildNiceNumericScale(positive, negative);
+
+        if (monthChart) {
+            monthChart.destroy();
+        }
+
+        monthChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: "Positief",
+                        data: positive,
+                        backgroundColor: "rgba(60, 198, 168, 0.75)",
+                        borderColor: "rgba(60, 198, 168, 1)",
+                        borderWidth: 1,
+                        maxBarThickness: 24,
+                        categoryPercentage: 0.7,
+                        barPercentage: 0.88,
+                    },
+                    {
+                        label: "Negatief",
+                        data: negative,
+                        backgroundColor: "rgba(240, 93, 94, 0.72)",
+                        borderColor: "rgba(240, 93, 94, 1)",
+                        borderWidth: 1,
+                        maxBarThickness: 24,
+                        categoryPercentage: 0.7,
+                        barPercentage: 0.88,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                resizeDelay: 150,
+                plugins: {
+                    valueLabels: {
+                        enabled: true,
+                        color: "#0f1b2b",
+                        font: "700 10px DM Sans",
+                        padding: 8
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: "Maand"
+                        }
+                    },
+                    y: {
+                        min: scale.min,
+                        max: scale.max,
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: "Bedrag (EUR)"
+                        },
+                        ticks: {
+                            stepSize: scale.stepSize,
+                            maxTicksLimit: 7,
+                            callback: value => compactEuroTick(value)
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderTable(filtered) {
+        transactionsBody.innerHTML = "";
+
+        filtered.forEach(tx => {
+            const tr = document.createElement("tr");
+            const signedAmount = Number(tx.signed_amount || 0);
+            const amountClass = signedAmount >= 0 ? "amount-pos" : "amount-neg";
+            const bonUrl = normalizeUrl(tx.bon);
+            const bonCell = bonUrl
+                ? `<a class="bon-link" href="${escapeHtml(bonUrl)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(bonUrl)}">🔗</a>`
+                : "";
+
+            tr.innerHTML = `
+                <td class="col-date">${escapeHtml(tx.date || "")}</td>
+                <td>${escapeHtml(tx.source || "")}</td>
+                <td>${escapeHtml(tx.af_bij || "")}</td>
+                <td class="${amountClass}">${toEuro(signedAmount)}</td>
+                <td>${escapeHtml(tx.tag || "")}</td>
+                <td>${escapeHtml(tx.description || "")}</td>
+                <td>${escapeHtml(tx.mededelingen || "")}</td>
+                <td class="col-bon">${bonCell}</td>
+            `;
+
+            transactionsBody.appendChild(tr);
+        });
+
+        rowCount.textContent = `${filtered.length} transacties`;
+    }
+
+    function applyFiltersAndRender() {
+        const filtered = getFilteredTransactions();
+
+        updateCardTitles();
+        updateBalanceCards();
+        renderTagChart(filtered);
+        renderMonthChart(filtered);
+        renderTable(filtered);
+    }
+
+    async function loadData() {
+        try {
+            const response = await fetch("/api/report-data", { cache: "no-store" });
+            const data = await response.json();
+
+            allTransactions = data.transactions || [];
+
+            fillSelect(monthFilter, data.filters?.months || []);
+            fillSelect(tagFilter, data.filters?.tags || []);
+            fillSelect(sourceFilter, data.filters?.sources || []);
+
+            if (Array.isArray(data.warnings) && data.warnings.length > 0) {
+                warningBox.style.display = "block";
+                warningBox.textContent = data.warnings.join(" ");
+            }
+
+            applyFiltersAndRender();
+        } catch (error) {
+            warningBox.style.display = "block";
+            warningBox.textContent = `Data laden mislukt: ${error.message}`;
+        }
+    }
+
+    [monthFilter, tagFilter, sourceFilter].forEach(element => {
+        element.addEventListener("change", applyFiltersAndRender);
+    });
+
+    mededelingenFilter.addEventListener("input", applyFiltersAndRender);
+
+    const MAIN_APP_URL = "{{ main_app_url|default('') }}";
+
+    function quitApp() {
+        const confirmed = confirm("Weet je zeker dat je de applicatie wilt afsluiten?");
+        if (!confirmed) {
+            return;
+        }
+
+        fetch("/quit", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+            .then(response => response.json())
+            .then(() => {
+                if (MAIN_APP_URL) {
+                    window.location.href = MAIN_APP_URL;
+                    return;
+                }
+                document.body.innerHTML = '<div style="text-align:center; padding:50px;"><h1>Applicatie afgesloten</h1><p>Je kunt dit venster nu sluiten.</p></div>';
+            })
+            .catch(() => {
+                if (MAIN_APP_URL) {
+                    window.location.href = MAIN_APP_URL;
+                    return;
+                }
+                document.body.innerHTML = '<div style="text-align:center; padding:50px;"><h1>Applicatie afgesloten</h1><p>Je kunt dit venster nu sluiten.</p></div>';
+            });
+    }
+
+    document.getElementById("quitBtn")?.addEventListener("click", quitApp);
+
+    loadData();
+</script>
+</body>
+</html>

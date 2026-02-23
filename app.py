@@ -103,6 +103,22 @@ def split_lines(value):
     return [line.strip() for line in (value or "").splitlines() if line.strip()]
 
 
+def parse_manual_transaction_mappings(value):
+    mappings = {}
+    for raw_line in (value or "").splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if ":" not in line:
+            continue
+        member_id, fragment = line.split(":", 1)
+        member_id = member_id.strip()
+        fragment = fragment.strip()
+        if member_id and fragment:
+            mappings[member_id] = fragment
+    return mappings
+
+
 def validate_workbook_tabs(file_path, required_sheets):
     try:
         wb = load_workbook(file_path, read_only=True, data_only=True)
@@ -147,6 +163,7 @@ def validate_main_config(config_data):
     bon = config_data.get("bontoevoegen", {})
     showreport = config_data.get("showreport", {})
     contributie = config_data.get("contributie", {})
+    rapporten = config_data.get("rapporten", {})
 
     def build_excel_path(file_name):
         if not grootboek_dir or not file_name:
@@ -203,16 +220,13 @@ def validate_main_config(config_data):
     elif not os.path.exists(contributie_file):
         errors.append(f"Contributie ledenbestand niet gevonden: {contributie_file}")
 
-    contributie_personen = contributie.get("leden_sheet_personen")
-    contributie_betaald = contributie.get("leden_sheet_betaald")
+    contributie_personen = contributie.get("leden_sheet_personen") or contributie.get("leden_sheet_name")
     if not contributie_personen:
         errors.append("Contributie tab personen is verplicht.")
-    if not contributie_betaald:
-        errors.append("Contributie tab betaald is verplicht.")
-    if contributie_file and contributie_personen and contributie_betaald:
+    if contributie_file and contributie_personen:
         errors.extend(validate_workbook_tabs(
             contributie_file,
-            [contributie_personen, contributie_betaald],
+            [contributie_personen],
         ))
 
     contributie_bank_name = contributie.get("bank_excel_file_name") or shared_bank_name
@@ -228,15 +242,23 @@ def validate_main_config(config_data):
     elif contributie_bank_path:
         errors.extend(validate_workbook_tabs(contributie_bank_path, [contributie_bank_sheet]))
 
-    tag_targets = contributie.get("tag_targets", {})
-    for code in ("8000", "8001"):
-        if code not in tag_targets:
-            errors.append(f"Contributie bedrag voor {code} ontbreekt.")
-            continue
-        try:
-            float(tag_targets.get(code))
-        except (TypeError, ValueError):
-            errors.append(f"Contributie bedrag voor {code} is ongeldig.")
+    rapporten_bank_name = rapporten.get("bank_excel_file_name") or shared_bank_name
+    rapporten_bank_path = build_excel_path(rapporten_bank_name)
+    if rapporten_bank_path and not os.path.exists(rapporten_bank_path):
+        errors.append(f"Rapporten bank Excel bestand niet gevonden: {rapporten_bank_path}")
+
+    rapporten_kas_name = rapporten.get("kas_excel_file_name") or kas_file_name
+    rapporten_kas_path = build_excel_path(rapporten_kas_name)
+    if rapporten_kas_path and not os.path.exists(rapporten_kas_path):
+        errors.append(f"Rapporten kas Excel bestand niet gevonden: {rapporten_kas_path}")
+
+    rapporten_bank_sheets = rapporten.get("bank_sheets") or bank_sheets
+    if rapporten_bank_path and rapporten_bank_sheets:
+        errors.extend(validate_workbook_tabs(rapporten_bank_path, rapporten_bank_sheets))
+
+    rapporten_kas_sheet = rapporten.get("kas_sheet_name") or kas_sheet
+    if rapporten_kas_path and rapporten_kas_sheet:
+        errors.extend(validate_workbook_tabs(rapporten_kas_path, [rapporten_kas_sheet]))
 
     return errors
 
@@ -282,6 +304,15 @@ APPS = {
         "name": "Contributie overzicht",
         "description": "Koppelt contributies aan leden",
         "cwd": os.path.join(APP_DIR, "project-debutade-contributie"),
+        "script": "webapp.py",
+        "python": os.path.join(".venv", "Scripts", "python.exe"),
+        "port": SUBAPP_PORT,
+    },
+    "rapporten": {
+        "id": "rapporten",
+        "name": "Rapporten",
+        "description": "Gecombineerde kas- en bankrapportage",
+        "cwd": os.path.join(APP_DIR, "project-debutade-rapporten"),
         "script": "webapp.py",
         "python": os.path.join(".venv", "Scripts", "python.exe"),
         "port": SUBAPP_PORT,
@@ -486,7 +517,7 @@ def get_app_status(app_id, app_info):
 
 @app.route("/")
 def index():
-    apps = [APPS[key] for key in APPS]
+    apps = [APPS[key] for key in APPS if key != "showreport"]
     error = request.args.get("error")
     return render_template(
         "main.html",
@@ -527,6 +558,7 @@ def settings_main():
         existing_bon = existing_config.get("bontoevoegen", {})
         existing_showreport = existing_config.get("showreport", {})
         existing_contributie = existing_config.get("contributie", {})
+        existing_rapporten = existing_config.get("rapporten", {})
 
         shared_bank_excel = form_value("shared_bank_excel_file_name") or existing_shared.get("bank_excel_file_name")
 
@@ -561,19 +593,28 @@ def settings_main():
             "report_url": form_value("showreport_report_url") or existing_showreport.get("report_url", ""),
             "report_title": form_value("showreport_report_title") or existing_showreport.get("report_title", ""),
         }
+        contributie_sheet_personen = (
+            form_value("contrib_leden_sheet_personen")
+            or existing_contributie.get("leden_sheet_personen")
+            or existing_contributie.get("leden_sheet_name", "")
+        )
         contributie_config = dict(existing_contributie)
         contributie_config.update({
             "ledenbestand_path": form_value("contrib_ledenbestand_path") or existing_contributie.get("ledenbestand_path", ""),
-            "leden_sheet_personen": form_value("contrib_leden_sheet_personen") or existing_contributie.get("leden_sheet_personen", ""),
-            "leden_sheet_betaald": form_value("contrib_leden_sheet_betaald") or existing_contributie.get("leden_sheet_betaald", ""),
+            "leden_sheet_personen": contributie_sheet_personen,
+            "leden_sheet_name": contributie_sheet_personen,
             "bank_excel_file_name": form_value("contrib_bank_excel_file_name") or shared_bank_excel or existing_contributie.get("bank_excel_file_name"),
             "bank_sheet_name": form_value("contrib_bank_sheet_name") or existing_contributie.get("bank_sheet_name", ""),
-            "tags": split_lines(form_value("contrib_tags")) or existing_contributie.get("tags", []),
-            "tag_targets": {
-                "8000": form_value("contrib_target_8000") or existing_contributie.get("tag_targets", {}).get("8000", ""),
-                "8001": form_value("contrib_target_8001") or existing_contributie.get("tag_targets", {}).get("8001", ""),
-            },
+            "manual_transaction_mappings": parse_manual_transaction_mappings(form_value("contrib_manual_transaction_mappings")),
         })
+        for deprecated_key in ("leden_sheet_betaald", "tags", "tag_targets"):
+            contributie_config.pop(deprecated_key, None)
+        rapporten_config = {
+            "bank_excel_file_name": form_value("rapporten_bank_excel_file_name") or shared_bank_excel or existing_rapporten.get("bank_excel_file_name"),
+            "kas_excel_file_name": form_value("rapporten_kas_excel_file_name") or existing_kas.get("excel_file_name") or existing_rapporten.get("kas_excel_file_name"),
+            "bank_sheets": split_lines(form_value("rapporten_bank_sheets")) or existing_rapporten.get("bank_sheets", []) or existing_bank.get("required_sheets", []),
+            "kas_sheet_name": form_value("rapporten_kas_sheet_name") or existing_rapporten.get("kas_sheet_name") or existing_kas.get("excel_sheet_name", ""),
+        }
 
         new_config = {
             "shared": shared_config,
@@ -582,6 +623,7 @@ def settings_main():
             "bontoevoegen": bon_config,
             "showreport": showreport_config,
             "contributie": contributie_config,
+            "rapporten": rapporten_config,
         }
 
         errors = validate_main_config(new_config)

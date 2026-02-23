@@ -132,6 +132,49 @@ LOG_LEVEL = config["log_level"]
 MAIN_APP_URL = os.getenv("MAIN_APP_URL", "").strip()
 
 
+def normalize_tag_key(value):
+    return str(value or "").strip().casefold()
+
+
+def build_tag_lookup(tags):
+    lookup = {}
+    description_keys = {}
+
+    for tag in tags:
+        canonical = str(tag or "").strip()
+        if not canonical:
+            continue
+
+        lookup[normalize_tag_key(canonical)] = canonical
+
+        if ";" in canonical:
+            code, description = canonical.split(";", 1)
+            code_key = normalize_tag_key(code)
+            description_key = normalize_tag_key(description)
+
+            if code_key and code_key not in lookup:
+                lookup[code_key] = canonical
+
+            if description_key:
+                if description_key not in description_keys:
+                    description_keys[description_key] = canonical
+                else:
+                    description_keys[description_key] = None
+
+    for description_key, canonical in description_keys.items():
+        if canonical and description_key not in lookup:
+            lookup[description_key] = canonical
+
+    return lookup
+
+
+TAG_LOOKUP = build_tag_lookup(TAGS)
+
+
+def canonicalize_tag(value):
+    return TAG_LOOKUP.get(normalize_tag_key(value))
+
+
 def settings_locked_response():
     message = "Instellingen zijn alleen beschikbaar via de hoofdapp."
     if MAIN_APP_URL:
@@ -350,6 +393,9 @@ def add_transaction():
             }), 400
 
         # Haal gegevens op uit het formulier
+        raw_tag_value = request.form.get('tag', '')
+        canonical_tag = canonicalize_tag(raw_tag_value)
+
         data = {
             'datum': request.form.get('datum'),
             'mededelingen': request.form.get('mededelingen', ''),
@@ -360,7 +406,7 @@ def add_transaction():
             'bedrag': request.form.get('bedrag'),
             'mutatiesoort': request.form.get('mutatiesoort', 'Kas'),
             'saldo': request.form.get('saldo', ''),
-            'tag': request.form.get('tag', '')
+            'tag': canonical_tag or ''
         }
         
         # Validatie
@@ -372,6 +418,9 @@ def add_transaction():
         
         if not data['bedrag'].strip():
             return jsonify({'success': False, 'message': 'Bedrag is verplicht'}), 400
+
+        if not canonical_tag:
+            return jsonify({'success': False, 'message': 'Ongeldige categorie. Kies een categorie uit de lijst.'}), 400
         
         # Converteer bedrag (accepteer komma als decimaal scheidingsteken)
         try:
@@ -469,9 +518,13 @@ def recommend_category():
         training_data = []
         for row in sheet.iter_rows(min_row=2, values_only=True):
             if row[2] and row[3]:  # Mededelingen en Tag kolommen
+                canonical_category = canonicalize_tag(row[3])
+                if not canonical_category:
+                    continue
+
                 training_data.append({
                     'description': str(row[2]).lower(),
-                    'category': str(row[3])
+                    'category': canonical_category
                 })
         
         wb.close()

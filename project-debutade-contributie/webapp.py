@@ -5,16 +5,16 @@ Contributie Debutade - Web Applicatie
 Web applicatie voor het koppelen van contributiebetalingen aan leden.
 
 Functionaliteiten:
-- Leest ledengegevens uit Ledenbestand.xlsx (tab personen en tab betaald)
-- Leest banktransacties met tags contributie-volwassenen/jeugd
-- Maakt een overzicht met ID, achternaam, rekening en totaal betaald
+- Leest ledengegevens uit Ledenbestand.xlsx (tab leden)
+- Leest banktransacties uit tab bankrekening en zoekt ID-lid in mededelingen
+- Maakt een overzicht met Te innen bedrag, Ontvangen bedrag en status
 
 Versie: 1.0
 Datum: 2026-02-16
 Auteur: Eric G.
 """
 
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from openpyxl import load_workbook
 from datetime import datetime
 import logging
@@ -70,11 +70,8 @@ def load_config(config_path, section_key="contributie"):
 
     required_keys = [
         "ledenbestand_path",
-        "leden_sheet_personen",
-        "leden_sheet_betaald",
         "bank_excel_file_name",
         "bank_sheet_name",
-        "tags",
     ]
     for key in required_keys:
         if key not in config:
@@ -89,33 +86,29 @@ except (FileNotFoundError, KeyError) as exc:
     print(f"WAARSCHUWING: {exc}")
     config = {
         "ledenbestand_path": r"C:\pad\naar\Ledenbestand.xlsx",
-        "leden_sheet_personen": "personen",
-        "leden_sheet_betaald": "betaald",
-        "bank_excel_file_name": "Debutade boekjaar bank 2026.xlsx",
-        "bank_sheet_name": "Bankrekening",
-        "tags": ["contributie-volwassenen", "contributie-jeugd"],
+        "leden_sheet_name": "leden",
+        "bank_excel_file_name": "Debutade boekjaar 2026 Bank.xlsx",
+        "bank_sheet_name": "bankrekening",
         "backup_directory": os.path.join(SCRIPT_DIR, "backup"),
         "log_directory": os.path.join(SCRIPT_DIR, "logs"),
         "log_level": "INFO",
     }
 
 LEDENBESTAND_PATH = config["ledenbestand_path"]
-LEDEN_SHEET_PERSONEN = config["leden_sheet_personen"]
-LEDEN_SHEET_BETAALD = config["leden_sheet_betaald"]
+LEDEN_SHEET_NAME = (
+    config.get("leden_sheet_name")
+    or config.get("leden_sheet_leden")
+    or "leden"
+)
 BANK_EXCEL_PATH = config.get("bank_excel_file_path") or config.get("bank_excel_file_name")
 BANK_SHEET_NAME = config["bank_sheet_name"]
-TAGS = [str(tag).strip().lower() for tag in config.get("tags", [])]
-TAG_TARGETS = {
-    str(key).strip().lower(): float(value)
-    for key, value in config.get(
-        "tag_targets",
-        {
-            "8000": 290.0,
-            "8001": 185.0,
-        },
-    ).items()
-}
-TAG_TARGET_ORDER = list(TAG_TARGETS.keys())
+MANUAL_TRANSACTION_MAPPINGS = config.get("manual_transaction_mappings", {})
+BANK_EXCEL_FALLBACK_BASENAMES = [
+    "Debutade boekjaar 2026 Bank",
+    "Debutade boekjaar bank 2026",
+]
+SHARED_BANK_EXCEL_FILE_NAME = config.get("bank_excel_file_name", "")
+ALLOWED_CONTRIBUTIE_TAG_CODES = {"8000", "8001"}
 BACKUP_DIRECTORY = config.get("backup_directory", os.path.join(SCRIPT_DIR, "backup"))
 LOG_DIRECTORY = config.get("log_directory", os.path.join(SCRIPT_DIR, "logs"))
 LOG_LEVEL = config.get("log_level", "INFO")
@@ -147,6 +140,10 @@ def normalize_account(value):
     return str(value).strip().replace(" ", "")
 
 
+def normalize_lastname(value):
+    return str(value or "").strip().lower()
+
+
 def parse_amount(value):
     if value is None:
         return 0.0
@@ -172,6 +169,49 @@ def parse_amount(value):
         return float(cleaned)
     except ValueError:
         return 0.0
+
+
+def normalize_member_id_4digit(value):
+    text = str(value or "").strip()
+    if not text:
+        return ""
+
+    if re.fullmatch(r"\d+(\.0+)?", text):
+        try:
+            text = str(int(float(text)))
+        except ValueError:
+            pass
+
+    exact_match = re.search(r"(?<!\d)(\d{4})(?!\d)", text)
+    if exact_match:
+        return exact_match.group(1)
+
+    digits_only = "".join(re.findall(r"\d", text))
+    if not digits_only:
+        return ""
+    if len(digits_only) >= 4:
+        return digits_only[-4:]
+    return digits_only.zfill(4)
+
+
+def extract_4digit_tokens(value):
+    text = str(value or "")
+    if not text:
+        return set()
+    return set(re.findall(r"(?<!\d)\d{4}(?!\d)", text))
+
+
+def find_manual_mapping_for_transaction(mededelingen):
+    if not mededelingen:
+        return None
+
+    mededelingen_lower = str(mededelingen).lower()
+    for member_id, mapping_fragment in MANUAL_TRANSACTION_MAPPINGS.items():
+        fragment_lower = str(mapping_fragment or "").lower()
+        if fragment_lower and fragment_lower in mededelingen_lower:
+            return member_id
+
+    return None
 
 
 def extract_tag_code(value):
@@ -223,13 +263,19 @@ def read_sheet_rows(file_path, sheet_name):
     except Exception as exc:  # noqa: BLE001
         return [], f"Kan Excel bestand niet openen: {file_path} ({exc})"
 
-    if sheet_name not in wb.sheetnames:
+    matched_sheet_name = None
+    for current_name in wb.sheetnames:
+        if current_name.strip().lower() == str(sheet_name).strip().lower():
+            matched_sheet_name = current_name
+            break
+
+    if not matched_sheet_name:
         wb.close()
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
         return [], f"Tabblad niet gevonden: {sheet_name}"
 
-    sheet = wb[sheet_name]
+    sheet = wb[matched_sheet_name]
     header_map = build_header_map(sheet)
     rows = list(sheet.iter_rows(min_row=2, values_only=True))
     wb.close()
@@ -239,172 +285,335 @@ def read_sheet_rows(file_path, sheet_name):
 
 
 def load_ledenbestand():
-    errors = []
-    persons_map = {}
-    betaald_rows = []
-
-    result, error = read_sheet_rows(LEDENBESTAND_PATH, LEDEN_SHEET_PERSONEN)
+    records = []
+    result, error = read_sheet_rows(LEDENBESTAND_PATH, LEDEN_SHEET_NAME)
     if error:
-        errors.append(error)
-    else:
-        rows, header_map = result
-        for row in rows:
-            member_id = get_cell_value(row, header_map, "ID-lid", "ID lid", "ID")
-            achternaam = get_cell_value(row, header_map, "Achternaam")
-            contributie = get_cell_value(row, header_map, "Contributie")
-            if member_id is None and not achternaam:
-                continue
-            member_id = str(member_id).strip() if member_id is not None else ""
-            persons_map[member_id] = {
-                "achternaam": str(achternaam or "").strip(),
-                "contributie": str(contributie or "").strip(),
-            }
+        return [], [error]
 
-    result, error = read_sheet_rows(LEDENBESTAND_PATH, LEDEN_SHEET_BETAALD)
-    if error:
-        errors.append(error)
-    else:
-        rows, header_map = result
-        for row in rows:
-            member_id = get_cell_value(row, header_map, "ID")
-            rekening = get_cell_value(row, header_map, "Rekening", "Rekeningnummer", "Rek.")
-            member_id = str(member_id).strip() if member_id is not None else ""
-            rekening = normalize_account(rekening)
-            if not member_id and not rekening:
-                continue
-            betaald_rows.append({
-                "member_id": member_id,
-                "rekening": rekening,
-            })
+    rows, header_map = result
+    for row in rows:
+        member_id = get_cell_value(row, header_map, "ID-lid", "ID lid", "ID")
+        achternaam = get_cell_value(row, header_map, "Achternaam")
+        email = get_cell_value(row, header_map, "Email", "E-mail", "Mail")
+        te_innen_bedrag = get_cell_value(
+            row,
+            header_map,
+            "bedrag",
+            "Te innen bedrag",
+            "Contributie",
+        )
 
-    return persons_map, betaald_rows, errors
+        member_id = str(member_id).strip() if member_id is not None else ""
+        achternaam = str(achternaam or "").strip()
+        email = str(email or "").strip()
+        due_amount = parse_amount(te_innen_bedrag)
 
-
-def load_contributie_totals():
-    if not BANK_EXCEL_PATH or not os.path.exists(BANK_EXCEL_PATH):
-        return {}, [f"Bankrekening Excel bestand niet gevonden: {BANK_EXCEL_PATH}"]
-
-    try:
-        wb = load_workbook(BANK_EXCEL_PATH, read_only=True, data_only=True)
-    except PermissionError:
-        return {}, [
-            f"Bestand is in gebruik: {BANK_EXCEL_PATH}. Sluit Excel en probeer opnieuw."
-        ]
-    except Exception as exc:  # noqa: BLE001
-        return {}, [f"Kan Excel bestand niet openen: {BANK_EXCEL_PATH} ({exc})"]
-    if BANK_SHEET_NAME not in wb.sheetnames:
-        wb.close()
-        return {}, [f"Bankrekening tabblad niet gevonden: {BANK_SHEET_NAME}"]
-
-    sheet = wb[BANK_SHEET_NAME]
-    header_map = build_header_map(sheet)
-    totals = {}
-
-    for row in sheet.iter_rows(min_row=2, values_only=True):
-        tag_value = get_cell_value(row, header_map, "Tag")
-        tag_code = extract_tag_code(tag_value)
-        if tag_code not in TAGS:
+        if not member_id and not achternaam and not email and due_amount == 0:
             continue
 
-        tegenrekening = get_cell_value(row, header_map, "Tegenrekening", "Tegen rekening")
-        bedrag = get_cell_value(row, header_map, "Bedrag (EUR)", "Bedrag", "BedragEUR")
+        if not member_id:
+            continue
+
+        records.append(
+            {
+                "member_id": member_id,
+                "member_id_4digit": normalize_member_id_4digit(member_id),
+                "achternaam": achternaam,
+                "email": email,
+                "due_amount": due_amount,
+                "received_amount": 0.0,
+                "opmerking": "",
+                "status_icon": "❌",
+                "status_label": "Nog niets ontvangen",
+                "status_class": "status-none",
+            }
+        )
+
+    return records, []
+
+
+def load_bank_transactions():
+    bank_excel_path = resolve_bank_excel_path()
+    result, error = read_sheet_rows(bank_excel_path, BANK_SHEET_NAME)
+    if error:
+        return [], [error]
+
+    rows, header_map = result
+    transactions = []
+    for row in rows:
+        tag_value = get_cell_value(row, header_map, "Tag", "Tags")
+        tag_code = extract_tag_code(tag_value)
+        if tag_code not in ALLOWED_CONTRIBUTIE_TAG_CODES:
+            continue
+
+        mededelingen = get_cell_value(
+            row,
+            header_map,
+            "Mededelingen",
+            "Omschrijving",
+            "Beschrijving",
+        )
+        bedrag = get_cell_value(row, header_map, "Bedrag", "Bedrag (EUR)", "BedragEUR")
         af_bij = get_cell_value(row, header_map, "Af Bij", "Af/Bij")
 
-        rekening_key = normalize_account(tegenrekening)
-        if not rekening_key:
-            continue
-
         amount_value = parse_amount(bedrag)
-
         if str(af_bij or "").strip().lower() == "af":
             amount_value = -amount_value
 
-        if rekening_key not in totals:
-            totals[rekening_key] = {}
-        totals[rekening_key][tag_code] = totals[rekening_key].get(tag_code, 0.0) + amount_value
+        if not mededelingen and amount_value == 0:
+            continue
 
-    wb.close()
-    return totals, []
+        transactions.append(
+            {
+                "mededelingen": str(mededelingen or ""),
+                "amount": amount_value,
+            }
+        )
+
+    return transactions, []
+
+
+def build_transaction_totals_by_member_id_4digit(transactions):
+    totals_by_member_id_4digit = {}
+
+    for transaction in transactions:
+        amount = transaction.get("amount", 0.0)
+        mededelingen = transaction.get("mededelingen", "")
+        id_tokens = extract_4digit_tokens(mededelingen)
+
+        for token in id_tokens:
+            totals_by_member_id_4digit[token] = totals_by_member_id_4digit.get(token, 0.0) + amount
+
+    return totals_by_member_id_4digit
+
+
+def build_name_pattern(name_value):
+    achternaam = str(name_value or "").strip()
+    if not achternaam:
+        return None
+
+    if len(achternaam) < 3:
+        return None
+
+    escaped = re.escape(achternaam)
+    escaped = escaped.replace(r"\ ", r"\s+")
+    pattern = rf"(?<![A-Za-zÀ-ÿ]){escaped}(?![A-Za-zÀ-ÿ])"
+    return re.compile(pattern, flags=re.IGNORECASE)
+
+
+def calculate_received_by_name_fallback(achternaam, transactions):
+    pattern = build_name_pattern(achternaam)
+    if pattern is None:
+        return 0.0, False, 0
+
+    fallback_amount = 0.0
+    found = False
+    matched_count = 0
+    for transaction in transactions:
+        mededelingen = str(transaction.get("mededelingen", ""))
+        if not mededelingen:
+            continue
+
+        if pattern.search(mededelingen):
+            fallback_amount += transaction.get("amount", 0.0)
+            found = True
+            matched_count += 1
+
+    return round(fallback_amount, 2), found, matched_count
+
+
+def resolve_bank_excel_path():
+    if BANK_EXCEL_PATH and os.path.exists(BANK_EXCEL_PATH):
+        return BANK_EXCEL_PATH
+
+    if SHARED_BANK_EXCEL_FILE_NAME and BANK_EXCEL_PATH:
+        bank_dir = os.path.dirname(BANK_EXCEL_PATH)
+        shared_candidate = os.path.join(bank_dir, SHARED_BANK_EXCEL_FILE_NAME)
+        if os.path.exists(shared_candidate):
+            return shared_candidate
+
+    search_dirs = []
+    if BANK_EXCEL_PATH:
+        bank_dir = os.path.dirname(BANK_EXCEL_PATH)
+        if bank_dir:
+            search_dirs.append(bank_dir)
+
+    if SCRIPT_DIR not in search_dirs:
+        search_dirs.append(SCRIPT_DIR)
+
+    for search_dir in search_dirs:
+        for fallback_basename in BANK_EXCEL_FALLBACK_BASENAMES:
+            for extension in (".xlsx", ".xlsm", ".xls"):
+                candidate = os.path.join(search_dir, f"{fallback_basename}{extension}")
+                if os.path.exists(candidate):
+                    return candidate
+
+        try:
+            for filename in os.listdir(search_dir):
+                filename_lower = filename.lower()
+                if "debutade" in filename_lower and "boekjaar" in filename_lower and "bank" in filename_lower and "2026" in filename_lower:
+                    wildcard_candidate = os.path.join(search_dir, filename)
+                    if os.path.isfile(wildcard_candidate):
+                        return wildcard_candidate
+        except OSError:
+            continue
+
+    return BANK_EXCEL_PATH
 
 
 def build_overview():
-    persons_map, betaald_rows, errors = load_ledenbestand()
-    totals, bank_errors = load_contributie_totals()
+    records, errors = load_ledenbestand()
+    transactions, bank_errors = load_bank_transactions()
     errors.extend(bank_errors)
+    transaction_totals_by_4digit = build_transaction_totals_by_member_id_4digit(transactions)
 
-    rekening_by_id = {}
-    for row in betaald_rows:
-        member_id = row.get("member_id", "")
-        rekening = row.get("rekening", "")
-        if member_id and rekening and member_id not in rekening_by_id:
-            rekening_by_id[member_id] = rekening
+    transaction_totals_by_manual = {}
+    for tx in transactions:
+        manual_member_id = find_manual_mapping_for_transaction(tx.get("mededelingen", ""))
+        if manual_member_id:
+            transaction_totals_by_manual[manual_member_id] = (
+                transaction_totals_by_manual.get(manual_member_id, 0.0) + tx.get("amount", 0.0)
+            )
 
-    records = []
-    summary = {
-        "volwassenen": {"received": 0.0, "max": 0.0, "count": 0},
-        "jeugd": {"received": 0.0, "max": 0.0, "count": 0},
+    matched_transaction_keys = set()
+
+    exact_count = 0
+    partial_count = 0
+    none_count = 0
+    neutral_count = 0
+
+    for record in records:
+        member_id_4digit = record.get("member_id_4digit", "")
+        achternaam = record.get("achternaam", "")
+        due_amount = record.get("due_amount", 0.0)
+        received_amount = transaction_totals_by_4digit.get(member_id_4digit, 0.0)
+
+        if abs(received_amount) < 0.005:
+            received_amount = transaction_totals_by_manual.get(record.get("member_id"), 0.0)
+
+        received_amount = round(received_amount, 2)
+        record["received_amount"] = received_amount
+        record["opmerking"] = ""
+
+        tx_matched_by_id = set()
+        tx_matched_by_fallback = set()
+
+        if not member_id_4digit:
+            record["opmerking"] = "ID-lid bevat geen 4 cijfers"
+            record["status_icon"] = "❌"
+            record["status_label"] = "Geen geldig 4-cijferig ID"
+            record["status_class"] = "status-none"
+            none_count += 1
+            continue
+
+        if abs(due_amount) < 0.005 and abs(received_amount) < 0.005:
+            record["opmerking"] = "Geen contributie verschuldigd"
+            record["status_icon"] = "🟣"
+            record["status_label"] = "Niet van toepassing (0/0)"
+            record["status_class"] = "status-neutral"
+            neutral_count += 1
+            continue
+
+        if abs(received_amount) < 0.005:
+            fallback_amount, fallback_found, fallback_count = calculate_received_by_name_fallback(
+                achternaam,
+                transactions,
+            )
+            if fallback_found and abs(fallback_amount) >= 0.005:
+                received_amount = fallback_amount
+                record["received_amount"] = received_amount
+                tx_label = "transactie" if fallback_count == 1 else "transacties"
+                record["opmerking"] = (
+                    f"Geen 4-cijferig ID ({member_id_4digit}) gevonden; "
+                    f"backup match op achternaam '{achternaam}' ({fallback_count} {tx_label})"
+                )
+
+                for i, tx in enumerate(transactions):
+                    pattern = build_name_pattern(achternaam)
+                    if pattern and pattern.search(str(tx.get("mededelingen", ""))):
+                        tx_matched_by_fallback.add(i)
+            else:
+                record["opmerking"] = f"Geen 4-cijferig ID ({member_id_4digit}) gevonden in mededelingen"
+                record["status_icon"] = "❌"
+                record["status_label"] = "Nog niets ontvangen"
+                record["status_class"] = "status-none"
+                none_count += 1
+                continue
+
+        if abs(received_amount) >= 0.005:
+            for i, tx in enumerate(transactions):
+                if member_id_4digit in extract_4digit_tokens(tx.get("mededelingen", "")):
+                    tx_matched_by_id.add(i)
+
+        # Track manual mappings
+        tx_matched_by_manual = set()
+        if record.get("member_id") in transaction_totals_by_manual and abs(received_amount - transaction_totals_by_manual[record.get("member_id")]) < 0.005:
+            for i, tx in enumerate(transactions):
+                if find_manual_mapping_for_transaction(tx.get("mededelingen", "")) == record.get("member_id"):
+                    tx_matched_by_manual.add(i)
+            if tx_matched_by_manual and not record["opmerking"]:
+                record["opmerking"] = "Handmatig gematched via config"
+
+        matched_transaction_keys.update(tx_matched_by_id)
+        matched_transaction_keys.update(tx_matched_by_fallback)
+        matched_transaction_keys.update(tx_matched_by_manual)
+
+        if abs(received_amount - due_amount) <= 0.009:
+            record["status_icon"] = "✅"
+            record["status_label"] = "Volledig ontvangen"
+            record["status_class"] = "status-ok"
+            exact_count += 1
+            continue
+
+        if received_amount < due_amount:
+            record["status_icon"] = "🔵"
+            record["status_label"] = "Gedeeltelijk ontvangen"
+            record["status_class"] = "status-partial"
+            partial_count += 1
+            continue
+
+        record["status_icon"] = "✅"
+        record["status_label"] = "Ontvangen (meer dan te innen)"
+        record["status_class"] = "status-ok"
+        exact_count += 1
+
+    unmatched_transactions = []
+    for i, tx in enumerate(transactions):
+        if i not in matched_transaction_keys:
+            unmatched_transactions.append(tx)
+
+    status_sort_order = {
+        "status-none": 0,
+        "status-partial": 1,
+        "status-ok": 2,
+        "status-neutral": 3,
     }
-    for member_id, person_info in persons_map.items():
-        achternaam = person_info.get("achternaam", "")
-        contributie = person_info.get("contributie", "")
-        contributie_flag = str(contributie or "").strip().lower()
-        if contributie_flag.startswith("j"):
-            selected_tags = ["8001"]
-            summary_key = "jeugd"
-        elif contributie_flag.startswith("v"):
-            selected_tags = ["8000"]
-            summary_key = "volwassenen"
-        else:
-            selected_tags = TAG_TARGET_ORDER
-            summary_key = None
-        
-        if summary_key:
-            summary[summary_key]["count"] += 1
-
-        rekening = rekening_by_id.get(member_id, "")
-        paid_by_tag = totals.get(rekening, {})
-        paid_total = sum(paid_by_tag.get(tag, 0.0) for tag in selected_tags)
-        bar_items = []
-        for tag_code in selected_tags:
-            target = TAG_TARGETS.get(tag_code, 0.0)
-            paid = paid_by_tag.get(tag_code, 0.0)
-            percent = (paid / target * 100) if target else 0.0
-            bar_items.append({
-                "tag": tag_code,
-                "target": target,
-                "paid": paid,
-                "percent": percent,
-                "bar_width": min(100.0, percent),
-                "overflow": percent > 100.0,
-            })
-            if summary_key:
-                summary[summary_key]["received"] += paid
-                summary[summary_key]["max"] += target
-        records.append({
-            "member_id": member_id,
-            "achternaam": achternaam,
-            "rekening": rekening,
-            "paid": paid_total,
-            "bar_items": bar_items,
-        })
-
-    records.sort(key=lambda item: (item.get("achternaam", ""), item.get("member_id", "")))
-
-    with_payment = sum(1 for item in records if item.get("paid", 0) > 0)
-    without_payment = len(records) - with_payment
+    records.sort(
+        key=lambda item: (
+            status_sort_order.get(item.get("status_class", ""), 99),
+            item.get("achternaam", "").lower(),
+            item.get("member_id", ""),
+        )
+    )
 
     stats = {
         "total": len(records),
-        "with_payment": with_payment,
-        "without_payment": without_payment,
+        "exact": exact_count,
+        "partial": partial_count,
+        "none": none_count,
+        "neutral": neutral_count,
+        "total_due": sum(item.get("due_amount", 0.0) for item in records),
+        "total_received": sum(item.get("received_amount", 0.0) for item in records),
+        "unmatched_count": len(unmatched_transactions),
+        "unmatched_total": round(sum(tx.get("amount", 0.0) for tx in unmatched_transactions), 2),
     }
 
-    return records, stats, errors, summary
+    return records, stats, errors, unmatched_transactions
 
 
 @app.route("/")
 def index():
-    records, stats, errors, summary = build_overview()
+    records, stats, errors, unmatched_transactions = build_overview()
     current_date = datetime.now().strftime("%d-%m-%Y")
     current_user = os.getlogin()
     return render_template(
@@ -412,7 +621,7 @@ def index():
         records=records,
         stats=stats,
         errors=errors,
-        summary=summary,
+        unmatched_transactions=unmatched_transactions,
         current_date=current_date,
         current_user=current_user,
         main_app_url=MAIN_APP_URL,
@@ -442,6 +651,42 @@ def quit_app():
     except Exception as exc:
         logging.error(f"Fout bij afsluiten applicatie: {str(exc)}")
         return jsonify({"success": False, "message": f"Fout: {str(exc)}"}), 500
+
+
+@app.route("/save_manual_mapping", methods=["POST"])
+def save_manual_mapping():
+    """Slaat een handmatige mapping op van mededelingen fragment naar lid nummer."""
+    try:
+        data = request.get_json()
+        member_id = str(data.get("member_id", "")).strip()
+        mededelingen = str(data.get("mededelingen", "")).strip()
+
+        if not member_id or not mededelingen:
+            return jsonify({"success": False, "error": "Lid nummer en mededelingen zijn verplicht"}), 400
+
+        # Laad config
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            config = json.load(f)
+
+        # Zorg ervoor dat de manual_transaction_mappings sectie bestaat
+        if "contributie" not in config:
+            config["contributie"] = {}
+        if "manual_transaction_mappings" not in config["contributie"]:
+            config["contributie"]["manual_transaction_mappings"] = {}
+
+        # Voeg de mapping toe
+        config["contributie"]["manual_transaction_mappings"][member_id] = mededelingen
+
+        # Schrijf config terug naar bestand
+        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(config, f, indent=4, ensure_ascii=False)
+
+        logging.info(f"Manual mapping opgeslagen: lid {member_id} -> '{mededelingen[:50]}...'")
+        return jsonify({"success": True, "message": "Mapping opgeslagen"}), 200
+
+    except Exception as exc:
+        logging.error(f"Fout bij opslaan manual mapping: {str(exc)}")
+        return jsonify({"success": False, "error": f"Fout: {str(exc)}"}), 500
 
 
 if __name__ == "__main__":

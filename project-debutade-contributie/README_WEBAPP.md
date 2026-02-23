@@ -1,16 +1,25 @@
 # Contributie Debutade - Web Applicatie
 
-Een web-applicatie die contributiebetalingen koppelt aan het ledenbestand.
+Een web-applicatie die contributiebetalingen koppelt aan het ledenbestand via `ID-lid` in de bankmededelingen.
 
 ## 📋 Overzicht
 
-Deze applicatie leest ledengegevens uit **Ledenbestand.xlsx** en matcht die met banktransacties in het bankrekeningbestand. Het resultaat is een overzicht met ID, achternaam, rekening en het totaal betaalde bedrag.
+Deze applicatie leest ledengegevens uit **Ledenbestand.xlsx** (tab `leden`) en zoekt per lid op `ID-lid` in de kolom `mededelingen` van het bankrekeningbestand. Het resultaat is een overzicht met:
+
+- `ID-lid`
+- `Achternaam`
+- `Email`
+- `Te innen bedrag`
+- `Ontvangen bedrag`
+- `Opmerking`
+- `Status` (`✅`, `🔵`, `❌`)
 
 ## ✨ Functionaliteiten
 
-- ✅ Leest ledengegevens uit tab **personen** en **betaald**
-- ✅ Filtert banktransacties op tags **contributie-volwassenen** en **contributie-jeugd**
-- ✅ Overzicht met totalen per tegenrekening
+- ✅ Leest ledengegevens uit tab **leden**
+- ✅ Zoekt `ID-lid` in banktab **bankrekening** kolom **mededelingen**
+- ✅ Berekent per lid ontvangen bedrag uit kolom **bedrag**
+- ✅ Status per lid: volledig / gedeeltelijk / nog niets
 - ✅ Zelfde layout/stijl als de andere Debutade-apps
 - ✅ Logging en duidelijke foutmeldingen
 
@@ -46,11 +55,9 @@ Voorbeeld:
 {
     "contributie": {
         "ledenbestand_path": "C:\\Users\\ericg\\OneDrive - Vereniging met volledige rechtsbevoegdheid\\SharePoint Debutade - Documenten\\03. Secretaris\\ledenadministratie\\Ledenbestand.xlsx",
-        "leden_sheet_personen": "personen",
-        "leden_sheet_betaald": "betaald",
-        "bank_excel_file_name": "Debutade boekjaar bank 2026.xlsx",
-        "bank_sheet_name": "Bankrekening",
-        "tags": ["contributie-volwassenen", "contributie-jeugd"]
+        "leden_sheet_name": "leden",
+        "bank_excel_file_name": "Debutade boekjaar 2026 Bank.xlsx",
+        "bank_sheet_name": "bankrekening"
     }
 }
 ```
@@ -60,18 +67,17 @@ De `bank_excel_file_name` wordt gecombineerd met de gedeelde `grootboek_director
 ## 📊 Excel vereisten
 
 **Ledenbestand.xlsx**
-- Tab `personen`: kolommen `ID-lid` en `Achternaam`
-- Tab `betaald`: kolommen `ID` en `Rekening`
+- Tab `leden`: kolommen `ID-lid`, `Achternaam`, `Email`, `bedrag`
 
 **Bankrekening Excel**
-- Tab `Bankrekening`
-- Kolommen: `Tegenrekening`, `Bedrag (EUR)`, `Af Bij`, `Tag`
+- Tab `bankrekening`
+- Kolommen: `mededelingen`, `bedrag` (optioneel ook `Af Bij`)
 
 ## 🧭 Gebruik
 
 1. Open de webpagina
 2. Controleer eventuele fouten bovenaan
-3. Bekijk het overzicht met ID, achternaam, rekening en totaal betaald
+3. Bekijk het overzicht met te innen bedrag, ontvangen bedrag en status per lid
 
 ## 🧪 Troubleshooting
 

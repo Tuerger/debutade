@@ -70,16 +70,14 @@
     },
     "contributie": {
         "ledenbestand_path": "C:\\Users\\ericg\\OneDrive - Vereniging met volledige rechtsbevoegdheid\\SharePoint Debutade - Documenten\\03. Secretaris\\ledenadministratie\\Ledenbestand.xlsx",
-        "leden_sheet_personen": "personen",
-        "leden_sheet_betaald": "betaald",
+        "leden_sheet_name": "personen",
         "bank_sheet_name": "Bankrekening",
-        "tags": [
-            "8000",
-            "8001"
-        ],
-        "tag_targets": {
-            "8000": 290,
-            "8001": 185
+        "manual_transaction_mappings": {
+            "1035": "van Zeventer eo M.H.J. van Zeventer-Ortelee",
+            "1090": "R. Hoed en/of A.M.A. Hoe Omschrijving: Teken cursus",
+            "1036": "Hr TJ van Baar Mw J Bruin-van Baar ",
+            "1032": "Naam: Mw M de Vries-Tensen  Hr W de Vries IBAN: NL12INGB0002121970 Valutadatum: 26-01-2026",
+            "1118": "Naam: H. Wen IBAN: NL18RABO0333569636 Datum/Tijd: 12-01-2026 23:54:44 Valutadatum: 12-01-2026"
         }
     }
 }
