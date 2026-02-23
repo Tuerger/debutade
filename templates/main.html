@@ -404,6 +404,40 @@
         const statusUrl = "{{ url_for('status') }}";
         const quitUrl = "{{ url_for('quit_app') }}";
 
+        function forceCloseWindow() {
+            window.open("", "_self");
+            window.close();
+            self.close();
+        }
+
+        function showCloseFallbackScreen() {
+            document.body.innerHTML = `
+                <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f1b2b;color:#eef3f7;font-family:'DM Sans','Segoe UI',sans-serif;padding:24px;text-align:center;">
+                    <div>
+                        <h2 style="margin:0 0 12px;">Venster is afgesloten</h2>
+                        <p style="margin:0;opacity:.85;">Als dit venster nog zichtbaar is, kun je het handmatig sluiten.</p>
+                    </div>
+                </div>
+            `;
+            window.location.replace("about:blank");
+        }
+
+        async function requestQuitMainApp() {
+            try {
+                if (navigator.sendBeacon) {
+                    navigator.sendBeacon(quitUrl);
+                    return;
+                }
+
+                await fetch(quitUrl, {
+                    method: "POST",
+                    keepalive: true,
+                });
+            } catch (error) {
+                console.error("Afsluiten mislukt", error);
+            }
+        }
+
         async function refreshStatus() {
             try {
                 const response = await fetch(statusUrl, { cache: "no-store" });
@@ -475,15 +509,19 @@
             exitMainBtn.addEventListener("click", async () => {
                 const confirmed = confirm("Weet je zeker dat je dit venster wilt sluiten?");
                 if (!confirmed) return;
-                try {
-                    await fetch(quitUrl, { method: "POST" });
-                } catch (error) {
-                    console.error("Afsluiten mislukt", error);
-                }
-                window.close();
+
+                exitMainBtn.disabled = true;
+                await requestQuitMainApp();
+
+                forceCloseWindow();
+                setTimeout(forceCloseWindow, 120);
+                setTimeout(forceCloseWindow, 300);
+
                 setTimeout(() => {
-                    window.location.href = "about:blank";
-                }, 300);
+                    if (!window.closed) {
+                        showCloseFallbackScreen();
+                    }
+                }, 450);
             });
         }
 

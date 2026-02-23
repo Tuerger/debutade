@@ -140,6 +140,21 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 14px;
+            opacity: 0;
+            transform: translateY(12px);
+            animation: cardFadeIn 520ms ease-out forwards;
+            animation-delay: calc(var(--card-index, 0) * 90ms);
+        }
+
+        @keyframes cardFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .card-title {
@@ -330,6 +345,14 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            .card {
+                animation: none;
+                opacity: 1;
+                transform: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -418,7 +441,7 @@
                 <canvas id="tagChart"></canvas>
             </article>
             <article class="chart-card">
-                <h3>Per maand: positieve en negatieve mutaties</h3>
+                <h3>Per maand boekjaar 2026: positieve en negatieve mutaties</h3>
                 <canvas id="monthChart"></canvas>
             </article>
         </section>
@@ -477,6 +500,30 @@
     let tagChart;
     let monthChart;
 
+    function applyCardAnimationDelays() {
+        const cards = document.querySelectorAll(".cards .card");
+        cards.forEach((card, index) => {
+            card.style.setProperty("--card-index", index);
+        });
+    }
+
+    function getBarAnimationDelayOptions() {
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            return false;
+        }
+
+        return {
+            duration: 680,
+            easing: "easeOutCubic",
+            delay(context) {
+                if (context.type !== "data") {
+                    return 0;
+                }
+                return (context.dataIndex * 70) + (context.datasetIndex * 90);
+            }
+        };
+    }
+
     function compactEuroTick(value) {
         return new Intl.NumberFormat("nl-NL", {
             notation: "compact",
@@ -534,6 +581,18 @@
         }
         const [year, month] = monthKey.split("-");
         return `${month}-${year}`;
+    }
+
+    const MONTH_CHART_BOOK_YEAR = 2026;
+    const MONTH_SHORT_LABELS = ["Jan", "Feb", "Maa", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
+
+    function monthShortLabel(monthKey) {
+        if (!/^\d{4}-\d{2}$/.test(String(monthKey || ""))) {
+            return "Onbekend";
+        }
+
+        const monthIndex = Number(String(monthKey).slice(5, 7)) - 1;
+        return MONTH_SHORT_LABELS[monthIndex] || "Onbekend";
     }
 
     function getPeriodLabel() {
@@ -595,7 +654,11 @@
         values.forEach(value => {
             const option = document.createElement("option");
             option.value = value;
-            option.textContent = value.startsWith("20") && value.length === 7 ? monthLabel(value) : value;
+            if (/^\d{4}-\d{2}$/.test(value)) {
+                option.textContent = `${monthShortLabel(value)} ${value.slice(0, 4)}`;
+            } else {
+                option.textContent = value;
+            }
             selectElement.appendChild(option);
         });
 
@@ -755,26 +818,33 @@
     function buildMonthAggregation(filtered) {
         const map = new Map();
 
+        const validMonthPattern = /^\d{4}-\d{2}$/;
+
+        for (let monthNumber = 1; monthNumber <= 12; monthNumber += 1) {
+            const monthKey = `${MONTH_CHART_BOOK_YEAR}-${String(monthNumber).padStart(2, "0")}`;
+            map.set(monthKey, { positive: 0, negative: 0 });
+        }
+
         filtered.forEach(tx => {
             if (shouldSkipChartTransaction(tx, true)) {
                 return;
             }
 
-            const month = tx.month || "Onbekend";
-            if (!map.has(month)) {
-                map.set(month, { positive: 0, negative: 0 });
-            }
-            const item = map.get(month);
             const amount = Number(tx.signed_amount || 0);
-            if (amount >= 0) {
-                item.positive += amount;
-            } else {
-                item.negative += amount;
+            const month = String(tx.month || "");
+
+            if (validMonthPattern.test(month) && month.startsWith(`${MONTH_CHART_BOOK_YEAR}-`) && map.has(month)) {
+                const item = map.get(month);
+                if (amount >= 0) {
+                    item.positive += amount;
+                } else {
+                    item.negative += amount;
+                }
             }
         });
 
         const sortedMonths = [...map.keys()].sort();
-        const labels = sortedMonths.map(monthLabel);
+        const labels = sortedMonths.map(monthShortLabel);
         const positive = sortedMonths.map(key => Number(map.get(key).positive.toFixed(2)));
         const negative = sortedMonths.map(key => Number(map.get(key).negative.toFixed(2)));
 
@@ -902,7 +972,7 @@
                 indexAxis: "y",
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: false,
+                animation: getBarAnimationDelayOptions(),
                 resizeDelay: 150,
                 plugins: {
                     valueLabels: {
@@ -985,7 +1055,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: false,
+                animation: getBarAnimationDelayOptions(),
                 resizeDelay: 150,
                 plugins: {
                     valueLabels: {
@@ -1068,9 +1138,15 @@
 
             allTransactions = data.transactions || [];
 
-            fillSelect(monthFilter, data.filters?.months || []);
+            const monthsFromData = Array.isArray(data.filters?.months) ? data.filters.months : [];
+            const bookYearMonths = MONTH_SHORT_LABELS.map((_, index) => `${MONTH_CHART_BOOK_YEAR}-${String(index + 1).padStart(2, "0")}`);
+            const monthOptions = [...new Set([...monthsFromData, ...bookYearMonths])].sort();
+
+            fillSelect(monthFilter, monthOptions);
             fillSelect(tagFilter, data.filters?.tags || []);
             fillSelect(sourceFilter, data.filters?.sources || []);
+
+            monthFilter.value = "";
 
             if (Array.isArray(data.warnings) && data.warnings.length > 0) {
                 warningBox.style.display = "block";
@@ -1123,6 +1199,7 @@
 
     document.getElementById("quitBtn")?.addEventListener("click", quitApp);
 
+    applyCardAnimationDelays();
     loadData();
 </script>
 </body>
