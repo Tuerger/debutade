@@ -60,6 +60,10 @@
         "excel_file_name": "Debutade boekjaar kas 2026.xlsx",
         "excel_sheet_name": "Kas"
     },
+    "begroting": {
+        "excel_file_name": "Debutade begroting 2026.xlsx",
+        "excel_sheet_name": "Begroting"
+    },
     "bontoevoegen": {
         "kas_excel_file_name": "Debutade boekjaar kas 2026.xlsx",
         "sharepoint_tenant": "debutabe"

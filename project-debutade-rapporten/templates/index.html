@@ -36,7 +36,7 @@
             background: radial-gradient(circle at top left, #1b2b45 0%, var(--bg-1) 45%, var(--bg-3) 100%);
             color: #1a2433;
             min-height: 100vh;
-            padding: 24px;
+            padding: 12px;
         }
 
         .container {
@@ -50,7 +50,7 @@
 
         .hero {
             position: relative;
-            padding: 30px;
+            padding: 14px 20px;
             color: var(--text);
             text-align: center;
             background: linear-gradient(120deg, rgba(15, 27, 43, 0.9), rgba(20, 34, 53, 0.82));
@@ -58,19 +58,19 @@
 
         .hero h1 {
             font-family: "Space Grotesk", "Segoe UI", sans-serif;
-            font-size: 30px;
-            margin-bottom: 6px;
+            font-size: 24px;
+            margin-bottom: 2px;
         }
 
         .hero p {
             color: var(--muted);
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .hero-meta {
             position: absolute;
-            top: 24px;
-            right: 30px;
+            top: 12px;
+            right: 20px;
             text-align: right;
             font-size: 12px;
             color: var(--muted);
@@ -78,8 +78,8 @@
 
         .hero-actions {
             position: absolute;
-            top: 24px;
-            left: 30px;
+            top: 12px;
+            left: 20px;
             display: flex;
             gap: 10px;
         }
@@ -109,7 +109,7 @@
         }
 
         main {
-            padding: 26px;
+            padding: 14px;
             background: var(--surface-alt);
         }
 
@@ -127,8 +127,8 @@
         .cards {
             display: grid;
             grid-template-columns: repeat(4, minmax(180px, 1fr));
-            gap: 14px;
-            margin-bottom: 18px;
+            gap: 10px;
+            margin-bottom: 10px;
         }
 
         .cards.beginsaldo {
@@ -139,7 +139,7 @@
             background: #ffffff;
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 14px;
+            padding: 12px;
             opacity: 0;
             transform: translateY(12px);
             animation: cardFadeIn 520ms ease-out forwards;
@@ -177,8 +177,44 @@
         .filters {
             display: grid;
             grid-template-columns: 180px 240px 220px 1fr;
-            gap: 12px;
-            margin-bottom: 18px;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .view-switch {
+            display: inline-flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding: 6px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .view-switch button {
+            border: 1px solid var(--border);
+            background: #ffffff;
+            color: #41566f;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .view-switch button:hover {
+            background: #eef3f8;
+        }
+
+        .view-switch button.active {
+            background: #1d2f45;
+            color: #ffffff;
+            border-color: #1d2f45;
+        }
+
+        .view-panel-hidden {
+            display: none !important;
         }
 
         .filter {
@@ -197,7 +233,7 @@
         .filter input {
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 9px 10px;
+            padding: 7px 9px;
             font-size: 14px;
             font-family: inherit;
             background: #fff;
@@ -215,26 +251,26 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 12px;
-            min-height: 420px;
-            height: 420px;
+            min-height: 480px;
+            height: 480px;
             overflow: auto;
             position: relative;
         }
 
         .chart-card canvas {
             width: 100% !important;
-            height: 360px !important;
-            max-height: 360px !important;
+            height: 420px !important;
+            max-height: 420px !important;
         }
 
         .tag-chart-card {
-            min-height: 470px;
-            height: 470px;
+            min-height: 530px;
+            height: 530px;
         }
 
         .tag-chart-card #tagChart {
-            height: 410px !important;
-            max-height: 410px !important;
+            height: 470px !important;
+            max-height: 470px !important;
         }
 
         .chart-card h3 {
@@ -303,7 +339,7 @@
         }
 
         .table-wrapper {
-            max-height: 320px;
+            max-height: 450px;
             overflow: auto;
             border: 1px solid #edf2f7;
             border-radius: 10px;
@@ -435,18 +471,25 @@
             </div>
         </section>
 
-        <section class="charts">
-            <article class="chart-card tag-chart-card">
-                <h3>Per tag: totaal positief en negatief</h3>
-                <canvas id="tagChart"></canvas>
-            </article>
-            <article class="chart-card">
-                <h3>Per maand boekjaar 2026: positieve en negatieve mutaties</h3>
-                <canvas id="monthChart"></canvas>
-            </article>
+        <section class="view-switch" aria-label="Wissel tussen grafieken en tabel">
+            <button type="button" id="viewChartsBtn" class="active">Grafieken</button>
+            <button type="button" id="viewTableBtn">Tabel</button>
         </section>
 
-        <section class="table-card">
+        <section id="chartsView" class="view-panel">
+            <section class="charts">
+                <article class="chart-card tag-chart-card">
+                    <h3>Per tag: totaal positief en negatief</h3>
+                    <canvas id="tagChart"></canvas>
+                </article>
+                <article class="chart-card">
+                    <h3>Per maand boekjaar 2026: positieve en negatieve mutaties</h3>
+                    <canvas id="monthChart"></canvas>
+                </article>
+            </section>
+        </section>
+
+        <section id="tableView" class="table-card view-panel view-panel-hidden">
             <h3>Transacties</h3>
             <div class="table-wrapper">
                 <table>
@@ -478,6 +521,10 @@
     const transactionsBody = document.getElementById("transactionsBody");
     const rowCount = document.getElementById("rowCount");
     const warningBox = document.getElementById("warningBox");
+    const chartsView = document.getElementById("chartsView");
+    const tableView = document.getElementById("tableView");
+    const viewChartsBtn = document.getElementById("viewChartsBtn");
+    const viewTableBtn = document.getElementById("viewTableBtn");
 
     const saldoSpaar1 = document.getElementById("saldoSpaar1");
     const saldoSpaar2 = document.getElementById("saldoSpaar2");
@@ -499,6 +546,25 @@
     let allTransactions = [];
     let tagChart;
     let monthChart;
+
+    function setView(view) {
+        const showCharts = view === "charts";
+
+        chartsView.classList.toggle("view-panel-hidden", !showCharts);
+        tableView.classList.toggle("view-panel-hidden", showCharts);
+
+        viewChartsBtn.classList.toggle("active", showCharts);
+        viewTableBtn.classList.toggle("active", !showCharts);
+
+        if (showCharts) {
+            if (tagChart) {
+                tagChart.resize();
+            }
+            if (monthChart) {
+                monthChart.resize();
+            }
+        }
+    }
 
     function applyCardAnimationDelays() {
         const cards = document.querySelectorAll(".cards .card");
@@ -1165,6 +1231,8 @@
     });
 
     mededelingenFilter.addEventListener("input", applyFiltersAndRender);
+    viewChartsBtn?.addEventListener("click", () => setView("charts"));
+    viewTableBtn?.addEventListener("click", () => setView("table"));
 
     const MAIN_APP_URL = "{{ main_app_url|default('') }}";
 
@@ -1200,6 +1268,7 @@
     document.getElementById("quitBtn")?.addEventListener("click", quitApp);
 
     applyCardAnimationDelays();
+    setView("charts");
     loadData();
 </script>
 </body>

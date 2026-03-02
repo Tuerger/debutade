@@ -333,6 +333,26 @@
             </div>
 
             <div class="card">
+                <h2>Begroting</h2>
+                <div class="tag-badge">Gebruikt grootboek directory uit Algemeen</div>
+                <div class="grid">
+                    <div>
+                        <label for="begroting_grootboek_directory">Grootboek directory (uit Algemeen)</label>
+                        <input id="begroting_grootboek_directory" type="text" value="{{ config_data.get('shared', {}).get('grootboek_directory', '') }}" disabled readonly />
+                        <div class="hint">Pas dit pad aan bij Algemeen.</div>
+                    </div>
+                    <div>
+                        <label for="begroting_excel_file_name">Begroting Excel bestandsnaam</label>
+                        <input id="begroting_excel_file_name" name="begroting_excel_file_name" type="text" value="{{ config_data.get('begroting', {}).get('excel_file_name', '') }}" />
+                    </div>
+                    <div>
+                        <label for="begroting_excel_sheet_name">Begroting Excel sheet naam</label>
+                        <input id="begroting_excel_sheet_name" name="begroting_excel_sheet_name" type="text" value="{{ config_data.get('begroting', {}).get('excel_sheet_name', 'Begroting') }}" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
                 <h2>Rapporten</h2>
                 <div class="tag-badge">Gebruikt gedeelde bank Excel en kasboek instellingen</div>
                 <div class="grid">

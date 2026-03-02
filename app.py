@@ -164,6 +164,7 @@ def validate_main_config(config_data):
     showreport = config_data.get("showreport", {})
     contributie = config_data.get("contributie", {})
     rapporten = config_data.get("rapporten", {})
+    begroting = config_data.get("begroting", {})
 
     def build_excel_path(file_name):
         if not grootboek_dir or not file_name:
@@ -182,6 +183,12 @@ def validate_main_config(config_data):
         errors.extend(validate_workbook_tabs(bank_path, bank_sheets))
     elif bank_path and not bank_sheets:
         errors.append("Bankrekening vereiste sheets zijn verplicht.")
+
+    bank_sheet_name = bank.get("excel_sheet_name")
+    if not bank_sheet_name:
+        errors.append("Bankrekening Excel sheet naam is verplicht.")
+    elif bank_path:
+        errors.extend(validate_workbook_tabs(bank_path, [bank_sheet_name]))
 
     kas_file_name = kas.get("excel_file_name")
     if not kas_file_name:
@@ -260,6 +267,19 @@ def validate_main_config(config_data):
     if rapporten_kas_path and rapporten_kas_sheet:
         errors.extend(validate_workbook_tabs(rapporten_kas_path, [rapporten_kas_sheet]))
 
+    begroting_file_name = begroting.get("excel_file_name")
+    if not begroting_file_name:
+        errors.append("Begroting Excel bestandsnaam is verplicht.")
+    begroting_path = build_excel_path(begroting_file_name)
+    if begroting_path and not os.path.exists(begroting_path):
+        errors.append(f"Begroting Excel bestand niet gevonden: {begroting_path}")
+
+    begroting_sheet = begroting.get("excel_sheet_name")
+    if not begroting_sheet:
+        errors.append("Begroting Excel sheet naam is verplicht.")
+    elif begroting_path:
+        errors.extend(validate_workbook_tabs(begroting_path, [begroting_sheet]))
+
     return errors
 
 APPS = {
@@ -304,6 +324,15 @@ APPS = {
         "name": "Contributie overzicht",
         "description": "Koppelt contributies aan leden",
         "cwd": os.path.join(APP_DIR, "project-debutade-contributie"),
+        "script": "webapp.py",
+        "python": os.path.join(".venv", "Scripts", "python.exe"),
+        "port": SUBAPP_PORT,
+    },
+    "begroting": {
+        "id": "begroting",
+        "name": "Begroting",
+        "description": "Overzicht Inkomsten en Uitgaven (begroot vs actueel)",
+        "cwd": os.path.join(APP_DIR, "project-debutade-begroting"),
         "script": "webapp.py",
         "python": os.path.join(".venv", "Scripts", "python.exe"),
         "port": SUBAPP_PORT,
@@ -559,6 +588,7 @@ def settings_main():
         existing_showreport = existing_config.get("showreport", {})
         existing_contributie = existing_config.get("contributie", {})
         existing_rapporten = existing_config.get("rapporten", {})
+        existing_begroting = existing_config.get("begroting", {})
 
         shared_bank_excel = form_value("shared_bank_excel_file_name") or existing_shared.get("bank_excel_file_name")
 
@@ -615,6 +645,10 @@ def settings_main():
             "bank_sheets": split_lines(form_value("rapporten_bank_sheets")) or existing_rapporten.get("bank_sheets", []) or existing_bank.get("required_sheets", []),
             "kas_sheet_name": form_value("rapporten_kas_sheet_name") or existing_rapporten.get("kas_sheet_name") or existing_kas.get("excel_sheet_name", ""),
         }
+        begroting_config = {
+            "excel_file_name": form_value("begroting_excel_file_name") or existing_begroting.get("excel_file_name", ""),
+            "excel_sheet_name": form_value("begroting_excel_sheet_name") or existing_begroting.get("excel_sheet_name", "Begroting"),
+        }
 
         new_config = {
             "shared": shared_config,
@@ -624,6 +658,7 @@ def settings_main():
             "showreport": showreport_config,
             "contributie": contributie_config,
             "rapporten": rapporten_config,
+            "begroting": begroting_config,
         }
 
         errors = validate_main_config(new_config)

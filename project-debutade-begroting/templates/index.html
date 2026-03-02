@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debutade Begroting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-1: #0f1b2b;
+            --bg-2: #142235;
+            --bg-3: #101a26;
+            --accent: #f3b860;
+            --accent-2: #3cc6a8;
+            --text: #eef3f7;
+            --muted: #b9c7d6;
+            --surface: #ffffff;
+            --surface-alt: #f4f7fb;
+            --border: #d6dee8;
+            --danger: #f05d5e;
+            --good: #2fa889;
+            --shadow: 0 18px 38px rgba(5, 10, 20, 0.16);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #1b2b45 0%, var(--bg-1) 45%, var(--bg-3) 100%);
+            color: #1a2433;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1460px;
+            margin: 0 auto;
+            background: var(--surface);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .hero {
+            position: relative;
+            padding: 14px 20px;
+            color: var(--text);
+            text-align: center;
+            background: linear-gradient(120deg, rgba(15, 27, 43, 0.9), rgba(20, 34, 53, 0.82));
+        }
+
+        .hero h1 {
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+
+        .hero p {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .hero-meta {
+            position: absolute;
+            top: 12px;
+            right: 20px;
+            text-align: right;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .hero-actions {
+            position: absolute;
+            top: 12px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .hero-actions a,
+        .hero-actions button {
+            font-size: 12px;
+            padding: 6px 12px;
+            background-color: var(--accent);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .hero-actions button {
+            font-weight: 600;
+        }
+
+        .hero-actions a:hover,
+        .hero-actions button:hover {
+            background-color: #f5a54f;
+        }
+
+        main {
+            padding: 26px;
+            background: var(--surface-alt);
+        }
+
+        .warning-box {
+            display: none;
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(240, 93, 94, 0.35);
+            background: rgba(240, 93, 94, 0.1);
+            color: #7a2324;
+            font-size: 13px;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .switch-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #1d2f45;
+            font-weight: 700;
+        }
+
+        .switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            display: inline-block;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #a7b7ca;
+            transition: .2s;
+            border-radius: 30px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .2s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-2);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .card-title {
+            font-size: 13px;
+            color: #5c6f86;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #122234;
+        }
+
+        .saldo-positive {
+            color: #1a1a1a;
+        }
+
+        .saldo-zero {
+            color: #2f6ea8;
+        }
+
+        .saldo-negative {
+            color: var(--danger);
+        }
+
+        .split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .table-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .table-card h3 {
+            font-size: 18px;
+            color: #1d2f45;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead th {
+            text-align: left;
+            background: #eef3f8;
+            color: #41566f;
+            padding: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        tbody td {
+            padding: 8px;
+            border-top: 1px solid #edf2f7;
+            vertical-align: top;
+        }
+
+        .table-wrapper {
+            max-height: 520px;
+            overflow: auto;
+            border: 1px solid #edf2f7;
+            border-radius: 10px;
+        }
+
+        .amount-pos {
+            color: var(--good);
+            font-weight: 700;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .amount-neg {
+            color: var(--danger);
+            font-weight: 700;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .amount-neutral {
+            color: #122234;
+            font-weight: 700;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .diff-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 180px;
+        }
+
+        .diff-track {
+            flex: 1;
+            height: 10px;
+            background: #e8eef5;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .diff-fill {
+            width: 0;
+            height: 100%;
+            opacity: 0.4;
+            border-radius: 999px;
+            transition: width 650ms ease-out, opacity 380ms ease-out;
+        }
+
+        .diff-fill.pos {
+            background: rgba(47, 168, 137, 0.9);
+        }
+
+        .diff-fill.neg {
+            background: rgba(240, 93, 94, 0.9);
+        }
+
+        .diff-value {
+            min-width: 78px;
+            text-align: right;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .group-header {
+            background: #eef3f8;
+            cursor: pointer;
+        }
+
+        .group-header td {
+            font-weight: 700;
+            color: #1d2f45;
+            border-top: 1px solid #dce6f1;
+        }
+
+        .group-header td.amount-pos {
+            color: var(--good);
+        }
+
+        .group-header td.amount-neg {
+            color: var(--danger);
+        }
+
+        .group-header td.amount-neutral {
+            color: #122234;
+        }
+
+        .group-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .group-toggle {
+            border: none;
+            background: transparent;
+            color: #1d2f45;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 0;
+            width: 16px;
+        }
+
+        .sub-row.hidden {
+            display: none;
+        }
+
+        .category-main {
+            display: block;
+            font-weight: 600;
+            color: #3f536b;
+            font-size: 12px;
+        }
+
+        .category-sub {
+            display: block;
+            color: #6f7f92;
+            font-size: 12px;
+            margin-top: 2px;
+            padding-left: 18px;
+        }
+
+        .meta {
+            color: #6d7f95;
+            font-size: 12px;
+        }
+
+        .group-controls {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .group-btn {
+            font-size: 12px;
+            padding: 6px 10px;
+            background: #ffffff;
+            border: 1px solid #d6dee8;
+            border-radius: 8px;
+            color: #1d2f45;
+            cursor: pointer;
+        }
+
+        .group-btn:hover {
+            background: #eef3f8;
+        }
+
+        @media (max-width: 1250px) {
+            .cards {
+                grid-template-columns: repeat(3, minmax(180px, 1fr));
+            }
+
+            .split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 820px) {
+            body {
+                padding: 10px;
+            }
+
+            .hero-actions,
+            .hero-meta {
+                position: static;
+                margin-top: 8px;
+                text-align: center;
+                justify-content: center;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <section class="hero">
+            <div class="hero-actions">
+                <button type="button" id="quitBtn">🔴 Afsluiten</button>
+            </div>
+            <div class="hero-meta">
+                <div>{{ current_date }}</div>
+                <div>{{ current_user }}</div>
+            </div>
+            <h1>Begroting</h1>
+            <p>Balans van Inkomsten (Bij) en Uitgaven (Af) op basis van begroting en actuele transacties.</p>
+        </section>
+
+        <main>
+            <div id="warningBox" class="warning-box"></div>
+
+            <div class="toolbar">
+                <div class="meta">Actueel gebruikt Bankrekening + Kas met matching op tag en Af/Bij.</div>
+                <div class="group-controls">
+                    <button type="button" class="group-btn" id="expandAllBtn">Alles uitklappen</button>
+                    <button type="button" class="group-btn" id="collapseAllBtn">Alles inklappen</button>
+                    <button type="button" class="group-btn" id="printDumpBtn">Publiceer printversie</button>
+                </div>
+                <div class="switch-wrap">
+                    Actueel
+                    <label class="switch" for="actualToggle">
+                        <input type="checkbox" id="actualToggle" />
+                        <span class="slider"></span>
+                    </label>
+                    <span id="actualState">Uit</span>
+                </div>
+            </div>
+
+            <section class="cards">
+                <article class="card">
+                    <div class="card-title">Inkomsten (Begroting)</div>
+                    <div id="budgetInkomsten" class="card-value">€ 0,00</div>
+                </article>
+                <article class="card">
+                    <div class="card-title">Uitgaven (Begroting)</div>
+                    <div id="budgetUitgaven" class="card-value">€ 0,00</div>
+                </article>
+                <article class="card">
+                    <div class="card-title">Saldo (Begroting)</div>
+                    <div id="budgetSaldo" class="card-value">€ 0,00</div>
+                </article>
+                <article class="card">
+                    <div class="card-title">Inkomsten (Actueel)</div>
+                    <div id="actualInkomsten" class="card-value">-</div>
+                </article>
+                <article class="card">
+                    <div class="card-title">Uitgaven (Actueel)</div>
+                    <div id="actualUitgaven" class="card-value">-</div>
+                </article>
+            </section>
+
+            <section class="split">
+                <article class="table-card">
+                    <h3>Inkomsten</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr id="inkomstenHead"></tr>
+                            </thead>
+                            <tbody id="inkomstenBody"></tbody>
+                        </table>
+                    </div>
+                </article>
+
+                <article class="table-card">
+                    <h3>Uitgaven</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr id="uitgavenHead"></tr>
+                            </thead>
+                            <tbody id="uitgavenBody"></tbody>
+                        </table>
+                    </div>
+                </article>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const warningBox = document.getElementById("warningBox");
+        const actualToggle = document.getElementById("actualToggle");
+        const actualState = document.getElementById("actualState");
+        const MAIN_APP_URL = "{{ main_app_url|default('') }}";
+        const expandAllBtn = document.getElementById("expandAllBtn");
+        const collapseAllBtn = document.getElementById("collapseAllBtn");
+        const printDumpBtn = document.getElementById("printDumpBtn");
+
+        const budgetInkomsten = document.getElementById("budgetInkomsten");
+        const budgetUitgaven = document.getElementById("budgetUitgaven");
+        const budgetSaldo = document.getElementById("budgetSaldo");
+        const actualInkomsten = document.getElementById("actualInkomsten");
+        const actualUitgaven = document.getElementById("actualUitgaven");
+
+        const inkomstenHead = document.getElementById("inkomstenHead");
+        const uitgavenHead = document.getElementById("uitgavenHead");
+        const inkomstenBody = document.getElementById("inkomstenBody");
+        const uitgavenBody = document.getElementById("uitgavenBody");
+
+        function euro(value) {
+            if (value === null || value === undefined) {
+                return "-";
+            }
+            return new Intl.NumberFormat("nl-NL", {
+                style: "currency",
+                currency: "EUR",
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            }).format(value);
+        }
+
+        function percent(value) {
+            return `${new Intl.NumberFormat("nl-NL", {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+            }).format(value)}%`;
+        }
+
+        function actualVsBudgetLabel(actualValue, budgetValue) {
+            const actual = Number(actualValue || 0);
+            const budget = Number(budgetValue || 0);
+
+            if (budget === 0) {
+                if (actual === 0) {
+                    return "0,0% actueel t.o.v. begroot";
+                }
+                return "n.v.t. actueel t.o.v. begroot (begroot = 0)";
+            }
+
+            const pct = (actual / budget) * 100;
+            return `${percent(pct)} actueel t.o.v. begroot`;
+        }
+
+        function amountClass(value) {
+            if (value > 0) {
+                return "amount-pos";
+            }
+            if (value < 0) {
+                return "amount-neg";
+            }
+            return "amount-neutral";
+        }
+
+        function renderHeader(headElement, includeActual) {
+            if (includeActual) {
+                headElement.innerHTML = "<th></th><th>Bedrag begroot</th><th>Actueel</th><th>Verschil</th>";
+            } else {
+                headElement.innerHTML = "<th></th><th>Bedrag begroot</th>";
+            }
+        }
+
+        function renderRows(bodyElement, rows, includeActual, side) {
+            bodyElement.innerHTML = "";
+
+            if (!rows.length) {
+                const colSpan = includeActual ? 4 : 2;
+                bodyElement.innerHTML = `<tr><td colspan="${colSpan}">Geen data gevonden.</td></tr>`;
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+
+            const groups = [];
+            const groupMap = new Map();
+
+            rows.forEach((row) => {
+                const hoofd = row.hoofdcategorie || "(Geen hoofdcategorie)";
+                if (!groupMap.has(hoofd)) {
+                    const group = {
+                        hoofd,
+                        rows: [],
+                        subSet: new Set(),
+                    };
+                    groupMap.set(hoofd, group);
+                    groups.push(group);
+                }
+                const group = groupMap.get(hoofd);
+                group.rows.push(row);
+                group.subSet.add(row.subcategorie || "(Geen subcategorie)");
+            });
+
+            let barIndex = 0;
+
+            function getActualVsBudgetWidth(actualValue, budgetValue) {
+                const actual = Number(actualValue || 0);
+                const budget = Number(budgetValue || 0);
+
+                if (budget === 0) {
+                    return actual === 0 ? 0 : 100;
+                }
+
+                const raw = (actual / budget) * 100;
+                return Math.max(0, Math.min(100, raw));
+            }
+
+            function createDifferenceCell(value, actualValue, budgetValue) {
+                const diffTd = document.createElement("td");
+
+                const diffWrap = document.createElement("div");
+                diffWrap.className = "diff-wrap";
+
+                const track = document.createElement("div");
+                track.className = "diff-track";
+
+                const fill = document.createElement("div");
+                fill.className = `diff-fill ${side === "Bij" ? "pos" : "neg"}`;
+                fill.style.transitionDelay = `${Math.min(barIndex * 70, 1000)}ms`;
+                track.appendChild(fill);
+
+                const valueSpan = document.createElement("span");
+                valueSpan.className = `diff-value ${side === "Bij" ? "amount-pos" : "amount-neg"}`;
+                valueSpan.textContent = euro(value || 0);
+
+                diffWrap.appendChild(track);
+                diffWrap.appendChild(valueSpan);
+                diffTd.appendChild(diffWrap);
+
+                const pct = getActualVsBudgetWidth(actualValue, budgetValue);
+                const ratioLabel = actualVsBudgetLabel(actualValue, budgetValue);
+                track.title = ratioLabel;
+                fill.title = ratioLabel;
+                valueSpan.title = ratioLabel;
+                requestAnimationFrame(() => {
+                    fill.style.width = `${pct}%`;
+                    fill.style.opacity = "1";
+                });
+
+                barIndex += 1;
+                return diffTd;
+            }
+
+            function createDetailRow(row, asSubRow = false) {
+                const tr = document.createElement("tr");
+                if (asSubRow) {
+                    tr.className = "sub-row";
+                }
+
+                const categorieTd = document.createElement("td");
+                const hoofd = row.hoofdcategorie || "(Geen hoofdcategorie)";
+                const sub = (row.subcategorie || "").trim();
+
+                if (!asSubRow) {
+                    const mainSpan = document.createElement("span");
+                    mainSpan.className = "category-main";
+                    mainSpan.textContent = hoofd;
+                    categorieTd.appendChild(mainSpan);
+                }
+
+                if (sub) {
+                    const subSpan = document.createElement("span");
+                    subSpan.className = "category-sub";
+                    subSpan.textContent = sub;
+                    categorieTd.appendChild(subSpan);
+                }
+                tr.appendChild(categorieTd);
+
+                const budgetTd = document.createElement("td");
+                budgetTd.className = side === "Bij" ? "amount-pos" : "amount-neg";
+                budgetTd.textContent = euro(row.budget);
+                tr.appendChild(budgetTd);
+
+                if (includeActual) {
+                    const actualTd = document.createElement("td");
+                    actualTd.className = row.actual === null ? "amount-neutral" : (side === "Bij" ? "amount-pos" : "amount-neg");
+                    actualTd.textContent = euro(row.actual);
+                    tr.appendChild(actualTd);
+
+                    const diffTd = createDifferenceCell(row.difference || 0, row.actual || 0, row.budget || 0);
+                    tr.appendChild(diffTd);
+                }
+
+                return tr;
+            }
+
+            groups.forEach((group, groupIndex) => {
+                const hasMultipleSubcategories = group.subSet.size > 1;
+
+                if (!hasMultipleSubcategories) {
+                    group.rows.forEach((row) => {
+                        fragment.appendChild(createDetailRow(row, false));
+                    });
+                    return;
+                }
+
+                const budgetTotal = group.rows.reduce((sum, row) => sum + (row.budget || 0), 0);
+                const actualTotal = group.rows.reduce((sum, row) => sum + (row.actual || 0), 0);
+                const diffTotal = group.rows.reduce((sum, row) => sum + (row.difference || 0), 0);
+
+                const groupHeader = document.createElement("tr");
+                groupHeader.className = "group-header";
+
+                const categorieTd = document.createElement("td");
+                const titleWrap = document.createElement("span");
+                titleWrap.className = "group-title";
+
+                const toggle = document.createElement("button");
+                toggle.type = "button";
+                toggle.className = "group-toggle";
+                toggle.textContent = "▶";
+
+                const title = document.createElement("span");
+                title.textContent = group.hoofd;
+
+                titleWrap.appendChild(toggle);
+                titleWrap.appendChild(title);
+                categorieTd.appendChild(titleWrap);
+
+                const subInfo = document.createElement("span");
+                subInfo.className = "category-sub";
+                subInfo.textContent = `${group.subSet.size} subcategorieën`;
+                categorieTd.appendChild(subInfo);
+
+                groupHeader.appendChild(categorieTd);
+
+                const budgetTd = document.createElement("td");
+                budgetTd.className = side === "Bij" ? "amount-pos" : "amount-neg";
+                budgetTd.textContent = euro(budgetTotal);
+                groupHeader.appendChild(budgetTd);
+
+                if (includeActual) {
+                    const actualTd = document.createElement("td");
+                    actualTd.className = side === "Bij" ? "amount-pos" : "amount-neg";
+                    actualTd.textContent = euro(actualTotal);
+                    groupHeader.appendChild(actualTd);
+
+                    const diffTd = createDifferenceCell(diffTotal, actualTotal, budgetTotal);
+                    groupHeader.appendChild(diffTd);
+                }
+
+                const childRows = group.rows.map((row) => createDetailRow(row, true));
+                let expanded = false;
+
+                childRows.forEach((row) => {
+                    row.classList.add("hidden");
+                });
+
+                const toggleGroup = () => {
+                    expanded = !expanded;
+                    toggle.textContent = expanded ? "▼" : "▶";
+                    childRows.forEach((row) => {
+                        row.classList.toggle("hidden", !expanded);
+                    });
+                };
+
+                groupHeader.addEventListener("click", toggleGroup);
+                toggle.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    toggleGroup();
+                });
+
+                fragment.appendChild(groupHeader);
+                childRows.forEach((child) => fragment.appendChild(child));
+            });
+
+            bodyElement.appendChild(fragment);
+        }
+
+        function setAllGroups(expanded) {
+            document.querySelectorAll(".group-header").forEach((headerRow) => {
+                const toggle = headerRow.querySelector(".group-toggle");
+                const childRows = [];
+                let next = headerRow.nextElementSibling;
+
+                while (next && next.classList.contains("sub-row")) {
+                    childRows.push(next);
+                    next = next.nextElementSibling;
+                }
+
+                if (toggle) {
+                    toggle.textContent = expanded ? "▼" : "▶";
+                }
+                childRows.forEach((row) => {
+                    row.classList.toggle("hidden", !expanded);
+                });
+            });
+        }
+
+        function setWarnings(warnings) {
+            if (!warnings || !warnings.length) {
+                warningBox.style.display = "none";
+                warningBox.innerHTML = "";
+                return;
+            }
+
+            warningBox.style.display = "block";
+            warningBox.innerHTML = `<strong>Let op:</strong><ul>${warnings.map((w) => `<li>${w}</li>`).join("")}</ul>`;
+        }
+
+                function escapeHtml(value) {
+                        return String(value ?? "")
+                                .replace(/&/g, "&amp;")
+                                .replace(/</g, "&lt;")
+                                .replace(/>/g, "&gt;")
+                                .replace(/\"/g, "&quot;")
+                                .replace(/'/g, "&#039;");
+                }
+
+                function buildPrintRows(rows, includeActual, side) {
+                    if (!rows || !rows.length) {
+                        return `<tr><td colspan="${includeActual ? 5 : 2}">Geen data gevonden.</td></tr>`;
+                    }
+
+                    const grouped = [];
+                    const groupedMap = new Map();
+
+                    rows.forEach((row) => {
+                        const hoofd = String(row.hoofdcategorie || "").trim();
+                        const sub = String(row.subcategorie || "").trim();
+                        const key = `${hoofd}||${sub}`;
+
+                        if (!groupedMap.has(key)) {
+                            const entry = {
+                                hoofd,
+                                sub,
+                                budget: 0,
+                                actual: 0,
+                                difference: 0,
+                            };
+                            groupedMap.set(key, entry);
+                            grouped.push(entry);
+                        }
+
+                        const entry = groupedMap.get(key);
+                        entry.budget += Number(row.budget || 0);
+                        entry.actual += Number(row.actual || 0);
+                        entry.difference += Number(row.difference || 0);
+                    });
+
+                    let previousHoofd = null;
+
+                    return grouped.map((row) => {
+                        const hoofd = escapeHtml(row.hoofd || "");
+                        const sub = escapeHtml(row.sub || "");
+
+                        const showHoofd = row.hoofd !== previousHoofd;
+                        previousHoofd = row.hoofd;
+
+                        const categoryCell = `
+                            ${showHoofd ? `<div class="cat-main">${hoofd}</div>` : ""}
+                            ${sub ? `<div class="cat-sub">${sub}</div>` : ""}
+                        `;
+
+                        const budgetClass = side === "Bij" ? "amount-pos" : "amount-neg";
+                        const actualClass = side === "Bij" ? "amount-pos" : "amount-neg";
+                        const diffClass = side === "Bij" ? "amount-pos" : "amount-neg";
+
+                        if (!includeActual) {
+                            return `
+                                <tr>
+                                    <td>${categoryCell}</td>
+                                    <td class="${budgetClass}">${escapeHtml(euro(row.budget || 0))}</td>
+                                </tr>
+                            `;
+                        }
+
+                        return `
+                            <tr>
+                                <td>${categoryCell}</td>
+                                <td class="${budgetClass}">${escapeHtml(euro(row.budget || 0))}</td>
+                                <td class="${actualClass}">${escapeHtml(euro(row.actual || 0))}</td>
+                                <td class="${diffClass}">${escapeHtml(euro(row.difference || 0))}</td>
+                                <td class="small">${escapeHtml(actualVsBudgetLabel(row.actual || 0, row.budget || 0))}</td>
+                            </tr>
+                        `;
+                    }).join("");
+                }
+
+                function estimateDumpScale(data) {
+                    const inkomstenCount = (data?.inkomsten || []).length;
+                    const uitgavenCount = (data?.uitgaven || []).length;
+                    const maxRows = Math.max(inkomstenCount, uitgavenCount, 1);
+                    const targetRows = 16;
+                    const scale = targetRows / maxRows;
+                    return Math.max(0.48, Math.min(1, scale));
+                }
+
+                function buildDumpHtml(data, includeActual, scale) {
+                    const title = includeActual ? "Begroting - inclusief actuele status" : "Begroting";
+                    const generatedAt = new Date().toLocaleString("nl-NL");
+
+                    const inkomstenRows = buildPrintRows(data.inkomsten || [], includeActual, "Bij");
+                    const uitgavenRows = buildPrintRows(data.uitgaven || [], includeActual, "Af");
+
+                        return `<!doctype html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8" />
+    <title>${escapeHtml(title)}</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            background: #ffffff;
+        }
+        body { font-family: Arial, sans-serif; color: #1a2433; }
+        .page {
+            box-sizing: border-box;
+            width: calc(100% / ${scale.toFixed(3)});
+            transform: scale(${scale.toFixed(3)});
+            transform-origin: top left;
+            padding: 10px 12px;
+        }
+        h1 { margin: 0 0 4px; font-size: 18px; }
+        h3 { margin: 0 0 4px; font-size: 13px; }
+        .meta { color: #4a5d72; font-size: 10px; margin-bottom: 8px; }
+        .cards { display: grid; grid-template-columns: repeat(5, minmax(90px, 1fr)); gap: 6px; margin-bottom: 8px; }
+        .card { border: 1px solid #d6dee8; border-radius: 6px; padding: 6px; }
+        .card-title { font-size: 9px; color: #5c6f86; margin-bottom: 2px; }
+        .card-value { font-size: 11px; font-weight: 700; }
+        .split { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; table-layout: fixed; }
+        th, td { border: 1px solid #dce6f1; padding: 3px 4px; vertical-align: top; }
+        th { background: #eef3f8; text-align: left; }
+        .amount-pos { color: #2fa889; font-weight: 700; text-align: right; white-space: nowrap; }
+        .amount-neg { color: #f05d5e; font-weight: 700; text-align: right; white-space: nowrap; }
+        .small { font-size: 9px; color: #5c6f86; }
+        .cat-main { color: #3f536b; font-weight: 600; font-size: 10px; }
+        .cat-sub { color: #6f7f92; font-size: 9px; margin-top: 1px; padding-left: 12px; }
+    </style>
+</head>
+<body>
+    <div class="page">
+    <h1>${escapeHtml(title)}</h1>
+    <div class="meta">Gegenereerd op ${escapeHtml(generatedAt)}</div>
+
+    <section class="cards">
+        <div class="card"><div class="card-title">Inkomsten (Begroting)</div><div class="card-value">${escapeHtml(euro(data.totals?.budget_inkomsten))}</div></div>
+        <div class="card"><div class="card-title">Uitgaven (Begroting)</div><div class="card-value">${escapeHtml(euro(data.totals?.budget_uitgaven))}</div></div>
+        <div class="card"><div class="card-title">Saldo (Begroting)</div><div class="card-value">${escapeHtml(euro(data.totals?.budget_saldo))}</div></div>
+        <div class="card"><div class="card-title">Inkomsten (Actueel)</div><div class="card-value">${includeActual ? escapeHtml(euro(data.totals?.actual_inkomsten)) : "-"}</div></div>
+        <div class="card"><div class="card-title">Uitgaven (Actueel)</div><div class="card-value">${includeActual ? escapeHtml(euro(data.totals?.actual_uitgaven)) : "-"}</div></div>
+    </section>
+
+    <section class="split">
+        <article>
+            <h3>Inkomsten</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Bedrag begroot</th>
+                        ${includeActual ? "<th>Actueel</th><th>Verschil</th><th>% actueel t.o.v. begroot</th>" : ""}
+                    </tr>
+                </thead>
+                <tbody>${inkomstenRows}</tbody>
+            </table>
+        </article>
+        <article>
+            <h3>Uitgaven</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Bedrag begroot</th>
+                        ${includeActual ? "<th>Actueel</th><th>Verschil</th><th>% actueel t.o.v. begroot</th>" : ""}
+                    </tr>
+                </thead>
+                <tbody>${uitgavenRows}</tbody>
+            </table>
+        </article>
+    </section>
+    </div>
+</body>
+</html>`;
+                }
+
+                function openDumpTab(data, includeActual) {
+                        const popup = window.open("", "_blank");
+                        if (!popup) {
+                                alert("Popup geblokkeerd. Sta popups toe om dumps te openen.");
+                                return false;
+                        }
+                    const scale = estimateDumpScale(data);
+                        popup.document.open();
+                    popup.document.write(buildDumpHtml(data, includeActual, scale));
+                        popup.document.close();
+                        return true;
+                }
+
+                async function openDumpTabs() {
+                        try {
+                                const responseNoActual = await fetch("/api/begroting-data?actual=0");
+                                const dataNoActual = await responseNoActual.json();
+
+                                const responseWithActual = await fetch("/api/begroting-data?actual=1");
+                                const dataWithActual = await responseWithActual.json();
+
+                                const firstOpened = openDumpTab(dataNoActual, false);
+                                if (!firstOpened) {
+                                        return;
+                                }
+
+                                setTimeout(() => {
+                                    openDumpTab(dataWithActual, true);
+                                }, 450);
+                        } catch (error) {
+                                alert("Dumps openen mislukt. Controleer de gegevens en probeer opnieuw.");
+                        }
+                }
+
+        async function loadData() {
+            const includeActual = actualToggle.checked;
+            actualState.textContent = includeActual ? "Aan" : "Uit";
+
+            const response = await fetch(`/api/begroting-data?actual=${includeActual ? "1" : "0"}`);
+            const data = await response.json();
+
+            setWarnings(data.warnings || []);
+
+            budgetInkomsten.textContent = euro(data.totals.budget_inkomsten);
+            budgetUitgaven.textContent = euro(data.totals.budget_uitgaven);
+            budgetSaldo.textContent = euro(data.totals.budget_saldo);
+            budgetSaldo.classList.remove("saldo-positive", "saldo-zero", "saldo-negative");
+            if ((data.totals.budget_saldo || 0) > 0) {
+                budgetSaldo.classList.add("saldo-positive");
+            } else if ((data.totals.budget_saldo || 0) < 0) {
+                budgetSaldo.classList.add("saldo-negative");
+            } else {
+                budgetSaldo.classList.add("saldo-zero");
+            }
+
+            actualInkomsten.textContent = includeActual ? euro(data.totals.actual_inkomsten) : "-";
+            actualUitgaven.textContent = includeActual ? euro(data.totals.actual_uitgaven) : "-";
+
+            renderHeader(inkomstenHead, includeActual);
+            renderHeader(uitgavenHead, includeActual);
+            renderRows(inkomstenBody, data.inkomsten || [], includeActual, "Bij");
+            renderRows(uitgavenBody, data.uitgaven || [], includeActual, "Af");
+        }
+
+        function quitApp() {
+            const confirmed = confirm("Weet je zeker dat je de applicatie wilt afsluiten?");
+            if (!confirmed) {
+                return;
+            }
+
+            fetch("/quit", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => response.json())
+                .then(() => {
+                    if (MAIN_APP_URL) {
+                        window.location.href = MAIN_APP_URL;
+                        return;
+                    }
+                    document.body.innerHTML = '<div style="text-align:center; padding:50px;"><h1>Applicatie afgesloten</h1><p>Je kunt dit venster nu sluiten.</p></div>';
+                })
+                .catch(() => {
+                    if (MAIN_APP_URL) {
+                        window.location.href = MAIN_APP_URL;
+                        return;
+                    }
+                    document.body.innerHTML = '<div style="text-align:center; padding:50px;"><h1>Applicatie afgesloten</h1><p>Je kunt dit venster nu sluiten.</p></div>';
+                });
+        }
+
+        actualToggle.checked = false;
+        actualToggle.addEventListener("change", loadData);
+        expandAllBtn?.addEventListener("click", () => setAllGroups(true));
+        collapseAllBtn?.addEventListener("click", () => setAllGroups(false));
+        printDumpBtn?.addEventListener("click", openDumpTabs);
+        document.getElementById("quitBtn")?.addEventListener("click", quitApp);
+        loadData();
+    </script>
+</body>
+</html>
