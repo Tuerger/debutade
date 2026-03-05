@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactie Toevoegen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-1: #0f1b2b;
+            --bg-2: #142235;
+            --bg-3: #101a26;
+            --accent: #f3b860;
+            --accent-2: #3cc6a8;
+            --text: #eef3f7;
+            --muted: #b9c7d6;
+            --surface: #ffffff;
+            --surface-alt: #f4f7fb;
+            --border: #d6dee8;
+            --danger: #f05d5e;
+            --good: #2fa889;
+            --shadow: 0 18px 38px rgba(5, 10, 20, 0.16);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "DM Sans", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #1b2b45 0%, var(--bg-1) 45%, var(--bg-3) 100%);
+            color: #1a2433;
+            min-height: 100vh;
+            padding: 12px;
+        }
+
+        .container {
+            max-width: 1460px;
+            margin: 0 auto;
+            background: var(--surface);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .hero {
+            position: relative;
+            padding: 14px 20px;
+            color: var(--text);
+            text-align: center;
+            background: linear-gradient(120deg, rgba(15, 27, 43, 0.9), rgba(20, 34, 53, 0.82));
+        }
+
+        .hero h1 {
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+
+        .hero p {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .hero-meta {
+            position: absolute;
+            top: 12px;
+            right: 20px;
+            text-align: right;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .hero-actions {
+            position: absolute;
+            top: 12px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .hero-actions a,
+        .hero-actions button {
+            font-size: 12px;
+            padding: 6px 12px;
+            background-color: var(--accent);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .hero-actions a:hover,
+        .hero-actions button:hover {
+            background-color: #f5a54f;
+        }
+
+        .hero-actions button {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .hero-actions .btn-quit {
+            background-color: var(--danger);
+            border-radius: 999px;
+            padding: 8px 14px;
+            color: #ffffff;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .hero-actions .btn-quit:hover {
+            transform: translateY(-1px);
+            background-color: #e04849;
+        }
+
+        .hero-actions .btn-quit:active {
+            transform: translateY(0);
+            background-color: #d93c3d;
+        }
+
+        main {
+            padding: 14px;
+            background: var(--surface-alt);
+        }
+
+        .warning-box,
+        .error-box,
+        .success-box {
+            display: none;
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid;
+            font-size: 13px;
+        }
+
+        .warning-box {
+            border-color: rgba(240, 93, 94, 0.35);
+            background: rgba(240, 93, 94, 0.1);
+            color: #7a2324;
+            display: block;
+        }
+
+        .error-box {
+            border-color: rgba(240, 93, 94, 0.35);
+            background: rgba(240, 93, 94, 0.1);
+            color: #7a2324;
+        }
+
+        .success-box {
+            border-color: rgba(47, 168, 137, 0.35);
+            background: rgba(47, 168, 137, 0.1);
+            color: #1a4d3c;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(180px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            opacity: 0;
+            transform: translateY(12px);
+            animation: cardFadeIn 520ms ease-out forwards;
+            animation-delay: calc(var(--card-index, 0) * 90ms);
+        }
+
+        @keyframes cardFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-title {
+            font-size: 13px;
+            color: #5c6f86;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #122234;
+        }
+
+        .filter-section {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-end;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .filter {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 280px;
+        }
+
+        .filter label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #5c6f86;
+        }
+
+        .filter select,
+        .filter input {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 7px 9px;
+            font-size: 14px;
+            font-family: inherit;
+            background: #fff;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-2);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #35b89e;
+        }
+
+        .btn-primary:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .table-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .table-header h3 {
+            font-size: 15px;
+            color: #1d2f45;
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            table-layout: fixed;
+        }
+
+        thead th {
+            text-align: left;
+            background: #eef3f8;
+            color: #41566f;
+            padding: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            font-weight: 600;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        tbody td {
+            padding: 8px;
+            border-top: 1px solid #edf2f7;
+            vertical-align: top;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        tbody tr.preview-row td {
+            font-style: italic;
+            background-color: #fffbea;
+        }
+
+        thead th:nth-child(1),
+        thead th:nth-child(4),
+        thead th:nth-child(5),
+        tbody td:nth-child(1),
+        tbody td:nth-child(4),
+        tbody td:nth-child(5) {
+            white-space: nowrap;
+        }
+
+        .amount-pos {
+            color: var(--good);
+            font-weight: 700;
+        }
+
+        .amount-neg {
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .table-wrapper {
+            max-height: 500px;
+            overflow: auto;
+            border: 1px solid #edf2f7;
+            border-radius: 10px;
+        }
+
+        .footer-note {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #6d7f95;
+        }
+
+        .page-footer {
+            text-align: center;
+            padding: 12px 15px;
+            border-top: 1px solid #e1e6ed;
+            font-size: 12px;
+            color: #8a96a6;
+            background: #ffffff;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 1400px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #1d2f45;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+            color: #1a2433;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel,
+        .btn-confirm {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-cancel {
+            background-color: #e1e6ed;
+            color: #41566f;
+        }
+
+        .btn-cancel:hover {
+            background-color: #d1d6dd;
+        }
+
+        .btn-confirm {
+            background-color: var(--good);
+            color: #ffffff;
+        }
+
+        .btn-confirm:hover {
+            background-color: #278375;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .error-list {
+            background-color: #fdf0f0;
+            border: 1px solid #f5c6c6;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px 0;
+            color: #7a2324;
+        }
+
+        .error-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .error-list li {
+            margin: 4px 0;
+            font-size: 12px;
+        }
+
+        @media (max-width: 1180px) {
+            .cards {
+                grid-template-columns: repeat(2, minmax(180px, 1fr));
+            }
+
+            .filter-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .filter {
+                width: 100%;
+                max-width: 520px;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .hero-meta,
+            .hero-actions {
+                position: static;
+                margin-top: 10px;
+                text-align: left;
+            }
+
+            .hero-actions {
+                flex-wrap: wrap;
+            }
+
+            .filter-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter {
+                min-width: 0;
+                width: 100%;
+            }
+
+            .actions {
+                justify-content: flex-start;
+            }
+
+            .modal-content {
+                width: 90%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .card {
+                animation: none;
+                opacity: 1;
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="hero">
+        <div class="hero-actions">
+            <button type="button" id="quitBtn" class="btn-quit">Afsluiten</button>
+        </div>
+        <h1>Transacties Toevoegen</h1>
+        <p>Voeg nieuwe bankrekening transacties toe uit CSV bestand.</p>
+        <div class="hero-meta">
+            <div>Gebruiker: {{ current_user }}</div>
+            <div>Datum: {{ current_date }}</div>
+        </div>
+    </header>
+
+    <main>
+        <div id="warningBox" class="warning-box"></div>
+        <div id="errorBox" class="error-box"></div>
+        <div id="successBox" class="success-box"></div>
+
+        <section class="cards">
+            {% for sheet in bank_sheets %}
+            <article class="card">
+                <div class="card-title" id="title-{{ loop.index0 }}">{{ sheet }}</div>
+                <div class="card-value" id="count-{{ loop.index0 }}">-</div>
+                <div style="font-size: 11px; color: #8a96a6; margin-top: 6px;">
+                    <span>Laatste: <span id="lastdate-{{ loop.index0 }}">-</span></span>
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+
+        <section class="filter-section">
+            <div class="filter">
+                <label for="sheetFilter">Selecteer Sheet</label>
+                <select id="sheetFilter">
+                    {% for sheet in bank_sheets %}
+                    <option value="{{ sheet }}" {% if loop.first %}selected{% endif %}>{{ sheet }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="actions">
+                <button type="button" id="selectFileBtn" class="btn-primary">📁 Selecteer Bestand</button>
+                <input type="file" id="csvFile" accept=".csv" style="display: none;">
+                <span id="fileName" style="font-size: 12px; color: #666;"></span>
+            </div>
+        </section>
+
+        <div class="table-card">
+            <div class="table-header">
+                <h3>Huidige Transacties</h3>
+                <span id="txnCount" style="font-size: 12px; color: #8a96a6;">-</span>
+            </div>
+            <div class="table-wrapper">
+                <table id="transactionsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 120px;">Datum</th>
+                            <th style="width: 100px;">Bron</th>
+                            <th style="width: 70px;">Af/Bij</th>
+                            <th style="width: 100px;">Bedrag</th>
+                            <th style="width: 150px;">Tag</th>
+                            <th>Omschrijving</th>
+                            <th>Mededelingen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsBody">
+                        <tr><td colspan="7" style="text-align: center; color: #999;">Laden...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="footer-note" id="tableNote"></div>
+        </div>
+    </main>
+
+    <footer class="page-footer">
+        <p>© Eric Greuter - Debutade</p>
+    </footer>
+</div>
+
+<!-- Preview Modal -->
+<div id="previewModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">Transacties ter controle</div>
+        <div class="modal-body">
+            <p style="margin-bottom: 12px;">De volgende transacties worden toegevoegd. Controleer alstublieft en geef akkoord:</p>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 120px;">Datum</th>
+                            <th style="width: 100px;">Bron</th>
+                            <th style="width: 70px;">Af/Bij</th>
+                            <th style="width: 100px;">Bedrag</th>
+                            <th style="width: 150px;">Tag</th>
+                            <th>Omschrijving</th>
+                            <th>Mededelingen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" onclick="closePreviewModal()">Annuleren</button>
+            <button type="button" class="btn-confirm" onclick="confirmAddTransactions()">Akkoord, Toevoegen</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let allStats = {};
+    let parsedTransactions = [];
+    let currentSheet = "{{ bank_sheets[0] }}";
+    const MAIN_APP_URL = "{{ main_app_url|default('') }}";
+    const INITIAL_ERROR = "{{ error|default('') }}";
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Show initial error if any
+        if (INITIAL_ERROR) {
+            showError(`<strong>⚠️ Fout:</strong> ${escapeHtml(INITIAL_ERROR)}`);
+        }
+
+        loadSheetData(currentSheet);
+
+        // Setup event listeners
+        document.getElementById("sheetFilter").addEventListener("change", function() {
+            currentSheet = this.value;
+            loadSheetData(currentSheet);
+        });
+
+        document.getElementById("selectFileBtn").addEventListener("click", function() {
+            document.getElementById("csvFile").click();
+        });
+
+        document.getElementById("csvFile").addEventListener("change", function() {
+            handleFileSelect(this.files[0]);
+        });
+
+        document.getElementById("quitBtn").addEventListener("click", quitApp);
+
+        // Initialize stats
+        updateStatsCards();
+    });
+
+    function updateStatsCards() {
+        const sheets = {{ bank_sheets | tojson }};
+        sheets.forEach((sheet, idx) => {
+            const stat = allStats[sheet] || {};
+            document.getElementById(`count-${idx}`).textContent = stat.count || "0";
+            document.getElementById(`lastdate-${idx}`).textContent = stat.last_date || "-";
+        });
+    }
+
+    function loadSheetData(sheetName, clearErrors = true) {
+        showLoading();
+
+        fetch(`/api/sheet-data/${encodeURIComponent(sheetName)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError(`<strong>⚠️ Fout:</strong> ${escapeHtml(data.error)}`);
+                    return;
+                }
+
+                // Update stats
+                allStats[sheetName] = data.stats;
+                updateStatsCards();
+
+                // Render table
+                renderTransactions(data.transactions, false);
+                document.getElementById("txnCount").textContent = `${data.transactions.length} records`;
+
+                // Reset file input
+                document.getElementById("csvFile").value = "";
+                document.getElementById("fileName").textContent = "";
+                parsedTransactions = [];
+                
+                // Only clear errors if requested
+                if (clearErrors) {
+                    hideError();
+                }
+            })
+            .catch(err => {
+                console.error("Error loading data:", err);
+                showError("<strong>⚠️ Fout:</strong> Fout bij laden gegevens");
+            });
+    }
+
+    function renderTransactions(transactions, showPreview) {
+        const tbody = document.getElementById("transactionsBody");
+        tbody.innerHTML = "";
+
+        if (transactions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">Geen transacties gevonden</td></tr>';
+            return;
+        }
+
+        transactions.forEach(txn => {
+            const row = document.createElement("tr");
+            const isPreview = showPreview && parsedTransactions.some(p =>
+                p.date === txn.date && p.bedrag === txn.bedrag && p.naam_omschrijving === txn.naam_omschrijving
+            );
+
+            if (isPreview) {
+                row.classList.add("preview-row");
+            }
+
+            const amountClass = txn.af_bij === "Bij" ? "amount-pos" : "amount-neg";
+            const amountDisplay = `€ ${txn.bedrag.toFixed(2)}`;
+
+            row.innerHTML = `
+                <td>${txn.date}</td>
+                <td>${currentSheet}</td>
+                <td>${txn.af_bij}</td>
+                <td class="${amountClass}">${amountDisplay}</td>
+                <td>${txn.tag || ""}</td>
+                <td>${txn.naam_omschrijving}</td>
+                <td>${txn.mededelingen || ""}</td>
+            `;
+
+            tbody.appendChild(row);
+        });
+    }
+
+    function handleFileSelect(file) {
+        if (!file) return;
+
+        if (!file.name.endsWith(".csv")) {
+            showError("<strong>❌ Fout:</strong> Bestand moet CSV zijn");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("sheet_name", currentSheet);
+
+        showLoading();
+        document.getElementById("fileName").textContent = `✓ ${file.name}`;
+
+        fetch("/api/parse-csv", {
+            method: "POST",
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError(`<strong>⚠️ Fout:</strong> ${escapeHtml(data.error)}`);
+                    resetFileAndTable();
+                    return;
+                }
+
+                if (data.validation_errors && data.validation_errors.length > 0) {
+                    let errorHtml = "<div class='error-list'><strong>❌ Data fouten:</strong><ul>";
+                    data.validation_errors.forEach(err => {
+                        errorHtml += `<li>${escapeHtml(err)}</li>`;
+                    });
+                    errorHtml += "</ul></div>";
+                    showError(errorHtml);
+                    resetFileAndTable();
+                    return;
+                }
+
+                if (data.duplicates && data.duplicates.length > 0 && (!data.transactions || data.transactions.length === 0)) {
+                    let warningHtml = "<div class='error-list'><strong>⚠️ Geen nieuwe transacties:</strong><p>Alle records in het bestand zijn duplicaten.</p><ul>";
+                    data.duplicates.forEach(dup => {
+                        warningHtml += `<li>${escapeHtml(dup)}</li>`;
+                    });
+                    warningHtml += "</ul></div>";
+                    document.getElementById("errorBox").innerHTML = warningHtml;
+                    document.getElementById("errorBox").style.display = "block";
+                    resetFileAndTable();
+                    return;
+                }
+
+                if (data.duplicates && data.duplicates.length > 0) {
+                    let warningHtml = "<div class='error-list'><strong>⚠️ Duplicaten gevonden (niet toegevoegd):</strong><ul>";
+                    data.duplicates.forEach(dup => {
+                        warningHtml += `<li>${escapeHtml(dup)}</li>`;
+                    });
+                    warningHtml += "</ul></div>";
+                    document.getElementById("errorBox").innerHTML = warningHtml;
+                    document.getElementById("errorBox").style.display = "block";
+                }
+
+                if (data.transactions && data.transactions.length > 0) {
+                    parsedTransactions = data.transactions;
+
+                    // Load current sheet data to show preview
+                    fetch(`/api/sheet-data/${encodeURIComponent(currentSheet)}`)
+                        .then(response => response.json())
+                        .then(existingData => {
+                            if (existingData.error) {
+                                showError(`<strong>⚠️ Fout:</strong> ${escapeHtml(existingData.error)}`);
+                                resetFileAndTable();
+                                return;
+                            }
+                            const combined = [...data.transactions, ...existingData.transactions];
+                            renderTransactions(combined, true);
+                            showPreviewModal();
+                            hideError();
+                        })
+                        .catch(err => {
+                            console.error("Fetch existing error:", err);
+                            showError("<strong>⚠️ Fout:</strong> Fout bij laden huidige transacties");
+                            resetFileAndTable();
+                        });
+                } else if (!data.validation_errors || data.validation_errors.length === 0) {
+                    showError("<strong>⚠️ Fout:</strong> Geen geldige transacties in bestand");
+                    resetFileAndTable();
+                }
+            })
+            .catch(err => {
+                console.error("Parse error:", err);
+                showError("<strong>⚠️ Fout:</strong> Fout bij parseren CSV");
+                resetFileAndTable();
+            });
+    }
+
+    function resetFileAndTable() {
+        // Clear file selection
+        parsedTransactions = [];
+        document.getElementById("csvFile").value = "";
+        document.getElementById("fileName").textContent = "";
+        
+        // Reload current sheet data WITHOUT clearing error messages
+        loadSheetData(currentSheet, false);
+    }
+
+    function showPreviewModal() {
+        const previewBody = document.getElementById("previewBody");
+        previewBody.innerHTML = "";
+
+        parsedTransactions.forEach(txn => {
+            const row = document.createElement("tr");
+            row.classList.add("preview-row");
+
+            const amountClass = txn.af_bij === "Bij" ? "amount-pos" : "amount-neg";
+            const amountDisplay = `€ ${txn.bedrag.toFixed(2)}`;
+
+            row.innerHTML = `
+                <td>${txn.date}</td>
+                <td>${currentSheet}</td>
+                <td>${txn.af_bij}</td>
+                <td class="${amountClass}">${amountDisplay}</td>
+                <td>${txn.tag || ""}</td>
+                <td>${txn.naam_omschrijving}</td>
+                <td>${txn.mededelingen || ""}</td>
+            `;
+            previewBody.appendChild(row);
+        });
+
+        document.getElementById("previewModal").style.display = "block";
+    }
+
+    function closePreviewModal() {
+        document.getElementById("previewModal").style.display = "none";
+        parsedTransactions = [];
+        document.getElementById("csvFile").value = "";
+        document.getElementById("fileName").textContent = "";
+    }
+
+    function confirmAddTransactions() {
+        // Store transactions before closing modal
+        const txnsToAdd = [...parsedTransactions];
+        
+        showLoading();
+        closePreviewModal();
+
+        fetch("/api/add-transactions", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                sheet_name: currentSheet,
+                transactions: txnsToAdd
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError(`<strong>⚠️ Fout:</strong> ${escapeHtml(data.error)}`);
+                    resetFileAndTable();
+                    return;
+                }
+
+                showSuccess(`✓ ${data.added_count} transacties succesvol toegevoegd!`);
+
+                // Update stats
+                allStats[currentSheet] = data.stats;
+                updateStatsCards();
+
+                // Reload sheet data
+                loadSheetData(currentSheet);
+            })
+            .catch(err => {
+                console.error("Add error:", err);
+                showError("<strong>⚠️ Fout:</strong> Fout bij toevoegen transacties");
+                resetFileAndTable();
+            });
+    }
+
+    function showLoading() {
+        document.getElementById("transactionsBody").innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">Laden...</td></tr>';
+    }
+
+    function showError(message) {
+        const errorBox = document.getElementById("errorBox");
+        errorBox.innerHTML = message;
+        errorBox.style.display = "block";
+        document.getElementById("warningBox").style.display = "none";
+    }
+
+    function hideError() {
+        document.getElementById("errorBox").style.display = "none";
+    }
+
+    function showSuccess(message) {
+        const successBox = document.getElementById("successBox");
+        successBox.textContent = message;
+        successBox.style.display = "block";
+
+        setTimeout(() => {
+            successBox.style.display = "none";
+        }, 5000);
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function quitApp() {
+        const confirmed = confirm("Weet je zeker dat je de applicatie wilt afsluiten?");
+        if (!confirmed) {
+            return;
+        }
+
+        fetch("/quit", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+            .then(response => response.json())
+            .then(() => {
+                if (MAIN_APP_URL) {
+                    window.location.href = MAIN_APP_URL;
+                    return;
+                }
+                document.body.innerHTML = '<div style="text-align:center; padding:50px;"><h1>Applicatie afgesloten</h1><p>Je kunt dit venster nu sluiten.</p></div>';
+            })
+            .catch(() => {
+                if (MAIN_APP_URL) {
+                    window.location.href = MAIN_APP_URL;
+                    return;
+                }
+                document.body.innerHTML = '<div style="text-align:center; padding:50px;"><h1>Applicatie afgesloten</h1><p>Je kunt dit venster nu sluiten.</p></div>';
+            });
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById("previewModal");
+        if (event.target === modal) {
+            closePreviewModal();
+        }
+    }
+</script>
+
+</body>
+</html>

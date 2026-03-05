@@ -107,6 +107,24 @@
             background-color: #f5a54f;
         }
 
+        .hero-banner .nav-buttons .btn-quit {
+            background-color: var(--danger);
+            border-radius: 999px;
+            padding: 8px 14px;
+            color: #ffffff;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .hero-banner .nav-buttons .btn-quit:hover {
+            transform: translateY(-1px);
+            background-color: #e04849;
+        }
+
+        .hero-banner .nav-buttons .btn-quit:active {
+            transform: translateY(0);
+            background-color: #d93c3d;
+        }
+
         .page-footer {
             text-align: center;
             margin-top: 30px;
@@ -437,7 +455,7 @@
     <div class="container">
         <section class="hero-banner">
             <div class="nav-buttons">
-                <button onclick="quitApp()">🔴 Afsluiten</button>
+                <button class="btn-quit" onclick="quitApp()">Afsluiten</button>
             </div>
             <div class="user-info">{{ current_user }} | {{ current_date }}</div>
             <h1>Contributie Overzicht</h1>
@@ -574,7 +592,7 @@
         </div>
         {% endif %}
 
-        <div class="page-footer">Debutade contributies | lokaal overzicht</div>
+        <div class="page-footer">© Eric Greuter - Debutade</div>
     </div>
     <script>
         const MAIN_APP_URL = "{{ main_app_url|default('') }}";

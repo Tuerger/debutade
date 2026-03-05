@@ -108,6 +108,24 @@
             font-weight: 600;
         }
 
+        .hero-actions .btn-quit {
+            background-color: var(--danger);
+            border-radius: 999px;
+            padding: 8px 14px;
+            color: #ffffff;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .hero-actions .btn-quit:hover {
+            transform: translateY(-1px);
+            background-color: #e04849;
+        }
+
+        .hero-actions .btn-quit:active {
+            transform: translateY(0);
+            background-color: #d93c3d;
+        }
+
         main {
             padding: 14px;
             background: var(--surface-alt);
@@ -351,6 +369,15 @@
             color: #6d7f95;
         }
 
+        .page-footer {
+            text-align: center;
+            padding: 12px 15px;
+            border-top: 1px solid #e1e6ed;
+            font-size: 12px;
+            color: #8a96a6;
+            background: #ffffff;
+        }
+
         @media (max-width: 1180px) {
             .cards {
                 grid-template-columns: repeat(2, minmax(200px, 1fr));
@@ -395,7 +422,7 @@
 <div class="container">
     <header class="hero">
         <div class="hero-actions">
-            <button type="button" id="quitBtn">🔴 Afsluiten</button>
+            <button type="button" id="quitBtn" class="btn-quit">Afsluiten</button>
         </div>
         <h1>Rapportage Kasboek &amp; Bankrekening</h1>
         <p>Overzicht op bron, maand, tag en mededelingen.</p>
@@ -511,6 +538,8 @@
             <div class="footer-note" id="rowCount">0 transacties</div>
         </section>
     </main>
+
+    <div class="page-footer">© Eric Greuter - Debutade</div>
 </div>
 
 <script>

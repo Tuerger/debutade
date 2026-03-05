@@ -108,7 +108,7 @@
         }
 
         .hero-banner .nav-buttons .btn-quit {
-            background-color: #f05d5e;
+            background-color: var(--danger);
             border-radius: 999px;
             padding: 8px 14px;
             transition: transform 0.2s ease, background-color 0.2s ease;
@@ -933,7 +933,7 @@
     <div class="container">
         <div class="hero-banner">
             <div class="nav-buttons">
-                <button id="quitBtn" class="btn-quit">🚪 Afsluiten</button>
+                <button id="quitBtn" class="btn-quit">Afsluiten</button>
             </div>
             <div class="user-info">Vandaag: {{ current_date }} | Gebruiker: {{ current_user }}</div>
             <h1>Kasboek Debutade</h1>
@@ -1042,9 +1042,7 @@
         </div>
         {% endif %}
         
-        <div class="page-footer">
-            Kasboek Debutade v2.0 - Web Applicatie
-        </div>
+        <div class="page-footer">© Eric Greuter - Debutade</div>
     </div>
     
     <script>

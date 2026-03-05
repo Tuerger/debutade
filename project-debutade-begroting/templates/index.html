@@ -101,6 +101,24 @@
             font-weight: 600;
         }
 
+        .hero-actions .btn-quit {
+            background-color: var(--danger);
+            border-radius: 999px;
+            padding: 8px 14px;
+            color: #ffffff;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .hero-actions .btn-quit:hover {
+            transform: translateY(-1px);
+            background-color: #e04849;
+        }
+
+        .hero-actions .btn-quit:active {
+            transform: translateY(0);
+            background-color: #d93c3d;
+        }
+
         .hero-actions a:hover,
         .hero-actions button:hover {
             background-color: #f5a54f;
@@ -120,6 +138,15 @@
             background: rgba(240, 93, 94, 0.1);
             color: #7a2324;
             font-size: 13px;
+        }
+
+        .page-footer {
+            text-align: center;
+            padding: 12px 15px;
+            border-top: 1px solid #e1e6ed;
+            font-size: 12px;
+            color: #8a96a6;
+            background: #ffffff;
         }
 
         .toolbar {
@@ -446,7 +473,7 @@
     <div class="container">
         <section class="hero">
             <div class="hero-actions">
-                <button type="button" id="quitBtn">🔴 Afsluiten</button>
+                <button type="button" id="quitBtn" class="btn-quit">Afsluiten</button>
             </div>
             <div class="hero-meta">
                 <div>{{ current_date }}</div>
@@ -525,6 +552,8 @@
                 </article>
             </section>
         </main>
+
+        <div class="page-footer">© Eric Greuter - Debutade</div>
     </div>
 
     <script>

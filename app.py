@@ -283,9 +283,18 @@ def validate_main_config(config_data):
     return errors
 
 APPS = {
+    "transactietoevoegen": {
+        "id": "transactietoevoegen",
+        "name": "Transacties Toevoegen",
+        "description": "Voeg nieuwe bankrekening transacties toe uit CSV bestand",
+        "cwd": os.path.join(APP_DIR, "project-debutade-transactietoevoegen"),
+        "script": "webapp.py",
+        "python": os.path.join(".venv", "Scripts", "python.exe"),
+        "port": SUBAPP_PORT,
+    },
     "bankrekening": {
         "id": "bankrekening",
-        "name": "Bankrekening transacties",
+        "name": "Categoriseer Bankrekening transacties",
         "description": "Beheer bank- en spaarrekening",
         "cwd": os.path.join(APP_DIR, "project-debutade-bankrekening - v2"),
         "script": "webapp.py",
@@ -312,7 +321,7 @@ APPS = {
     },
     "showreport": {
         "id": "showreport",
-        "name": "Show rapport",
+        "name": "Toon rapporten",
         "description": "Power BI rapportage",
         "cwd": os.path.join(APP_DIR, "project-debutade-showreport"),
         "script": "webapp.py",
@@ -321,7 +330,7 @@ APPS = {
     },
     "contributie": {
         "id": "contributie",
-        "name": "Contributie overzicht",
+        "name": "Toon contributie overzicht",
         "description": "Koppelt contributies aan leden",
         "cwd": os.path.join(APP_DIR, "project-debutade-contributie"),
         "script": "webapp.py",

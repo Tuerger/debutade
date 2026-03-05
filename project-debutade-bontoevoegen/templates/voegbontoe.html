@@ -105,6 +105,24 @@
             background-color: #f5a54f;
         }
 
+        .hero-banner .nav-buttons .btn-quit {
+            background-color: var(--danger);
+            border-radius: 999px;
+            padding: 8px 14px;
+            color: #ffffff;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .hero-banner .nav-buttons .btn-quit:hover {
+            transform: translateY(-1px);
+            background-color: #e04849;
+        }
+
+        .hero-banner .nav-buttons .btn-quit:active {
+            transform: translateY(0);
+            background-color: #d93c3d;
+        }
+
         .hero-banner .nav-buttons .btn-settings {
             background-color: #3cc6a8;
             color: #0f1b2b;
@@ -862,7 +880,7 @@
     <div class="container">
         <div class="hero-banner">
             <div class="nav-buttons">
-                <button onclick="quitApp()">🔴 Afsluiten</button>
+                <button class="btn-quit" onclick="quitApp()">Afsluiten</button>
             </div>
             <div class="user-info">Vandaag: {{ current_date }} | Gebruiker: {{ current_user }}</div>
             <h1>🧾 Voeg Bon Toe</h1>
@@ -980,9 +998,7 @@
             </tbody>
         </table>
 
-        <div class="page-footer">
-            Debutade Voeg Bon Toe © 2026 | Bonbeheer Systeem
-        </div>
+        <div class="page-footer">© Eric Greuter - Debutade</div>
     </div>
 
     <script>
