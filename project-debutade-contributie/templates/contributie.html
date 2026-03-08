@@ -80,6 +80,16 @@
             font-weight: normal;
         }
 
+        .datetime-meta {
+            top: 12px !important;
+            right: 20px !important;
+            text-align: right !important;
+            font-family: "DM Sans", "Segoe UI", sans-serif !important;
+            font-size: 13px !important;
+            font-variant-numeric: tabular-nums !important;
+            line-height: 1.45 !important;
+        }
+
         .hero-banner .nav-buttons {
             position: absolute;
             top: 12px;
@@ -427,14 +437,14 @@
         }
 
         .insight-details summary::before {
-            content: "▶";
+            content: ">";
             display: inline-block;
             margin-right: 6px;
             font-size: 9px;
         }
 
         .insight-details[open] summary::before {
-            content: "▼";
+            content: "v";
         }
 
         @media (max-width: 768px) {
@@ -445,8 +455,76 @@
                 justify-content: center;
             }
 
+            .datetime-meta {
+                position: static !important;
+                text-align: center !important;
+            }
+
             .hero-banner {
                 text-align: center;
+            }
+        }
+    
+        /* Digital Clock Badge */
+        .datetime-meta {
+            position: absolute !important;
+            top: 12px !important;
+            right: 20px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            padding: 8px 12px !important;
+            border-radius: 12px !important;
+            background: rgba(9, 14, 22, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22) !important;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            text-align: right !important;
+            font-family: "DM Sans", "Segoe UI", sans-serif !important;
+            font-size: 13px !important;
+            font-variant-numeric: tabular-nums !important;
+            line-height: 1.2 !important;
+            color: var(--muted) !important;
+        }
+
+        .datetime-chip {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1px;
+        }
+
+        .datetime-label {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.75;
+        }
+
+        .datetime-value {
+            font-family: "Space Grotesk", "DM Sans", "Segoe UI", sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: #eef3f7;
+            text-shadow: 0 0 14px rgba(60, 198, 168, 0.2);
+        }
+
+        .datetime-sep {
+            width: 1px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .datetime-meta {
+                position: static !important;
+                margin-top: 10px !important;
+                text-align: center !important;
+            }
+
+            .datetime-chip {
+                align-items: center;
             }
         }
     </style>
@@ -457,7 +535,7 @@
             <div class="nav-buttons">
                 <button class="btn-quit" onclick="quitApp()">Afsluiten</button>
             </div>
-            <div class="user-info">{{ current_user }} | {{ current_date }}</div>
+            <div class="user-info datetime-meta"><span class="datetime-chip"><span class="datetime-label">Tijd</span><span id="liveClock" class="datetime-value">--:--:--</span></span><span class="datetime-sep" aria-hidden="true"></span><span class="datetime-chip"><span class="datetime-label">Datum</span><span id="liveDate" class="datetime-value">{{ current_date }}</span></span></div>
             <h1>Contributie Overzicht</h1>
             <p>Contributies uit bankrekening en ledenbestand</p>
         </section>
@@ -475,19 +553,19 @@
                     <span>{{ stats.get('total', 0) }}</span>
                 </div>
                 <div class="stat-card">
-                    <h3>✅ Volledig</h3>
+                    <h3>Volledig</h3>
                     <span>{{ stats.get('exact', 0) }}</span>
                 </div>
                 <div class="stat-card">
-                    <h3>🔵 Gedeeltelijk</h3>
+                    <h3>Gedeeltelijk</h3>
                     <span>{{ stats.get('partial', 0) }}</span>
                 </div>
                 <div class="stat-card">
-                    <h3>❌ Nog niets</h3>
+                    <h3>Nog niets</h3>
                     <span>{{ stats.get('none', 0) }}</span>
                 </div>
                 <div class="stat-card">
-                    <h3>🟣 N.v.t. (0/0)</h3>
+                    <h3>N.v.t. (0/0)</h3>
                     <span>{{ stats.get('neutral', 0) }}</span>
                 </div>
                 <div class="stat-card">
@@ -501,10 +579,10 @@
             </div>
 
             <div class="legend" style="margin-top: 14px;">
-                <div class="legend-item">✅ Volledig ontvangen</div>
-                <div class="legend-item">🔵 Gedeeltelijk ontvangen</div>
-                <div class="legend-item">❌ Nog niets ontvangen</div>
-                <div class="legend-item">🟣 Niet van toepassing (te innen 0 en ontvangen 0)</div>
+                <div class="legend-item">Volledig ontvangen</div>
+                <div class="legend-item">Gedeeltelijk ontvangen</div>
+                <div class="legend-item">Nog niets ontvangen</div>
+                <div class="legend-item">Niet van toepassing (te innen 0 en ontvangen 0)</div>
             </div>
             <p style="margin-top: 8px; font-size: 12px; color: #475569;">
                 Alleen transacties met tag 8000;Contributies - Volwassenen of 8001;Contributies - Jeugd worden verwerkt.
@@ -545,7 +623,7 @@
 
         {% if unmatched_transactions %}
         <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e1e6ed;">
-            <h3 style="font-size: 16px; color: #1a2433; margin-bottom: 12px;">💬 Niet gematchte transacties ({{ unmatched_transactions|length }})</h3>
+            <h3 style="font-size: 16px; color: #1a2433; margin-bottom: 12px;">Niet gematchte transacties ({{ unmatched_transactions|length }})</h3>
             <p style="font-size: 12px; color: #7f8c8d; margin-bottom: 12px;">
                 Transacties met tag 8000/8001 die niet aan een lid konden worden gekoppeld. Voer het lid nummer in en klik Opslaan:
             </p>
@@ -596,6 +674,28 @@
     </div>
     <script>
         const MAIN_APP_URL = "{{ main_app_url|default('') }}";
+        function updateHeaderDateTime() {
+            const clockEl = document.getElementById("liveClock");
+            const dateEl = document.getElementById("liveDate");
+            const now = new Date();
+
+            if (clockEl) {
+                clockEl.textContent = new Intl.DateTimeFormat("nl-NL", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false,
+                }).format(now);
+            }
+
+            if (dateEl) {
+                dateEl.textContent = new Intl.DateTimeFormat("nl-NL", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                }).format(now);
+            }
+        }
 
         function saveMemberMapping(button) {
             const index = button.dataset.index;
@@ -629,7 +729,7 @@
                     if (data.success) {
                         alert('Mapping opgeslagen! Ververs de pagina om de wijzigingen te zien.');
                         memberIdInput.style.backgroundColor = '#d4edda';
-                        button.textContent = '✓ Opgeslagen';
+                        button.textContent = 'Opgeslagen';
                         button.style.backgroundColor = '#28a745';
                     } else {
                         alert('Fout: ' + (data.error || 'Onbekende fout'));
@@ -670,6 +770,11 @@
                     });
             }
         }
+
+            updateHeaderDateTime();
+            setInterval(updateHeaderDateTime, 1000);
     </script>
 </body>
 </html>
+
+

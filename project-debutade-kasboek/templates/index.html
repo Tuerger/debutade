@@ -80,6 +80,16 @@
             font-weight: normal;
         }
 
+        .datetime-meta {
+            top: 12px !important;
+            right: 20px !important;
+            text-align: right !important;
+            font-family: "DM Sans", "Segoe UI", sans-serif !important;
+            font-size: 13px !important;
+            font-variant-numeric: tabular-nums !important;
+            line-height: 1.45 !important;
+        }
+
         .hero-banner .nav-buttons {
             position: absolute;
             top: 12px;
@@ -131,6 +141,13 @@
             border-top: 1px solid #e1e6ed;
             font-size: 12px;
             color: #8a96a6;
+        }
+
+        @media (max-width: 768px) {
+            .datetime-meta {
+                position: static !important;
+                text-align: center !important;
+            }
         }
         
         h1 {
@@ -927,6 +944,69 @@
                 transform: translateY(0);
             }
         }
+    
+        /* Digital Clock Badge */
+        .datetime-meta {
+            position: absolute !important;
+            top: 12px !important;
+            right: 20px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            padding: 8px 12px !important;
+            border-radius: 12px !important;
+            background: rgba(9, 14, 22, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22) !important;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            text-align: right !important;
+            font-family: "DM Sans", "Segoe UI", sans-serif !important;
+            font-size: 13px !important;
+            font-variant-numeric: tabular-nums !important;
+            line-height: 1.2 !important;
+            color: var(--muted) !important;
+        }
+
+        .datetime-chip {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1px;
+        }
+
+        .datetime-label {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.75;
+        }
+
+        .datetime-value {
+            font-family: "Space Grotesk", "DM Sans", "Segoe UI", sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: #eef3f7;
+            text-shadow: 0 0 14px rgba(60, 198, 168, 0.2);
+        }
+
+        .datetime-sep {
+            width: 1px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .datetime-meta {
+                position: static !important;
+                margin-top: 10px !important;
+                text-align: center !important;
+            }
+
+            .datetime-chip {
+                align-items: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -935,7 +1015,7 @@
             <div class="nav-buttons">
                 <button id="quitBtn" class="btn-quit">Afsluiten</button>
             </div>
-            <div class="user-info">Vandaag: {{ current_date }} | Gebruiker: {{ current_user }}</div>
+            <div class="user-info datetime-meta"><span class="datetime-chip"><span class="datetime-label">Tijd</span><span id="liveClock" class="datetime-value">--:--:--</span></span><span class="datetime-sep" aria-hidden="true"></span><span class="datetime-chip"><span class="datetime-label">Datum</span><span id="liveDate" class="datetime-value">{{ current_date }}</span></span></div>
             <h1>Kasboek Debutade</h1>
             <p>Financiële transactie beheerder</p>
         </div>
@@ -976,7 +1056,7 @@
                         <label for="mededelingen">Mededeling *</label>
                         <input type="text" id="mededelingen" name="mededelingen" placeholder="Mededeling van de transactie" required>
                         <div id="recommendationBox" class="recommendation-box">
-                            <h4>💡 Aanbevolen categorieën:</h4>
+                            <h4>Aanbevolen categorieën:</h4>
                             <div id="recommendationItems" class="recommendation-items">
                                 <div class="recommendation-loading">Type om aanbevelingen te zien...</div>
                             </div>
@@ -1006,7 +1086,7 @@
         </div>
         
         <div class="history-section">
-            <h2>📊 Transacties in deze sessie</h2>
+            <h2>Transacties in deze sessie</h2>
             <div id="historyContainer">
                 <div class="no-data">Nog geen transacties toegevoegd in deze sessie</div>
             </div>
@@ -1049,9 +1129,33 @@
         let sessionTransactions = [];
         const availableTags = {{ (tags|default([]))|tojson|safe }};
         let selectedTagIndex = -1;
+        function updateHeaderDateTime() {
+            const clockEl = document.getElementById("liveClock");
+            const dateEl = document.getElementById("liveDate");
+            const now = new Date();
+
+            if (clockEl) {
+                clockEl.textContent = new Intl.DateTimeFormat("nl-NL", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false,
+                }).format(now);
+            }
+
+            if (dateEl) {
+                dateEl.textContent = new Intl.DateTimeFormat("nl-NL", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                }).format(now);
+            }
+        }
         
         // Init bij pagina laden
         document.addEventListener('DOMContentLoaded', function() {
+            updateHeaderDateTime();
+            setInterval(updateHeaderDateTime, 1000);
             renderSessionTransactions();
             setupAutocomplete();
             setupCategoryRecommendations();
@@ -1414,3 +1518,5 @@
     </script>
 </body>
 </html>
+
+

@@ -119,6 +119,15 @@ def normalize_text(value: Any) -> str:
     return str(value or "").strip()
 
 
+def find_header_column(col_map: dict[str, int], aliases: tuple[str, ...], default: int) -> int:
+    """Return first matching column index from header aliases, else fallback to default."""
+    for alias in aliases:
+        idx = col_map.get(alias)
+        if idx is not None:
+            return idx
+    return default
+
+
 def parse_date(value: Any) -> datetime | None:
     if isinstance(value, datetime):
         return value
@@ -213,10 +222,12 @@ def read_transactions_from_sheet(file_path: str, sheet_name: str) -> tuple[list[
             txn_date = parse_date(get_value(row, ("datum",), 0))
             af_bij = normalize_text(get_value(row, ("af bij", "af/bij"), 5))
             amount = parse_amount(get_value(row, ("bedrag (eur)", "bedrag", "amount"), 6))
-            rekening = normalize_text(get_value(row, ("rekening",), 3))
-            valutadatum = normalize_text(get_value(row, ("valutadatum",), 2))
+            rekening = normalize_text(get_value(row, ("rekening",), 2))
+            tegenrekening = normalize_text(get_value(row, ("tegenrekening",), 3))
+            code = normalize_text(get_value(row, ("code",), 4))
+            valutadatum = normalize_text(get_value(row, ("valutadatum",), None))
             mededelingen = normalize_text(get_value(row, ("mededelingen",), 8))
-            tag = normalize_text(get_value(row, ("tag",), 10))
+            tag = normalize_text(get_value(row, ("tag",), 11))
 
             if amount is None or af_bij not in {"Af", "Bij"}:
                 continue
@@ -229,6 +240,8 @@ def read_transactions_from_sheet(file_path: str, sheet_name: str) -> tuple[list[
                     "af_bij": af_bij,
                     "bedrag": round(float(amount), 2),
                     "rekening": rekening,
+                    "tegenrekening": tegenrekening,
+                    "code": code,
                     "valutadatum": valutadatum,
                     "mededelingen": mededelingen,
                     "tag": tag,
@@ -432,6 +445,8 @@ def parse_csv():
         af_bij_val = find_column(row, ["Af Bij", "af_bij", "Af/Bij", "af/bij"])
         naam_val = find_column(row, ["Naam / Omschrijving", "Omschrijving", "Naam", "naam", "omschrijving", "Description", "description"])
         rekening_val = find_column(row, ["Rekening", "rekening", "IBAN", "iban", "Account"])
+        tegenrekening_val = find_column(row, ["Tegenrekening", "tegenrekening", "Counter Account", "counter account"])
+        code_val = find_column(row, ["Code", "code", "Mutatiesoort", "mutatiesoort", "Type"])
         valutadatum_val = find_column(row, ["Valutadatum", "valutadatum", "Value Date", "valuedate"])
         mededelingen_val = find_column(row, ["Mededelingen", "mededelingen", "Notes", "notes", "Opmerking"])
         tag_val = find_column(row, ["Tag", "tag", "Tags", "tags"])
@@ -452,6 +467,8 @@ def parse_csv():
             "af_bij": af_bij,
             "bedrag": bedrag,
             "rekening": normalize_text(rekening_val),
+            "tegenrekening": normalize_text(tegenrekening_val),
+            "code": normalize_text(code_val),
             "valutadatum": normalize_text(valutadatum_extracted),
             "mededelingen": normalize_text(mededelingen_val),
             "tag": normalize_text(tag_val),
@@ -588,32 +605,37 @@ def add_transactions():
                 key = normalize_text(cell_value).lower()
                 col_map[key] = idx + 1  # openpyxl uses 1-based indexing
         
-        # Find default column positions if headers not found
-        datum_col = col_map.get("datum", 1)
-        naam_col = col_map.get("naam / omschrijving", 2)
-        valuta_col = col_map.get("valutadatum", 3)
-        rekening_col = col_map.get("rekening", 4)
-        mededelingen_col = col_map.get("mededelingen", 5)
-        af_bij_col = col_map.get("af bij", 6)
-        bedrag_col = col_map.get("bedrag (eur)", 7)
-        tag_col = col_map.get("tag", 8)
+        # Find column positions by aliases; defaults match the standard bank sheet layout.
+        datum_col = find_header_column(col_map, ("datum",), 1)
+        naam_col = find_header_column(col_map, ("naam / omschrijving", "omschrijving", "naam"), 2)
+        rekening_col = find_header_column(col_map, ("rekening",), 3)
+        tegenrekening_col = find_header_column(col_map, ("tegenrekening",), 4)
+        code_col = find_header_column(col_map, ("code",), 5)
+        af_bij_col = find_header_column(col_map, ("af bij", "af/bij"), 6)
+        bedrag_col = find_header_column(col_map, ("bedrag (eur)", "bedrag", "amount"), 7)
+        valuta_col = find_header_column(col_map, ("valutadatum",), 8)
+        mededelingen_col = find_header_column(col_map, ("mededelingen",), 9)
+        tag_col = find_header_column(col_map, ("tag",), 12)
         
         # Find next row
         next_row = sheet.max_row + 1
         
         added_count = 0
         for txn in transactions:
-            # Convert date format from DD-MM-YYYY to DD/MM/YYYY for Excel
-            date_value = txn.get("date", "")
-            if date_value and "-" in date_value:
-                date_value = date_value.replace("-", "/")
+            # Write a true Excel date value (datetime), not a formatted text string.
+            date_value = parse_date(txn.get("date", ""))
 
             date_cell = sheet.cell(row=next_row, column=datum_col)
             date_cell.value = date_value
+            if date_value:
+                date_cell.number_format = "DD-MM-YYYY"
             date_cell.alignment = Alignment(horizontal="right")
+
             sheet.cell(row=next_row, column=naam_col).value = txn.get("naam_omschrijving")
-            sheet.cell(row=next_row, column=valuta_col).value = txn.get("valutadatum")
             sheet.cell(row=next_row, column=rekening_col).value = txn.get("rekening")
+            sheet.cell(row=next_row, column=tegenrekening_col).value = txn.get("tegenrekening", "")
+            sheet.cell(row=next_row, column=code_col).value = txn.get("code", "")
+            sheet.cell(row=next_row, column=valuta_col).value = txn.get("valutadatum")
             sheet.cell(row=next_row, column=mededelingen_col).value = txn.get("mededelingen")
             sheet.cell(row=next_row, column=af_bij_col).value = txn.get("af_bij")
             sheet.cell(row=next_row, column=bedrag_col).value = txn.get("bedrag")

@@ -80,6 +80,16 @@
             font-weight: normal;
         }
 
+        .datetime-meta {
+            top: 12px !important;
+            right: 20px !important;
+            text-align: right !important;
+            font-family: "DM Sans", "Segoe UI", sans-serif !important;
+            font-size: 13px !important;
+            font-variant-numeric: tabular-nums !important;
+            line-height: 1.45 !important;
+        }
+
         .hero-banner .nav-buttons {
             position: absolute;
             top: 12px;
@@ -139,6 +149,13 @@
             border-top: 1px solid #e1e6ed;
             font-size: 12px;
             color: #8a96a6;
+        }
+
+        @media (max-width: 768px) {
+            .datetime-meta {
+                position: static !important;
+                text-align: center !important;
+            }
         }
 
         .info-section {
@@ -874,6 +891,69 @@
                 transform: translateY(0);
             }
         }
+    
+        /* Digital Clock Badge */
+        .datetime-meta {
+            position: absolute !important;
+            top: 12px !important;
+            right: 20px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            padding: 8px 12px !important;
+            border-radius: 12px !important;
+            background: rgba(9, 14, 22, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22) !important;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            text-align: right !important;
+            font-family: "DM Sans", "Segoe UI", sans-serif !important;
+            font-size: 13px !important;
+            font-variant-numeric: tabular-nums !important;
+            line-height: 1.2 !important;
+            color: var(--muted) !important;
+        }
+
+        .datetime-chip {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1px;
+        }
+
+        .datetime-label {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.75;
+        }
+
+        .datetime-value {
+            font-family: "Space Grotesk", "DM Sans", "Segoe UI", sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: #eef3f7;
+            text-shadow: 0 0 14px rgba(60, 198, 168, 0.2);
+        }
+
+        .datetime-sep {
+            width: 1px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .datetime-meta {
+                position: static !important;
+                margin-top: 10px !important;
+                text-align: center !important;
+            }
+
+            .datetime-chip {
+                align-items: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -882,8 +962,8 @@
             <div class="nav-buttons">
                 <button class="btn-quit" onclick="quitApp()">Afsluiten</button>
             </div>
-            <div class="user-info">Vandaag: {{ current_date }} | Gebruiker: {{ current_user }}</div>
-            <h1>🧾 Voeg Bon Toe</h1>
+            <div class="user-info datetime-meta"><span class="datetime-chip"><span class="datetime-label">Tijd</span><span id="liveClock" class="datetime-value">--:--:--</span></span><span class="datetime-sep" aria-hidden="true"></span><span class="datetime-chip"><span class="datetime-label">Datum</span><span id="liveDate" class="datetime-value">{{ current_date }}</span></span></div>
+            <h1>Voeg Bon Toe</h1>
             <p>Financiële Transactie Bonbeheer</p>
         </div>
 
@@ -892,14 +972,14 @@
         </div>
 
         <div class="stats-summary">
-            <h3>📊 Bon-Status Overzicht per Tab</h3>
+            <h3>Bon-Status Overzicht per Tab</h3>
             <table class="stats-table">
                 <thead>
                     <tr>
                         <th>Tab</th>
                         <th>Totaal</th>
-                        <th class="stats-with-bon">✅ Met Bon</th>
-                        <th class="stats-without-bon">🔵 Zonder Bon</th>
+                        <th class="stats-with-bon">Met Bon</th>
+                        <th class="stats-without-bon">Zonder Bon</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -987,7 +1067,7 @@
                     <td>
                         <div class="action-buttons">
                             <button class="btn-bewaar" onclick="saveBonUrl(this)" disabled data-action="{% if record.get('Bon') %}vervang{% else %}bewaar{% endif %}">
-                                💾 {% if record.get('Bon') %}Vervang{% else %}Bewaar{% endif %}
+                                {% if record.get('Bon') %}Vervang{% else %}Bewaar{% endif %}
                             </button>
                         </div>
                         <input type="text" class="url-input" placeholder="Plak hier de SharePoint URL van de bon (PDF, JPG of JPEG)" 
@@ -1002,8 +1082,34 @@
     </div>
 
     <script>
+        function updateHeaderDateTime() {
+            const clockEl = document.getElementById("liveClock");
+            const dateEl = document.getElementById("liveDate");
+            const now = new Date();
+
+            if (clockEl) {
+                clockEl.textContent = new Intl.DateTimeFormat("nl-NL", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false,
+                }).format(now);
+            }
+
+            if (dateEl) {
+                dateEl.textContent = new Intl.DateTimeFormat("nl-NL", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                }).format(now);
+            }
+        }
+
         // Verzamel alle unieke tabs voor filter
         document.addEventListener('DOMContentLoaded', function() {
+            updateHeaderDateTime();
+            setInterval(updateHeaderDateTime, 1000);
+
             const tabFilter = document.getElementById('filter-tab');
             const rows = document.querySelectorAll('.record-row');
             const tabs = new Set();
@@ -1089,7 +1195,7 @@
                     urlInput.dispatchEvent(new Event('input', { bubbles: true }));
                     urlInput.focus();
                     
-                    showMessage('✅ SharePoint koppeling ingevuld!', 'success');
+                    showMessage('SharePoint koppeling ingevuld!', 'success');
                     return;
                 }
             }
@@ -1101,22 +1207,22 @@
                 const fileName = file.name.toLowerCase();
 
                 if (!fileName.endsWith('.pdf') && !fileName.endsWith('.jpg') && !fileName.endsWith('.jpeg')) {
-                    showMessage('❌ Alleen PDF en JPG/JPEG bestanden zijn toegestaan', 'error');
+                    showMessage('Fout: Alleen PDF en JPG/JPEG bestanden zijn toegestaan', 'error');
                     return;
                 }
 
                 urlInput.classList.add('url-input-visible');
                 urlInput.value = '';
-                urlInput.placeholder = `📋 Plak SharePoint URL voor: ${file.name}`;
+                urlInput.placeholder = `Plak SharePoint URL voor: ${file.name}`;
                 urlInput.focus();
                 urlInput.dispatchEvent(new Event('input', { bubbles: true }));
                 urlInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 
                 showMessage(
-                    `✅ Bestand herkend: ${file.name}\n\n` +
-                    `📋 Volgende stap:\n` +
+                    `Bestand herkend: ${file.name}\n\n` +
+                    `Volgende stap:\n` +
                     `1. Ga naar SharePoint\n` +
-                    `2. Rechtsklik bestand → "Koppeling kopieren"\n` +
+                    `2. Rechtsklik bestand -> "Koppeling kopieren"\n` +
                     `3. Plak in het gele veld boven`,
                     'info'
                 );
@@ -1124,11 +1230,11 @@
             }
 
             showMessage(
-                `⚠️ Geen bestand of link gedetecteerd\n\n` +
+                `Geen bestand of link gedetecteerd\n\n` +
                 `Volgende opties:\n` +
-                `1️⃣ Sleep een bestand van je computer\n` +
-                `2️⃣ Of rechtsklik in SharePoint:\n` +
-                `   "Koppeling kopieren" → Plak hierna`,
+                `1. Sleep een bestand van je computer\n` +
+                `2. Of rechtsklik in SharePoint:\n` +
+                `   "Koppeling kopieren" -> Plak hierna`,
                 'error'
             );
         }
@@ -1152,14 +1258,14 @@
             console.log('saveBonUrl gestart');
             
             if (!bonUrl) {
-                showMessage('❌ Voer eerst een URL in', 'error');
+                showMessage('Fout: Voer eerst een URL in', 'error');
                 return;
             }
 
             // Valideer SharePoint URL
             if (!bonUrl.toLowerCase().includes('sharepoint')) {
                 console.log('Ongeldige URL gedetecteerd - veld wordt leeggemaakt');
-                showMessage('❌ Alleen SharePoint URLs zijn toegestaan', 'error');
+                showMessage('Fout: Alleen SharePoint URLs zijn toegestaan', 'error');
                 urlInput.value = '';
                 urlInput.focus();
                 button.disabled = true;
@@ -1222,7 +1328,7 @@
 
                 if (result && result.success) {
                     const action = button.textContent.includes('Vervang') ? 'vervangen' : 'opgeslagen';
-                    showMessage(`✅ Bon URL succesvol ${action}!`, 'success');
+                    showMessage(`Bon URL succesvol ${action}!`, 'success');
                     
                     // Update de bon kolom in de tabel
                     const bonCell = row.querySelector('.bon-cell');
@@ -1236,7 +1342,7 @@
                     button.disabled = true;
                 } else {
                     const errorMsg = (result && result.message) ? result.message : 'Onbekende fout';
-                    showMessage('❌ Fout: ' + errorMsg, 'error');
+                    showMessage('Fout: ' + errorMsg, 'error');
                     
                     // Maak invoerveld leeg bij validatiefouten (URL bestaat niet, etc.)
                     urlInput.value = '';
@@ -1248,9 +1354,9 @@
                 
                 // Check of het een timeout was
                 if (error.name === 'AbortError') {
-                    showMessage('❌ Opslaan duurt te lang (timeout na 90 sec). OneDrive sync kan traag zijn. Controleer handmatig of de bon is opgeslagen of probeer opnieuw.', 'error');
+                    showMessage('Fout: Opslaan duurt te lang (timeout na 90 sec). OneDrive sync kan traag zijn. Controleer handmatig of de bon is opgeslagen of probeer opnieuw.', 'error');
                 } else {
-                    showMessage('❌ Fout bij opslaan: ' + error.message, 'error');
+                    showMessage('Fout bij opslaan: ' + error.message, 'error');
                 }
                 
                 // Maak invoerveld leeg bij alle fouten
@@ -1317,3 +1423,5 @@
     </script>
 </body>
 </html>
+
+

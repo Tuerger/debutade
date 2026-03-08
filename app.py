@@ -295,7 +295,7 @@ APPS = {
     "bankrekening": {
         "id": "bankrekening",
         "name": "Categoriseer Bankrekening transacties",
-        "description": "Beheer bank- en spaarrekening",
+        "description": "Voeg categorie toe aan bank- en spaarrekening transacties",
         "cwd": os.path.join(APP_DIR, "project-debutade-bankrekening - v2"),
         "script": "webapp.py",
         "python": os.path.join(".venv", "Scripts", "python.exe"),
@@ -304,7 +304,7 @@ APPS = {
     "kasboek": {
         "id": "kasboek",
         "name": "Kasboek beheer",
-        "description": "Bijhouden van Debutade kas",
+        "description": "Invoeren van Debutade kas transacties",
         "cwd": os.path.join(APP_DIR, "project-debutade-kasboek"),
         "script": "webapp.py",
         "python": os.path.join(".venv", "Scripts", "python.exe"),
@@ -313,7 +313,7 @@ APPS = {
     "bontoevoegen": {
         "id": "bontoevoegen",
         "name": "Bon toevoegen",
-        "description": "Voeg bonnen en URLs toe aan transacties",
+        "description": "Voeg bonnen als SharePoint URL toe aan transacties",
         "cwd": os.path.join(APP_DIR, "project-debutade-bontoevoegen"),
         "script": "voegbontoe_webapp.py",
         "python": os.path.join(".venv", "Scripts", "python.exe"),
@@ -331,7 +331,7 @@ APPS = {
     "contributie": {
         "id": "contributie",
         "name": "Toon contributie overzicht",
-        "description": "Koppelt contributies aan leden",
+        "description": "Geeft overzicht van de betaalde contributies",
         "cwd": os.path.join(APP_DIR, "project-debutade-contributie"),
         "script": "webapp.py",
         "python": os.path.join(".venv", "Scripts", "python.exe"),
@@ -349,7 +349,7 @@ APPS = {
     "rapporten": {
         "id": "rapporten",
         "name": "Rapporten",
-        "description": "Gecombineerde kas- en bankrapportage",
+        "description": "Gecombineerde kas- en bankrapportages",
         "cwd": os.path.join(APP_DIR, "project-debutade-rapporten"),
         "script": "webapp.py",
         "python": os.path.join(".venv", "Scripts", "python.exe"),

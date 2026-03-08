@@ -75,6 +75,16 @@
             color: var(--muted);
         }
 
+        .datetime-meta {
+            top: 12px !important;
+            right: 20px !important;
+            text-align: right !important;
+            font-family: "DM Sans", "Segoe UI", sans-serif !important;
+            font-size: 13px !important;
+            font-variant-numeric: tabular-nums !important;
+            line-height: 1.45 !important;
+        }
+
         .hero-actions {
             position: absolute;
             top: 12px;
@@ -282,7 +292,8 @@
         }
 
         table {
-            width: 100%;
+            width: max-content;
+            min-width: 100%;
             border-collapse: collapse;
             font-size: 13px;
             table-layout: fixed;
@@ -308,6 +319,8 @@
             word-wrap: break-word;
             overflow-wrap: break-word;
             hyphens: auto;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         tbody tr.preview-row td {
@@ -315,13 +328,18 @@
             background-color: #fffbea;
         }
 
-        thead th:nth-child(1),
-        thead th:nth-child(4),
-        thead th:nth-child(5),
-        tbody td:nth-child(1),
-        tbody td:nth-child(4),
-        tbody td:nth-child(5) {
+        thead th:not(:nth-child(9)),
+        tbody td:not(:nth-child(9)) {
             white-space: nowrap;
+        }
+
+        thead th:nth-child(9),
+        tbody td:nth-child(9) {
+            white-space: normal;
+            width: 230px;
+            min-width: 230px;
+            overflow: visible;
+            text-overflow: clip;
         }
 
         .amount-pos {
@@ -387,11 +405,19 @@
 
         .modal-body {
             margin-bottom: 20px;
-            max-height: 500px;
+            max-height: 70vh;
             overflow-y: auto;
+            overflow-x: hidden;
             color: #1a2433;
             font-size: 13px;
             line-height: 1.5;
+        }
+
+        /* In de controle-modal nooit dubbele verticale scrollbars tonen */
+        .modal-body .table-wrapper {
+            max-height: none;
+            overflow-y: visible;
+            overflow-x: auto;
         }
 
         .modal-footer {
@@ -483,6 +509,10 @@
                 text-align: left;
             }
 
+            .datetime-meta {
+                text-align: left !important;
+            }
+
             .hero-actions {
                 flex-wrap: wrap;
             }
@@ -513,6 +543,69 @@
                 transform: none;
             }
         }
+    
+        /* Digital Clock Badge */
+        .datetime-meta {
+            position: absolute !important;
+            top: 12px !important;
+            right: 20px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            padding: 8px 12px !important;
+            border-radius: 12px !important;
+            background: rgba(9, 14, 22, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22) !important;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            text-align: right !important;
+            font-family: "DM Sans", "Segoe UI", sans-serif !important;
+            font-size: 13px !important;
+            font-variant-numeric: tabular-nums !important;
+            line-height: 1.2 !important;
+            color: var(--muted) !important;
+        }
+
+        .datetime-chip {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1px;
+        }
+
+        .datetime-label {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.75;
+        }
+
+        .datetime-value {
+            font-family: "Space Grotesk", "DM Sans", "Segoe UI", sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: #eef3f7;
+            text-shadow: 0 0 14px rgba(60, 198, 168, 0.2);
+        }
+
+        .datetime-sep {
+            width: 1px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .datetime-meta {
+                position: static !important;
+                margin-top: 10px !important;
+                text-align: center !important;
+            }
+
+            .datetime-chip {
+                align-items: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -523,10 +616,7 @@
         </div>
         <h1>Transacties Toevoegen</h1>
         <p>Voeg nieuwe bankrekening transacties toe uit CSV bestand.</p>
-        <div class="hero-meta">
-            <div>Gebruiker: {{ current_user }}</div>
-            <div>Datum: {{ current_date }}</div>
-        </div>
+        <div class="hero-meta datetime-meta"><span class="datetime-chip"><span class="datetime-label">Tijd</span><span id="liveClock" class="datetime-value">--:--:--</span></span><span class="datetime-sep" aria-hidden="true"></span><span class="datetime-chip"><span class="datetime-label">Datum</span><span id="liveDate" class="datetime-value">{{ current_date }}</span></span></div>
     </header>
 
     <main>
@@ -556,7 +646,7 @@
                 </select>
             </div>
             <div class="actions">
-                <button type="button" id="selectFileBtn" class="btn-primary">📁 Selecteer Bestand</button>
+                <button type="button" id="selectFileBtn" class="btn-primary">Selecteer Bestand</button>
                 <input type="file" id="csvFile" accept=".csv" style="display: none;">
                 <span id="fileName" style="font-size: 12px; color: #666;"></span>
             </div>
@@ -568,20 +658,23 @@
                 <span id="txnCount" style="font-size: 12px; color: #8a96a6;">-</span>
             </div>
             <div class="table-wrapper">
-                <table id="transactionsTable">
+                <table id="transactionsTable" class="transactions-grid">
                     <thead>
                         <tr>
-                            <th style="width: 120px;">Datum</th>
-                            <th style="width: 100px;">Bron</th>
-                            <th style="width: 70px;">Af/Bij</th>
-                            <th style="width: 100px;">Bedrag</th>
-                            <th style="width: 150px;">Tag</th>
-                            <th>Omschrijving</th>
+                            <th style="width: 110px;">Datum</th>
+                            <th style="width: 120px;">Sheet</th>
+                            <th style="width: 180px;">Naam / Omschrijving</th>
+                            <th style="width: 165px;">Rekening</th>
+                            <th style="width: 165px;">Tegenrekening</th>
+                            <th style="width: 90px;">Code</th>
+                            <th style="width: 65px;">Af/Bij</th>
+                            <th style="width: 95px;">Bedrag</th>
                             <th>Mededelingen</th>
+                            <th style="width: 150px;">Tag</th>
                         </tr>
                     </thead>
                     <tbody id="transactionsBody">
-                        <tr><td colspan="7" style="text-align: center; color: #999;">Laden...</td></tr>
+                        <tr><td colspan="10" style="text-align: center; color: #999;">Laden...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -601,16 +694,19 @@
         <div class="modal-body">
             <p style="margin-bottom: 12px;">De volgende transacties worden toegevoegd. Controleer alstublieft en geef akkoord:</p>
             <div class="table-wrapper">
-                <table>
+                <table class="transactions-grid">
                     <thead>
                         <tr>
-                            <th style="width: 120px;">Datum</th>
-                            <th style="width: 100px;">Bron</th>
-                            <th style="width: 70px;">Af/Bij</th>
-                            <th style="width: 100px;">Bedrag</th>
-                            <th style="width: 150px;">Tag</th>
-                            <th>Omschrijving</th>
+                            <th style="width: 110px;">Datum</th>
+                            <th style="width: 120px;">Sheet</th>
+                            <th style="width: 180px;">Naam / Omschrijving</th>
+                            <th style="width: 165px;">Rekening</th>
+                            <th style="width: 165px;">Tegenrekening</th>
+                            <th style="width: 90px;">Code</th>
+                            <th style="width: 65px;">Af/Bij</th>
+                            <th style="width: 95px;">Bedrag</th>
                             <th>Mededelingen</th>
+                            <th style="width: 150px;">Tag</th>
                         </tr>
                     </thead>
                     <tbody id="previewBody">
@@ -632,10 +728,36 @@
     const MAIN_APP_URL = "{{ main_app_url|default('') }}";
     const INITIAL_ERROR = "{{ error|default('') }}";
 
+    function updateHeaderDateTime() {
+        const clockEl = document.getElementById("liveClock");
+        const dateEl = document.getElementById("liveDate");
+        const now = new Date();
+
+        if (clockEl) {
+            clockEl.textContent = new Intl.DateTimeFormat("nl-NL", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+            }).format(now);
+        }
+
+        if (dateEl) {
+            dateEl.textContent = new Intl.DateTimeFormat("nl-NL", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+            }).format(now);
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
+        updateHeaderDateTime();
+        setInterval(updateHeaderDateTime, 1000);
+
         // Show initial error if any
         if (INITIAL_ERROR) {
-            showError(`<strong>⚠️ Fout:</strong> ${escapeHtml(INITIAL_ERROR)}`);
+            showError(`<strong>Fout:</strong> ${escapeHtml(INITIAL_ERROR)}`);
         }
 
         loadSheetData(currentSheet);
@@ -676,7 +798,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
-                    showError(`<strong>⚠️ Fout:</strong> ${escapeHtml(data.error)}`);
+                    showError(`<strong>Fout:</strong> ${escapeHtml(data.error)}`);
                     return;
                 }
 
@@ -700,7 +822,7 @@
             })
             .catch(err => {
                 console.error("Error loading data:", err);
-                showError("<strong>⚠️ Fout:</strong> Fout bij laden gegevens");
+                showError("<strong>Fout:</strong> Fout bij laden gegevens");
             });
     }
 
@@ -709,7 +831,7 @@
         tbody.innerHTML = "";
 
         if (transactions.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">Geen transacties gevonden</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #999;">Geen transacties gevonden</td></tr>';
             return;
         }
 
@@ -729,11 +851,14 @@
             row.innerHTML = `
                 <td>${txn.date}</td>
                 <td>${currentSheet}</td>
+                <td>${txn.naam_omschrijving || ""}</td>
+                <td>${txn.rekening || ""}</td>
+                <td>${txn.tegenrekening || ""}</td>
+                <td>${txn.code || ""}</td>
                 <td>${txn.af_bij}</td>
                 <td class="${amountClass}">${amountDisplay}</td>
-                <td>${txn.tag || ""}</td>
-                <td>${txn.naam_omschrijving}</td>
                 <td>${txn.mededelingen || ""}</td>
+                <td>${txn.tag || ""}</td>
             `;
 
             tbody.appendChild(row);
@@ -744,7 +869,7 @@
         if (!file) return;
 
         if (!file.name.endsWith(".csv")) {
-            showError("<strong>❌ Fout:</strong> Bestand moet CSV zijn");
+            showError("<strong>Fout:</strong> Bestand moet CSV zijn");
             return;
         }
 
@@ -753,7 +878,7 @@
         formData.append("sheet_name", currentSheet);
 
         showLoading();
-        document.getElementById("fileName").textContent = `✓ ${file.name}`;
+        document.getElementById("fileName").textContent = `Bestand: ${file.name}`;
 
         fetch("/api/parse-csv", {
             method: "POST",
@@ -762,13 +887,13 @@
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
-                    showError(`<strong>⚠️ Fout:</strong> ${escapeHtml(data.error)}`);
+                    showError(`<strong>Fout:</strong> ${escapeHtml(data.error)}`);
                     resetFileAndTable();
                     return;
                 }
 
                 if (data.validation_errors && data.validation_errors.length > 0) {
-                    let errorHtml = "<div class='error-list'><strong>❌ Data fouten:</strong><ul>";
+                    let errorHtml = "<div class='error-list'><strong>Data fouten:</strong><ul>";
                     data.validation_errors.forEach(err => {
                         errorHtml += `<li>${escapeHtml(err)}</li>`;
                     });
@@ -779,7 +904,7 @@
                 }
 
                 if (data.duplicates && data.duplicates.length > 0 && (!data.transactions || data.transactions.length === 0)) {
-                    let warningHtml = "<div class='error-list'><strong>⚠️ Geen nieuwe transacties:</strong><p>Alle records in het bestand zijn duplicaten.</p><ul>";
+                    let warningHtml = "<div class='error-list'><strong>Geen nieuwe transacties:</strong><p>Alle records in het bestand zijn duplicaten.</p><ul>";
                     data.duplicates.forEach(dup => {
                         warningHtml += `<li>${escapeHtml(dup)}</li>`;
                     });
@@ -791,7 +916,7 @@
                 }
 
                 if (data.duplicates && data.duplicates.length > 0) {
-                    let warningHtml = "<div class='error-list'><strong>⚠️ Duplicaten gevonden (niet toegevoegd):</strong><ul>";
+                    let warningHtml = "<div class='error-list'><strong>Duplicaten gevonden (niet toegevoegd):</strong><ul>";
                     data.duplicates.forEach(dup => {
                         warningHtml += `<li>${escapeHtml(dup)}</li>`;
                     });
@@ -808,7 +933,7 @@
                         .then(response => response.json())
                         .then(existingData => {
                             if (existingData.error) {
-                                showError(`<strong>⚠️ Fout:</strong> ${escapeHtml(existingData.error)}`);
+                                showError(`<strong>Fout:</strong> ${escapeHtml(existingData.error)}`);
                                 resetFileAndTable();
                                 return;
                             }
@@ -819,17 +944,17 @@
                         })
                         .catch(err => {
                             console.error("Fetch existing error:", err);
-                            showError("<strong>⚠️ Fout:</strong> Fout bij laden huidige transacties");
+                            showError("<strong>Fout:</strong> Fout bij laden huidige transacties");
                             resetFileAndTable();
                         });
                 } else if (!data.validation_errors || data.validation_errors.length === 0) {
-                    showError("<strong>⚠️ Fout:</strong> Geen geldige transacties in bestand");
+                    showError("<strong>Fout:</strong> Geen geldige transacties in bestand");
                     resetFileAndTable();
                 }
             })
             .catch(err => {
                 console.error("Parse error:", err);
-                showError("<strong>⚠️ Fout:</strong> Fout bij parseren CSV");
+                showError("<strong>Fout:</strong> Fout bij parseren CSV");
                 resetFileAndTable();
             });
     }
@@ -858,11 +983,14 @@
             row.innerHTML = `
                 <td>${txn.date}</td>
                 <td>${currentSheet}</td>
+                <td>${txn.naam_omschrijving || ""}</td>
+                <td>${txn.rekening || ""}</td>
+                <td>${txn.tegenrekening || ""}</td>
+                <td>${txn.code || ""}</td>
                 <td>${txn.af_bij}</td>
                 <td class="${amountClass}">${amountDisplay}</td>
-                <td>${txn.tag || ""}</td>
-                <td>${txn.naam_omschrijving}</td>
                 <td>${txn.mededelingen || ""}</td>
+                <td>${txn.tag || ""}</td>
             `;
             previewBody.appendChild(row);
         });
@@ -895,12 +1023,12 @@
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
-                    showError(`<strong>⚠️ Fout:</strong> ${escapeHtml(data.error)}`);
+                    showError(`<strong>Fout:</strong> ${escapeHtml(data.error)}`);
                     resetFileAndTable();
                     return;
                 }
 
-                showSuccess(`✓ ${data.added_count} transacties succesvol toegevoegd!`);
+                showSuccess(`${data.added_count} transacties succesvol toegevoegd!`);
 
                 // Update stats
                 allStats[currentSheet] = data.stats;
@@ -911,13 +1039,13 @@
             })
             .catch(err => {
                 console.error("Add error:", err);
-                showError("<strong>⚠️ Fout:</strong> Fout bij toevoegen transacties");
+                showError("<strong>Fout:</strong> Fout bij toevoegen transacties");
                 resetFileAndTable();
             });
     }
 
     function showLoading() {
-        document.getElementById("transactionsBody").innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">Laden...</td></tr>';
+        document.getElementById("transactionsBody").innerHTML = '<tr><td colspan="10" style="text-align: center; color: #999;">Laden...</td></tr>';
     }
 
     function showError(message) {
@@ -992,3 +1120,5 @@
 
 </body>
 </html>
+
+

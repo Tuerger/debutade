@@ -76,6 +76,16 @@
             color: var(--muted);
         }
 
+        .datetime-meta {
+            top: 12px !important;
+            right: 20px !important;
+            text-align: right !important;
+            font-family: "DM Sans", "Segoe UI", sans-serif !important;
+            font-size: 13px !important;
+            font-variant-numeric: tabular-nums !important;
+            line-height: 1.45 !important;
+        }
+
         .hero-actions {
             position: absolute;
             top: 12px;
@@ -400,6 +410,10 @@
                 text-align: left;
             }
 
+            .datetime-meta {
+                text-align: left !important;
+            }
+
             .hero-actions {
                 flex-wrap: wrap;
             }
@@ -416,6 +430,69 @@
                 transform: none;
             }
         }
+    
+        /* Digital Clock Badge */
+        .datetime-meta {
+            position: absolute !important;
+            top: 12px !important;
+            right: 20px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            padding: 8px 12px !important;
+            border-radius: 12px !important;
+            background: rgba(9, 14, 22, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22) !important;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            text-align: right !important;
+            font-family: "DM Sans", "Segoe UI", sans-serif !important;
+            font-size: 13px !important;
+            font-variant-numeric: tabular-nums !important;
+            line-height: 1.2 !important;
+            color: var(--muted) !important;
+        }
+
+        .datetime-chip {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1px;
+        }
+
+        .datetime-label {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.75;
+        }
+
+        .datetime-value {
+            font-family: "Space Grotesk", "DM Sans", "Segoe UI", sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: #eef3f7;
+            text-shadow: 0 0 14px rgba(60, 198, 168, 0.2);
+        }
+
+        .datetime-sep {
+            width: 1px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .datetime-meta {
+                position: static !important;
+                margin-top: 10px !important;
+                text-align: center !important;
+            }
+
+            .datetime-chip {
+                align-items: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -426,10 +503,7 @@
         </div>
         <h1>Rapportage Kasboek &amp; Bankrekening</h1>
         <p>Overzicht op bron, maand, tag en mededelingen.</p>
-        <div class="hero-meta">
-            <div>Gebruiker: {{ current_user }}</div>
-            <div>Datum: {{ current_date }}</div>
-        </div>
+        <div class="hero-meta datetime-meta"><span class="datetime-chip"><span class="datetime-label">Tijd</span><span id="liveClock" class="datetime-value">--:--:--</span></span><span class="datetime-sep" aria-hidden="true"></span><span class="datetime-chip"><span class="datetime-label">Datum</span><span id="liveDate" class="datetime-value">{{ current_date }}</span></span></div>
     </header>
 
     <main>
@@ -575,6 +649,29 @@
     let allTransactions = [];
     let tagChart;
     let monthChart;
+
+    function updateHeaderDateTime() {
+        const clockEl = document.getElementById("liveClock");
+        const dateEl = document.getElementById("liveDate");
+        const now = new Date();
+
+        if (clockEl) {
+            clockEl.textContent = new Intl.DateTimeFormat("nl-NL", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+            }).format(now);
+        }
+
+        if (dateEl) {
+            dateEl.textContent = new Intl.DateTimeFormat("nl-NL", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+            }).format(now);
+        }
+    }
 
     function setView(view) {
         const showCharts = view === "charts";
@@ -1196,7 +1293,7 @@
             const amountClass = signedAmount >= 0 ? "amount-pos" : "amount-neg";
             const bonUrl = normalizeUrl(tx.bon);
             const bonCell = bonUrl
-                ? `<a class="bon-link" href="${escapeHtml(bonUrl)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(bonUrl)}">🔗</a>`
+                ? `<a class="bon-link" href="${escapeHtml(bonUrl)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(bonUrl)}">Open</a>`
                 : "";
 
             tr.innerHTML = `
@@ -1297,8 +1394,12 @@
     document.getElementById("quitBtn")?.addEventListener("click", quitApp);
 
     applyCardAnimationDelays();
+    updateHeaderDateTime();
+    setInterval(updateHeaderDateTime, 1000);
     setView("charts");
     loadData();
 </script>
 </body>
 </html>
+
+

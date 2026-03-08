@@ -75,6 +75,16 @@
             color: var(--muted);
         }
 
+        .datetime-meta {
+            top: 12px !important;
+            right: 20px !important;
+            text-align: right !important;
+            font-family: "DM Sans", "Segoe UI", sans-serif !important;
+            font-size: 13px !important;
+            font-variant-numeric: tabular-nums !important;
+            line-height: 1.45 !important;
+        }
+
         .hero-actions {
             position: absolute;
             top: 12px;
@@ -463,6 +473,10 @@
                 justify-content: center;
             }
 
+            .datetime-meta {
+                text-align: center !important;
+            }
+
             .cards {
                 grid-template-columns: 1fr;
             }
@@ -475,10 +489,7 @@
             <div class="hero-actions">
                 <button type="button" id="quitBtn" class="btn-quit">Afsluiten</button>
             </div>
-            <div class="hero-meta">
-                <div>{{ current_date }}</div>
-                <div>{{ current_user }}</div>
-            </div>
+            <div class="hero-meta datetime-meta"><span class="datetime-chip"><span class="datetime-label">Tijd</span><span id="liveClock" class="datetime-value">--:--:--</span></span><span class="datetime-sep" aria-hidden="true"></span><span class="datetime-chip"><span class="datetime-label">Datum</span><span id="liveDate" class="datetime-value">{{ current_date }}</span></span></div>
             <h1>Begroting</h1>
             <p>Balans van Inkomsten (Bij) en Uitgaven (Af) op basis van begroting en actuele transacties.</p>
         </section>
@@ -575,6 +586,29 @@
         const uitgavenHead = document.getElementById("uitgavenHead");
         const inkomstenBody = document.getElementById("inkomstenBody");
         const uitgavenBody = document.getElementById("uitgavenBody");
+
+        function updateHeaderDateTime() {
+            const clockEl = document.getElementById("liveClock");
+            const dateEl = document.getElementById("liveDate");
+            const now = new Date();
+
+            if (clockEl) {
+                clockEl.textContent = new Intl.DateTimeFormat("nl-NL", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false,
+                }).format(now);
+            }
+
+            if (dateEl) {
+                dateEl.textContent = new Intl.DateTimeFormat("nl-NL", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                }).format(now);
+            }
+        }
 
         function euro(value) {
             if (value === null || value === undefined) {
@@ -775,7 +809,7 @@
                 const toggle = document.createElement("button");
                 toggle.type = "button";
                 toggle.className = "group-toggle";
-                toggle.textContent = "▶";
+                toggle.textContent = ">";
 
                 const title = document.createElement("span");
                 title.textContent = group.hoofd;
@@ -815,7 +849,7 @@
 
                 const toggleGroup = () => {
                     expanded = !expanded;
-                    toggle.textContent = expanded ? "▼" : "▶";
+                    toggle.textContent = expanded ? "v" : ">";
                     childRows.forEach((row) => {
                         row.classList.toggle("hidden", !expanded);
                     });
@@ -846,7 +880,7 @@
                 }
 
                 if (toggle) {
-                    toggle.textContent = expanded ? "▼" : "▶";
+                    toggle.textContent = expanded ? "v" : ">";
                 }
                 childRows.forEach((row) => {
                     row.classList.toggle("hidden", !expanded);
@@ -997,6 +1031,69 @@
         .small { font-size: 9px; color: #5c6f86; }
         .cat-main { color: #3f536b; font-weight: 600; font-size: 10px; }
         .cat-sub { color: #6f7f92; font-size: 9px; margin-top: 1px; padding-left: 12px; }
+    
+        /* Digital Clock Badge */
+        .datetime-meta {
+            position: absolute !important;
+            top: 12px !important;
+            right: 20px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            padding: 8px 12px !important;
+            border-radius: 12px !important;
+            background: rgba(9, 14, 22, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22) !important;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            text-align: right !important;
+            font-family: "DM Sans", "Segoe UI", sans-serif !important;
+            font-size: 13px !important;
+            font-variant-numeric: tabular-nums !important;
+            line-height: 1.2 !important;
+            color: var(--muted) !important;
+        }
+
+        .datetime-chip {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1px;
+        }
+
+        .datetime-label {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.75;
+        }
+
+        .datetime-value {
+            font-family: "Space Grotesk", "DM Sans", "Segoe UI", sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: #eef3f7;
+            text-shadow: 0 0 14px rgba(60, 198, 168, 0.2);
+        }
+
+        .datetime-sep {
+            width: 1px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .datetime-meta {
+                position: static !important;
+                margin-top: 10px !important;
+                text-align: center !important;
+            }
+
+            .datetime-chip {
+                align-items: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1144,7 +1241,11 @@
         collapseAllBtn?.addEventListener("click", () => setAllGroups(false));
         printDumpBtn?.addEventListener("click", openDumpTabs);
         document.getElementById("quitBtn")?.addEventListener("click", quitApp);
+        updateHeaderDateTime();
+        setInterval(updateHeaderDateTime, 1000);
         loadData();
     </script>
 </body>
 </html>
+
+
