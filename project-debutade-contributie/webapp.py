@@ -14,7 +14,7 @@ Datum: 2026-02-16
 Auteur: Eric G.
 """
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, g
 from openpyxl import load_workbook
 from datetime import datetime
 import logging
@@ -24,6 +24,7 @@ import sys
 import re
 import tempfile
 import shutil
+import time
 
 # Fix encoding voor Windows console
 if sys.platform == "win32":
@@ -35,6 +36,10 @@ if sys.platform == "win32":
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+
+CACHE_TTL_SECONDS = int(os.getenv("DEBUTADE_CACHE_TTL_SECONDS", "20"))
+BENCHMARK_ENABLED = os.getenv("DEBUTADE_BENCHMARK", "1") == "1"
+RUNTIME_CACHE = {}
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.getenv(
@@ -103,6 +108,7 @@ LEDEN_SHEET_NAME = (
 BANK_EXCEL_PATH = config.get("bank_excel_file_path") or config.get("bank_excel_file_name")
 BANK_SHEET_NAME = config["bank_sheet_name"]
 MANUAL_TRANSACTION_MAPPINGS = config.get("manual_transaction_mappings", {})
+MANUAL_PAID_OVERRIDES = config.get("manual_paid_overrides", {})
 BANK_EXCEL_FALLBACK_BASENAMES = [
     "Debutade boekjaar 2026 Bank",
     "Debutade boekjaar bank 2026",
@@ -130,6 +136,48 @@ logging.basicConfig(
 
 def normalize_header(value):
     return str(value or "").strip().lower().replace(" ", "").replace("-", "")
+
+
+def _file_signature(file_path):
+    if not file_path or not os.path.exists(file_path):
+        return None
+    stat = os.stat(file_path)
+    return (stat.st_mtime_ns, stat.st_size)
+
+
+def _cache_get(key):
+    entry = RUNTIME_CACHE.get(key)
+    if not entry:
+        return None
+
+    if time.time() - entry["ts"] > CACHE_TTL_SECONDS:
+        RUNTIME_CACHE.pop(key, None)
+        return None
+
+    return entry["value"]
+
+
+def _cache_set(key, value):
+    RUNTIME_CACHE[key] = {"ts": time.time(), "value": value}
+    return value
+
+
+def invalidate_runtime_cache():
+    RUNTIME_CACHE.clear()
+
+
+@app.before_request
+def _benchmark_start():
+    if BENCHMARK_ENABLED:
+        g._start_time = time.perf_counter()
+
+
+@app.after_request
+def _benchmark_end(response):
+    if BENCHMARK_ENABLED and hasattr(g, "_start_time"):
+        elapsed_ms = (time.perf_counter() - g._start_time) * 1000
+        logging.info("PERF %s %s %s %.1fms", request.method, request.path, response.status_code, elapsed_ms)
+    return response
 
 
 def normalize_account(value):
@@ -462,6 +510,17 @@ def resolve_bank_excel_path():
 
 
 def build_overview():
+    bank_excel_path = resolve_bank_excel_path()
+    cache_key = (
+        "contributie_overview",
+        _file_signature(LEDENBESTAND_PATH),
+        _file_signature(bank_excel_path),
+        _file_signature(CONFIG_PATH),
+    )
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        return cached
+
     records, errors = load_ledenbestand()
     transactions, bank_errors = load_bank_transactions()
     errors.extend(bank_errors)
@@ -483,6 +542,7 @@ def build_overview():
     neutral_count = 0
 
     for record in records:
+        member_id = str(record.get("member_id", "")).strip()
         member_id_4digit = record.get("member_id_4digit", "")
         achternaam = record.get("achternaam", "")
         due_amount = record.get("due_amount", 0.0)
@@ -494,9 +554,27 @@ def build_overview():
         received_amount = round(received_amount, 2)
         record["received_amount"] = received_amount
         record["opmerking"] = ""
+        record["manual_paid_override"] = False
 
         tx_matched_by_id = set()
         tx_matched_by_fallback = set()
+
+        override_entry = MANUAL_PAID_OVERRIDES.get(member_id)
+        if isinstance(override_entry, dict) and override_entry.get("marked_paid"):
+            reason = str(override_entry.get("reason", "")).strip()
+            record["manual_paid_override"] = True
+            if due_amount > 0:
+                record["received_amount"] = max(received_amount, due_amount)
+            record["opmerking"] = (
+                f"Handmatig als betaald gemarkeerd: {reason}"
+                if reason
+                else "Handmatig als betaald gemarkeerd"
+            )
+            record["status_icon"] = "✅"
+            record["status_label"] = "Handmatig gemarkeerd als betaald"
+            record["status_class"] = "status-ok"
+            exact_count += 1
+            continue
 
         if not member_id_4digit:
             record["opmerking"] = "ID-lid bevat geen 4 cijfers"
@@ -608,7 +686,7 @@ def build_overview():
         "unmatched_total": round(sum(tx.get("amount", 0.0) for tx in unmatched_transactions), 2),
     }
 
-    return records, stats, errors, unmatched_transactions
+    return _cache_set(cache_key, (records, stats, errors, unmatched_transactions))
 
 
 @app.route("/")
@@ -677,15 +755,68 @@ def save_manual_mapping():
         # Voeg de mapping toe
         config["contributie"]["manual_transaction_mappings"][member_id] = mededelingen
 
+        # Update runtime mapping direct, zodat herstart niet nodig is.
+        MANUAL_TRANSACTION_MAPPINGS[member_id] = mededelingen
+
         # Schrijf config terug naar bestand
         with open(CONFIG_PATH, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=4, ensure_ascii=False)
+
+        invalidate_runtime_cache()
 
         logging.info(f"Manual mapping opgeslagen: lid {member_id} -> '{mededelingen[:50]}...'")
         return jsonify({"success": True, "message": "Mapping opgeslagen"}), 200
 
     except Exception as exc:
         logging.error(f"Fout bij opslaan manual mapping: {str(exc)}")
+        return jsonify({"success": False, "error": f"Fout: {str(exc)}"}), 500
+
+
+@app.route("/save_paid_override", methods=["POST"])
+def save_paid_override():
+    """Sla handmatige betaalstatus op per lid met reden."""
+    try:
+        data = request.get_json() or {}
+        member_id = str(data.get("member_id", "")).strip()
+        marked_paid = bool(data.get("marked_paid", False))
+        reason = str(data.get("reason", "")).strip()
+
+        if not member_id:
+            return jsonify({"success": False, "error": "Lid nummer is verplicht"}), 400
+
+        if marked_paid and not reason:
+            return jsonify({"success": False, "error": "Reden is verplicht bij handmatig betaald"}), 400
+
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            config_data = json.load(f)
+
+        if "contributie" not in config_data:
+            config_data["contributie"] = {}
+        if "manual_paid_overrides" not in config_data["contributie"]:
+            config_data["contributie"]["manual_paid_overrides"] = {}
+
+        if marked_paid:
+            config_data["contributie"]["manual_paid_overrides"][member_id] = {
+                "marked_paid": True,
+                "reason": reason,
+                "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            MANUAL_PAID_OVERRIDES[member_id] = config_data["contributie"]["manual_paid_overrides"][member_id]
+            message = "Lid handmatig als betaald gemarkeerd"
+        else:
+            config_data["contributie"]["manual_paid_overrides"].pop(member_id, None)
+            MANUAL_PAID_OVERRIDES.pop(member_id, None)
+            message = "Handmatige betaald-markering verwijderd"
+
+        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(config_data, f, indent=4, ensure_ascii=False)
+
+        invalidate_runtime_cache()
+        logging.info("Paid override bijgewerkt voor lid %s | marked_paid=%s", member_id, marked_paid)
+        return jsonify({"success": True, "message": message}), 200
+
+    except Exception as exc:
+        logging.error("Fout bij opslaan paid override: %s", str(exc))
         return jsonify({"success": False, "error": f"Fout: {str(exc)}"}), 500
 
 

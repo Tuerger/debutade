@@ -18,7 +18,7 @@ Datum: 2026-01-03
 Auteur: Eric G.
 """
 
-from flask import Flask, render_template, request, jsonify, redirect, url_for, send_from_directory
+from flask import Flask, render_template, request, jsonify, redirect, url_for, send_from_directory, g
 from openpyxl import Workbook, load_workbook
 from datetime import datetime
 import os
@@ -28,6 +28,7 @@ import shutil
 import locale
 import getpass
 import sys
+import time
 
 try:
     from tag_recommender import TagRecommender
@@ -72,6 +73,52 @@ app = Flask(__name__)
 app.static_folder = 'static'
 # Zorg dat gewijzigde templates direct opnieuw geladen worden (ontwikkelmodus)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+CACHE_TTL_SECONDS = int(os.getenv("DEBUTADE_CACHE_TTL_SECONDS", "20"))
+BENCHMARK_ENABLED = os.getenv("DEBUTADE_BENCHMARK", "1") == "1"
+RUNTIME_CACHE = {}
+
+
+def _file_signature(file_path):
+    if not file_path or not os.path.exists(file_path):
+        return None
+    stat = os.stat(file_path)
+    return (stat.st_mtime_ns, stat.st_size)
+
+
+def _cache_get(key):
+    entry = RUNTIME_CACHE.get(key)
+    if not entry:
+        return None
+
+    if time.time() - entry["ts"] > CACHE_TTL_SECONDS:
+        RUNTIME_CACHE.pop(key, None)
+        return None
+
+    return entry["value"]
+
+
+def _cache_set(key, value):
+    RUNTIME_CACHE[key] = {"ts": time.time(), "value": value}
+    return value
+
+
+def invalidate_runtime_cache():
+    RUNTIME_CACHE.clear()
+
+
+@app.before_request
+def _benchmark_start():
+    if BENCHMARK_ENABLED:
+        g._start_time = time.perf_counter()
+
+
+@app.after_request
+def _benchmark_end(response):
+    if BENCHMARK_ENABLED and hasattr(g, "_start_time"):
+        elapsed_ms = (time.perf_counter() - g._start_time) * 1000
+        logging.info("PERF %s %s %s %.1fms", request.method, request.path, response.status_code, elapsed_ms)
+    return response
 
 # Laad configuratie
 def load_config(config_path, section_key="bankrekening"):
@@ -280,6 +327,90 @@ def create_backup():
     except Exception as e:
         logging.error(f"Fout bij maken backup: {str(e)}")
         return False
+
+
+def get_dashboard_data_cached():
+    """Bouw dashboarddata in 1 read-pass en cache kort om Excel I/O te beperken."""
+    signature = _file_signature(EXCEL_FILE_PATH)
+    cache_key = ("dashboard", signature, EXCEL_SHEET_NAME, tuple(REQUIRED_SHEETS))
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    payload = {
+        "total_amount": 0,
+        "untagged_transactions": [],
+        "all_transactions": [],
+        "sheet_stats": [],
+    }
+
+    if not signature:
+        return _cache_set(cache_key, payload)
+
+    wb = None
+    try:
+        wb = load_workbook(EXCEL_FILE_PATH, read_only=True, data_only=True)
+
+        for sheet_name in REQUIRED_SHEETS:
+            total_rows = 0
+            untagged_rows = 0
+
+            if sheet_name not in wb.sheetnames:
+                payload["sheet_stats"].append({"sheet_name": sheet_name, "total": 0, "untagged": 0})
+                continue
+
+            sheet = wb[sheet_name]
+            for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+                if not row:
+                    continue
+
+                is_non_empty = any(cell is not None and str(cell).strip() != '' for cell in row)
+                if is_non_empty:
+                    total_rows += 1
+
+                tag_value = (row[11] if len(row) > 11 else '') or ''
+                is_untagged = str(tag_value).strip() == ''
+
+                if is_untagged:
+                    untagged_rows += 1
+                    payload["untagged_transactions"].append({
+                        'sheet_name': sheet_name,
+                        'row_index': row_idx,
+                        'datum': row[0].strftime('%Y-%m-%d') if isinstance(row[0], datetime) else (row[0] or ''),
+                        'mededelingen': (row[8] if len(row) > 8 else None) or row[1] or '',
+                        'af_bij': row[5] or '',
+                        'bedrag': f"{row[6]:.2f}" if isinstance(row[6], (int, float)) else '0.00',
+                        'rekening': row[2] or ''
+                    })
+
+                if row[0]:
+                    payload["all_transactions"].append({
+                        'sheet_name': sheet_name,
+                        'row_index': row_idx,
+                        'datum': row[0].strftime('%Y-%m-%d') if isinstance(row[0], datetime) else (row[0] or ''),
+                        'mededelingen': (row[8] if len(row) > 8 else None) or row[1] or '',
+                        'af_bij': row[5] or '',
+                        'bedrag': f"{row[6]:.2f}" if isinstance(row[6], (int, float)) else '0.00',
+                        'rekening': row[2] or '',
+                        'tag': tag_value
+                    })
+
+                if sheet_name == EXCEL_SHEET_NAME and isinstance(row[6] if len(row) > 6 else None, (int, float)):
+                    if row[5] == "Af":
+                        payload["total_amount"] -= row[6]
+                    elif row[5] == "Bij":
+                        payload["total_amount"] += row[6]
+
+            payload["sheet_stats"].append({'sheet_name': sheet_name, 'total': total_rows, 'untagged': untagged_rows})
+
+        payload["total_amount"] = round(payload["total_amount"], 2)
+        return _cache_set(cache_key, payload)
+    except Exception as e:
+        logging.error(f"Fout bij opbouwen dashboard cache: {str(e)}")
+        return payload
+    finally:
+        if wb:
+            wb.close()
 
 def calculate_total_amount():
     """Bereken het totale saldo in de kas"""
@@ -494,10 +625,7 @@ def favicon():
 @app.route('/')
 def index():
     """Hoofdpagina met invoerformulier"""
-    total_amount = calculate_total_amount()
-    untagged_transactions = get_untagged_transactions()
-    all_transactions = get_all_transactions_all_sheets()
-    sheet_stats = get_sheet_stats()
+    dashboard_data = get_dashboard_data_cached()
     today = datetime.now().strftime('%Y-%m-%d')
     current_date_display = datetime.now().strftime('%d-%m-%Y')
     current_user = getpass.getuser()
@@ -511,10 +639,10 @@ def index():
     
     return render_template('index.html', 
                          tags=TAGS,
-                         total_amount=total_amount,
-                         untagged_transactions=untagged_transactions,
-                         all_transactions=all_transactions,
-                         sheet_stats=sheet_stats,
+                         total_amount=dashboard_data["total_amount"],
+                         untagged_transactions=dashboard_data["untagged_transactions"],
+                         all_transactions=dashboard_data["all_transactions"],
+                         sheet_stats=dashboard_data["sheet_stats"],
                          today=today,
                          current_date=current_date_display,
                          current_user=current_user,
@@ -670,6 +798,7 @@ def update_tag():
         # Schrijf tag in kolom 12 (Tag)
         sheet.cell(row=row_index, column=12, value=new_tag)
         wb.save(EXCEL_FILE_PATH)
+        invalidate_runtime_cache()
 
         user = getpass.getuser()
         logging.info(f"TAG BIJGEWERKT | Gebruiker: {user} | Sheet: {sheet_name} | Rij: {row_index} | Tag: {new_tag}")
@@ -777,6 +906,7 @@ def add_transaction():
         
         # Sla op
         wb.save(EXCEL_FILE_PATH)
+        invalidate_runtime_cache()
         
         # Log de actie met meer details
         user = getpass.getuser()  # Krijg Windows username

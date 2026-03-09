@@ -72,6 +72,9 @@
         "report_url": "https://app.powerbi.com/reportEmbed?reportId=025c3e0f-ac55-43e3-a2f6-d01bfb41b443&autoAuth=true&ctid=edd6765e-96d3-4d90-be2c-4af904697688",
         "report_title": "Grootboek 2026"
     },
+    "transactietoevoegen": {
+        "csv_import_directory": "C:\\Users\\ericg\\Downloads"
+    },
     "contributie": {
         "ledenbestand_path": "C:\\Users\\ericg\\OneDrive - Vereniging met volledige rechtsbevoegdheid\\SharePoint Debutade - Documenten\\03. Secretaris\\ledenadministratie\\Ledenbestand.xlsx",
         "leden_sheet_name": "personen",
@@ -82,6 +85,18 @@
             "1036": "Hr TJ van Baar Mw J Bruin-van Baar ",
             "1032": "Naam: Mw M de Vries-Tensen  Hr W de Vries IBAN: NL12INGB0002121970 Valutadatum: 26-01-2026",
             "1118": "Naam: H. Wen IBAN: NL18RABO0333569636 Datum/Tijd: 12-01-2026 23:54:44 Valutadatum: 12-01-2026"
+        },
+        "manual_paid_overrides": {
+            "1069": {
+                "marked_paid": true,
+                "reason": "Betaald in vorig boekjaar",
+                "updated_at": "2026-03-09 16:20:26"
+            },
+            "1017": {
+                "marked_paid": true,
+                "reason": "Betaald in vorig boekjaar",
+                "updated_at": "2026-03-09 16:20:37"
+            }
         }
     }
 }

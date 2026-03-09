@@ -165,6 +165,7 @@ def validate_main_config(config_data):
     contributie = config_data.get("contributie", {})
     rapporten = config_data.get("rapporten", {})
     begroting = config_data.get("begroting", {})
+    transactietoevoegen = config_data.get("transactietoevoegen", {})
 
     def build_excel_path(file_name):
         if not grootboek_dir or not file_name:
@@ -279,6 +280,10 @@ def validate_main_config(config_data):
         errors.append("Begroting Excel sheet naam is verplicht.")
     elif begroting_path:
         errors.extend(validate_workbook_tabs(begroting_path, [begroting_sheet]))
+
+    csv_import_directory = (transactietoevoegen.get("csv_import_directory") or "").strip()
+    if csv_import_directory and not os.path.isdir(csv_import_directory):
+        errors.append(f"Transacties Toevoegen CSV import directory bestaat niet: {csv_import_directory}")
 
     return errors
 
@@ -598,6 +603,7 @@ def settings_main():
         existing_contributie = existing_config.get("contributie", {})
         existing_rapporten = existing_config.get("rapporten", {})
         existing_begroting = existing_config.get("begroting", {})
+        existing_transactietoevoegen = existing_config.get("transactietoevoegen", {})
 
         shared_bank_excel = form_value("shared_bank_excel_file_name") or existing_shared.get("bank_excel_file_name")
 
@@ -658,6 +664,12 @@ def settings_main():
             "excel_file_name": form_value("begroting_excel_file_name") or existing_begroting.get("excel_file_name", ""),
             "excel_sheet_name": form_value("begroting_excel_sheet_name") or existing_begroting.get("excel_sheet_name", "Begroting"),
         }
+        transactietoevoegen_config = {
+            "csv_import_directory": (
+                form_value("transactietoevoegen_csv_import_directory")
+                or existing_transactietoevoegen.get("csv_import_directory", "")
+            ),
+        }
 
         new_config = {
             "shared": shared_config,
@@ -668,6 +680,7 @@ def settings_main():
             "contributie": contributie_config,
             "rapporten": rapporten_config,
             "begroting": begroting_config,
+            "transactietoevoegen": transactietoevoegen_config,
         }
 
         errors = validate_main_config(new_config)

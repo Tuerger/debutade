@@ -6,6 +6,8 @@ Web applicatie voor het toevoegen van nieuwe bankrekening transacties vanuit een
 
 - **Filteren op sheet**: Selecteer tussen Bankrekening, Spaarrekening 1, of Spaarrekening 2
 - **CSV Upload**: Laad transacties uit een CSV bestand
+- **Snelle CSV selectie**: Kies direct een CSV uit een ingestelde map (zonder bestandsdialoog)
+- **Automatische CSV backup**: Bij laden wordt de geselecteerde CSV gekopieerd naar de backup map
 - **Data Profiling**: Validatie van datum, bedrag, af/bij en rekeningnummers
 - **Duplicate Detection**: Controle op duplicaten voordat toevoegen
 - **Preview**: Preview van transacties voordat ze daadwerkelijk worden toegevoegd
@@ -46,6 +48,9 @@ Het CSV bestand moet de volgende kolommen bevatten (hoofdlettergevoelig):
 Zorg ervoor dat volgende instellingen in config.json correct zijn:
 ```json
 {
+    "transactietoevoegen": {
+        "csv_import_directory": "C:\\Users\\<gebruikersnaam>\\Downloads"
+    },
     "shared": {
         "bank_excel_file_name": "Debutade boekjaar bank 2026.xlsx",
         "backup_directory": "C:\\path\\to\\backup",

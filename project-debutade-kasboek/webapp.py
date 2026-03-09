@@ -18,7 +18,7 @@ Datum: 2026-01-03
 Auteur: Eric G.
 """
 
-from flask import Flask, render_template, request, jsonify, redirect, url_for, send_from_directory
+from flask import Flask, render_template, request, jsonify, redirect, url_for, send_from_directory, g
 from openpyxl import Workbook, load_workbook
 from datetime import datetime
 import os
@@ -28,6 +28,7 @@ import shutil
 import locale
 import getpass
 import sys
+import time
 
 # Fix encoding voor Windows console
 if sys.platform == 'win32':
@@ -55,6 +56,50 @@ REQUIRED_HEADERS = [
 
 app = Flask(__name__)
 app.static_folder = 'static'
+
+CACHE_TTL_SECONDS = int(os.getenv("DEBUTADE_CACHE_TTL_SECONDS", "20"))
+BENCHMARK_ENABLED = os.getenv("DEBUTADE_BENCHMARK", "1") == "1"
+RUNTIME_CACHE = {}
+
+
+def _file_signature(file_path):
+    if not file_path or not os.path.exists(file_path):
+        return None
+    stat = os.stat(file_path)
+    return (stat.st_mtime_ns, stat.st_size)
+
+
+def _cache_get(key):
+    entry = RUNTIME_CACHE.get(key)
+    if not entry:
+        return None
+    if time.time() - entry["ts"] > CACHE_TTL_SECONDS:
+        RUNTIME_CACHE.pop(key, None)
+        return None
+    return entry["value"]
+
+
+def _cache_set(key, value):
+    RUNTIME_CACHE[key] = {"ts": time.time(), "value": value}
+    return value
+
+
+def invalidate_runtime_cache():
+    RUNTIME_CACHE.clear()
+
+
+@app.before_request
+def _benchmark_start():
+    if BENCHMARK_ENABLED:
+        g._start_time = time.perf_counter()
+
+
+@app.after_request
+def _benchmark_end(response):
+    if BENCHMARK_ENABLED and hasattr(g, "_start_time"):
+        elapsed_ms = (time.perf_counter() - g._start_time) * 1000
+        logging.info("PERF %s %s %s %.1fms", request.method, request.path, response.status_code, elapsed_ms)
+    return response
 
 # Laad configuratie
 def load_config(config_path, section_key="kasboek"):
@@ -267,48 +312,34 @@ def create_backup():
         logging.error(f"Fout bij maken backup: {str(e)}")
         return False
 
-def calculate_total_amount():
-    """Bereken het totale saldo in de kas"""
-    try:
-        if not os.path.exists(EXCEL_FILE_PATH):
-            return 0
-        
-        wb = load_workbook(EXCEL_FILE_PATH)
-        if EXCEL_SHEET_NAME in wb.sheetnames:
-            sheet = wb[EXCEL_SHEET_NAME]
-            total = 0
-            # Kolom F = Af/Bij (kolom 6), Kolom G = Bedrag (kolom 7)
-            for row in sheet.iter_rows(min_row=2, min_col=6, max_col=7, values_only=True):
-                af_bij, amount = row
-                if isinstance(amount, (int, float)):
-                    if af_bij == "Af":
-                        total -= amount
-                    elif af_bij == "Bij":
-                        total += amount
-            return round(total, 2)
-        return 0
-    except Exception as e:
-        logging.error(f"Fout bij berekenen totaal: {str(e)}")
-        return 0
 
-def get_recent_transactions(limit=10):
-    """Haal de meest recente transacties op"""
+def get_dashboard_data_cached(limit=10):
+    signature = _file_signature(EXCEL_FILE_PATH)
+    cache_key = ("kas_dashboard", signature, EXCEL_SHEET_NAME, int(limit))
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    payload = {"total_amount": 0, "recent_transactions": []}
+    if not signature:
+        return _cache_set(cache_key, payload)
+
+    wb = None
     try:
-        if not os.path.exists(EXCEL_FILE_PATH):
-            return []
-        
-        wb = load_workbook(EXCEL_FILE_PATH)
+        wb = load_workbook(EXCEL_FILE_PATH, read_only=True, data_only=True)
         if EXCEL_SHEET_NAME not in wb.sheetnames:
-            return []
-        
+            return _cache_set(cache_key, payload)
+
         sheet = wb[EXCEL_SHEET_NAME]
-        transactions = []
-        
-        # Start bij rij 2 (rij 1 is header)
-        for row in sheet.iter_rows(min_row=2, max_row=min(limit+1, sheet.max_row), 
-                                   values_only=True):
-            if row[0]:  # Als datum bestaat
-                transactions.append({
+        for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+            if isinstance(row[6] if len(row) > 6 else None, (int, float)):
+                if row[5] == "Af":
+                    payload["total_amount"] -= row[6]
+                elif row[5] == "Bij":
+                    payload["total_amount"] += row[6]
+
+            if row_idx <= limit + 1 and row and row[0]:
+                payload["recent_transactions"].append({
                     'datum': row[0].strftime('%Y-%m-%d') if isinstance(row[0], datetime) else str(row[0]),
                     'mededelingen': (row[8] if len(row) > 8 else None) or row[1] or '',
                     'af_bij': row[5] or '',
@@ -316,11 +347,23 @@ def get_recent_transactions(limit=10):
                     'tag': row[11] or '',
                     'saldo': f"€ {row[9]:.2f}" if isinstance(row[9], (int, float)) else '€ 0.00'
                 })
-        
-        return transactions
+
+        payload["total_amount"] = round(payload["total_amount"], 2)
+        return _cache_set(cache_key, payload)
     except Exception as e:
-        logging.error(f"Fout bij ophalen transacties: {str(e)}")
-        return []
+        logging.error(f"Fout bij opbouwen dashboard cache: {str(e)}")
+        return payload
+    finally:
+        if wb:
+            wb.close()
+
+def calculate_total_amount():
+    """Bereken het totale saldo in de kas"""
+    return get_dashboard_data_cached(limit=10)["total_amount"]
+
+def get_recent_transactions(limit=10):
+    """Haal de meest recente transacties op"""
+    return get_dashboard_data_cached(limit=limit)["recent_transactions"]
 
 def get_all_transactions():
     """Haal alle transacties op uit het Excel bestand"""
@@ -475,6 +518,7 @@ def add_transaction():
         
         # Sla op
         wb.save(EXCEL_FILE_PATH)
+        invalidate_runtime_cache()
         
         # Log de actie met meer details
         user = getpass.getuser()  # Krijg Windows username

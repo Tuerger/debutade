@@ -20,6 +20,7 @@ Deze applicatie leest ledengegevens uit **Ledenbestand.xlsx** (tab `leden`) en z
 - ✅ Zoekt `ID-lid` in banktab **bankrekening** kolom **mededelingen**
 - ✅ Berekent per lid ontvangen bedrag uit kolom **bedrag**
 - ✅ Status per lid: volledig / gedeeltelijk / nog niets
+- ✅ Handmatig als betaald markeren per lid met reden
 - ✅ Zelfde layout/stijl als de andere Debutade-apps
 - ✅ Logging en duidelijke foutmeldingen
 
@@ -78,6 +79,25 @@ De `bank_excel_file_name` wordt gecombineerd met de gedeelde `grootboek_director
 1. Open de webpagina
 2. Controleer eventuele fouten bovenaan
 3. Bekijk het overzicht met te innen bedrag, ontvangen bedrag en status per lid
+4. Gebruik indien nodig de knop **Handmatig betaald** bij een lid en vul een reden in
+
+### Handmatige betaald-markering
+
+Een handmatige betaald-markering wordt opgeslagen in `config.json` onder:
+
+```json
+"contributie": {
+  "manual_paid_overrides": {
+    "<lidnummer>": {
+      "marked_paid": true,
+      "reason": "Betaald in vorig boekjaar",
+      "updated_at": "2026-03-09 21:10:00"
+    }
+  }
+}
+```
+
+Je kunt deze markering ook weer verwijderen vanuit hetzelfde overzicht.
 
 ## 🧪 Troubleshooting
 

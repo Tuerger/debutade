@@ -367,6 +367,22 @@
             </div>
 
             <div class="card">
+                <h2>Transacties Toevoegen</h2>
+                <div class="grid">
+                    <div class="grid-wide">
+                        <label for="transactietoevoegen_csv_import_directory">CSV import directory</label>
+                        <input
+                            id="transactietoevoegen_csv_import_directory"
+                            name="transactietoevoegen_csv_import_directory"
+                            type="text"
+                            value="{{ config_data.get('transactietoevoegen', {}).get('csv_import_directory', '') }}"
+                        />
+                        <div class="hint">Map waar de app CSV-bestanden toont in "Snelle CSV selectie".</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
                 <h2>Kasboek</h2>
                 <div class="grid">
                     <div>
@@ -427,6 +443,12 @@
                         <textarea id="contrib_manual_transaction_mappings" name="contrib_manual_transaction_mappings">{% for member_id, fragment in config_data.get('contributie', {}).get('manual_transaction_mappings', {}).items() %}{{ member_id }}: {{ fragment }}{% if not loop.last %}
 {% endif %}{% endfor %}</textarea>
                         <div class="hint">Formaat: lidnummer: tekstfragment (1 per regel).</div>
+                    </div>
+                    <div class="grid-wide">
+                        <label for="contrib_manual_paid_overrides">Handmatige verwerkingen (alleen lezen)</label>
+                        <textarea id="contrib_manual_paid_overrides" readonly>{% for member_id, info in config_data.get('contributie', {}).get('manual_paid_overrides', {}).items() %}{{ member_id }}: {{ info.get('reason', '') }}{% if info.get('updated_at') %} ({{ info.get('updated_at') }}){% endif %}{% if not loop.last %}
+{% endif %}{% endfor %}</textarea>
+                        <div class="hint">Wordt automatisch bijgewerkt vanuit de Contributie app.</div>
                     </div>
                 </div>
             </div>

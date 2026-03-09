@@ -15,13 +15,14 @@ Datum: 2026-01-22
 Auteur: Eric G.
 """
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, g
 from openpyxl import load_workbook
 import threading
 import os
 import json
 import logging
 import sys
+import time
 from datetime import datetime
 
 # Fix encoding voor Windows console
@@ -34,6 +35,9 @@ if sys.platform == 'win32':
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+CACHE_TTL_SECONDS = int(os.getenv("DEBUTADE_CACHE_TTL_SECONDS", "20"))
+BENCHMARK_ENABLED = os.getenv("DEBUTADE_BENCHMARK", "1") == "1"
+RUNTIME_CACHE = {}
 
 # Zorg dat server TCP sockets onmiddellijk kan hergebruiken
 app.config['ENV'] = 'production'
@@ -113,6 +117,46 @@ logging.basicConfig(
 
 # Houd workbooks in geheugen voor snellere reads/writes
 workbook_cache = {}
+
+
+def _file_signature(file_path):
+    if not file_path or not os.path.exists(file_path):
+        return None
+    stat = os.stat(file_path)
+    return (stat.st_mtime_ns, stat.st_size)
+
+
+def _cache_get(key):
+    entry = RUNTIME_CACHE.get(key)
+    if not entry:
+        return None
+    if time.time() - entry["ts"] > CACHE_TTL_SECONDS:
+        RUNTIME_CACHE.pop(key, None)
+        return None
+    return entry["value"]
+
+
+def _cache_set(key, value):
+    RUNTIME_CACHE[key] = {"ts": time.time(), "value": value}
+    return value
+
+
+def invalidate_runtime_cache():
+    RUNTIME_CACHE.clear()
+
+
+@app.before_request
+def _benchmark_start():
+    if BENCHMARK_ENABLED:
+        g._start_time = time.perf_counter()
+
+
+@app.after_request
+def _benchmark_end(response):
+    if BENCHMARK_ENABLED and hasattr(g, "_start_time"):
+        elapsed_ms = (time.perf_counter() - g._start_time) * 1000
+        logging.info("PERF %s %s %s %.1fms", request.method, request.path, response.status_code, elapsed_ms)
+    return response
 
 def create_backup(file_path):
     """
@@ -277,6 +321,8 @@ def save_bon_url_to_excel(file_path, tab_name, row_index, bon_url):
                 logging.info("Cache geïnvalideerd")
         except Exception as cache_error:
             logging.warning(f"Kon cache niet invalideren: {cache_error} - niet kritiek")
+
+        invalidate_runtime_cache()
         
         logging.info(f"✓✓✓ BON URL SUCCESVOL OPGESLAGEN: {file_path}, tab={tab_name}, rij={row_index}")
         return True, "Bon URL succesvol opgeslagen"
@@ -286,77 +332,80 @@ def save_bon_url_to_excel(file_path, tab_name, row_index, bon_url):
         return False, f"Fout bij opslaan: {str(e)}"
 
 
-@app.route('/')
-def index():
-    """Hoofdpagina - toon alle records"""
-    # Lees records uit beide Excel bestanden
+def build_index_payload_cached():
+    cache_key = (
+        "bon_index_payload",
+        _file_signature(KAS_EXCEL_PATH),
+        _file_signature(BANK_EXCEL_PATH),
+    )
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        return cached
+
     kas_records = read_excel_all_tabs(KAS_EXCEL_PATH)
     bank_records = read_excel_all_tabs(BANK_EXCEL_PATH)
-    
-    # Markeer bron
+
     for record in kas_records:
         record['bron'] = 'Kasboek'
     for record in bank_records:
         record['bron'] = 'Bankrekening'
-    
-    # Combineer records
+
     all_records = kas_records + bank_records
-    
-    # Sorteer records van nieuw naar oud op basis van Datum kolom
-    # Als er geen Datum kolom is, sorteer dan op row_index (nieuwere rijen hebben hogere nummers)
+
     def get_sort_key(record):
         datum = record.get('Datum') or record.get('datum') or record.get('DATUM')
         if datum and isinstance(datum, datetime):
             return datum
         elif datum:
-            # Probeer datum te parsen als string
             try:
                 from datetime import datetime as dt
-                # Probeer verschillende datum formaten
                 for fmt in ['%d-%m-%Y', '%Y-%m-%d', '%d/%m/%Y', '%Y/%m/%d']:
                     try:
                         return dt.strptime(str(datum), fmt)
-                    except:
+                    except Exception:
                         continue
-            except:
+            except Exception:
                 pass
-        # Fallback: gebruik row_index en tab als secundaire sortering
-        # Hogere row_index = nieuwer, dus negatief voor reverse sort
-        return datetime(1900, 1, 1)  # Oude datum voor records zonder datum
-    
-    # Sorteer: nieuwste eerst (reverse=True)
+        return datetime(1900, 1, 1)
+
     all_records.sort(key=get_sort_key, reverse=True)
-    
-    # Bereken statistieken per tab
+
     stats_by_tab = {}
-    
     for record in all_records:
         tab = record['tab']
         has_bon = bool(record.get('Bon'))
-        
-        # Statistieken per tab
+
         if tab not in stats_by_tab:
             stats_by_tab[tab] = {
                 'total': 0,
                 'with_bon': 0,
                 'without_bon': 0
             }
-        
+
         stats_by_tab[tab]['total'] += 1
         if has_bon:
             stats_by_tab[tab]['with_bon'] += 1
         else:
             stats_by_tab[tab]['without_bon'] += 1
+
+    payload = {"records": all_records, "stats_by_tab": stats_by_tab}
+    return _cache_set(cache_key, payload)
+
+
+@app.route('/')
+def index():
+    """Hoofdpagina - toon alle records"""
+    payload = build_index_payload_cached()
     
     # Haal huidige datum en gebruiker op
     current_date = datetime.now().strftime('%d-%m-%Y')
     current_user = os.getlogin()
     
     return render_template('voegbontoe.html', 
-                         records=all_records,
+                         records=payload['records'],
                          current_date=current_date,
                          current_user=current_user,
-                         stats_by_tab=stats_by_tab,
+                         stats_by_tab=payload['stats_by_tab'],
                          main_app_url=MAIN_APP_URL)
 
 @app.route('/save_bon_url', methods=['POST'])

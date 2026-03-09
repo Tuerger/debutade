@@ -9,13 +9,14 @@ Datum: 2026-02-09
 Auteur: Eric G.
 """
 
-from flask import Flask, render_template, jsonify, redirect, request
+from flask import Flask, render_template, jsonify, redirect, request, g
 from datetime import datetime
 import os
 import json
 import logging
 import getpass
 import sys
+import time
 
 # Fix encoding voor Windows console
 if sys.platform == "win32":
@@ -68,11 +69,22 @@ app = Flask(
     static_folder=os.path.join(SCRIPT_DIR, "..", "static"),
 )
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+BENCHMARK_ENABLED = os.getenv("DEBUTADE_BENCHMARK", "1") == "1"
 
 
 @app.before_request
 def log_request():
     logging.info("REQUEST %s %s %s", request.remote_addr, request.method, request.path)
+    if BENCHMARK_ENABLED:
+        g._start_time = time.perf_counter()
+
+
+@app.after_request
+def benchmark_request(response):
+    if BENCHMARK_ENABLED and hasattr(g, "_start_time"):
+        elapsed_ms = (time.perf_counter() - g._start_time) * 1000
+        logging.info("PERF %s %s %s %.1fms", request.method, request.path, response.status_code, elapsed_ms)
+    return response
 
 
 @app.route("/")

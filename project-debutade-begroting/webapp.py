@@ -6,9 +6,10 @@ import json
 import logging
 import os
 import sys
+import time
 from typing import Any
 
-from flask import Flask, jsonify, redirect, render_template, request
+from flask import Flask, jsonify, redirect, render_template, request, g
 from openpyxl import load_workbook
 
 
@@ -152,6 +153,34 @@ app = Flask(
     static_folder=os.path.join(SCRIPT_DIR, "static"),
 )
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+
+CACHE_TTL_SECONDS = int(os.getenv("DEBUTADE_CACHE_TTL_SECONDS", "20"))
+BENCHMARK_ENABLED = os.getenv("DEBUTADE_BENCHMARK", "1") == "1"
+RUNTIME_CACHE: dict[tuple[Any, ...], dict[str, Any]] = {}
+
+
+def _file_signature(file_path: str) -> tuple[int, int] | None:
+    if not file_path or not os.path.exists(file_path):
+        return None
+    stat = os.stat(file_path)
+    return (stat.st_mtime_ns, stat.st_size)
+
+
+def _cache_get(key: tuple[Any, ...]) -> Any:
+    entry = RUNTIME_CACHE.get(key)
+    if not entry:
+        return None
+
+    if time.time() - entry["ts"] > CACHE_TTL_SECONDS:
+        RUNTIME_CACHE.pop(key, None)
+        return None
+
+    return entry["value"]
+
+
+def _cache_set(key: tuple[Any, ...], value: Any) -> Any:
+    RUNTIME_CACHE[key] = {"ts": time.time(), "value": value}
+    return value
 
 
 def map_headers(sheet) -> dict[str, int]:
@@ -380,6 +409,20 @@ def build_rows_for_ui(
 
 
 def load_budget_and_actual(include_actual: bool) -> tuple[dict[str, Any], list[str]]:
+    begroting_file = config.get("begroting_excel_path", "")
+    bank_file = config.get("bank_excel_path", "")
+    kas_file = config.get("kas_excel_path", "")
+    cache_key = (
+        "begroting_payload",
+        include_actual,
+        _file_signature(begroting_file),
+        _file_signature(bank_file) if include_actual else None,
+        _file_signature(kas_file) if include_actual else None,
+    )
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        return cached
+
     warnings: list[str] = []
 
     budget_rows, budget_warning = parse_budget_rows(
@@ -450,12 +493,22 @@ def load_budget_and_actual(include_actual: bool) -> tuple[dict[str, Any], list[s
             "kas_sheet": config.get("kas_sheet_name", "Kas"),
         },
     }
-    return payload, warnings
+    return _cache_set(cache_key, (payload, warnings))
 
 
 @app.before_request
 def log_request() -> None:
     logging.info("REQUEST %s %s %s", request.remote_addr, request.method, request.path)
+    if BENCHMARK_ENABLED:
+        g._start_time = time.perf_counter()
+
+
+@app.after_request
+def benchmark_request(response):
+    if BENCHMARK_ENABLED and hasattr(g, "_start_time"):
+        elapsed_ms = (time.perf_counter() - g._start_time) * 1000
+        logging.info("PERF %s %s %s %.1fms", request.method, request.path, response.status_code, elapsed_ms)
+    return response
 
 
 @app.route("/")

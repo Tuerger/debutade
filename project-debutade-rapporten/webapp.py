@@ -16,9 +16,10 @@ import json
 import logging
 import os
 import sys
+import time
 from typing import Any
 
-from flask import Flask, jsonify, redirect, render_template, request
+from flask import Flask, jsonify, redirect, render_template, request, g
 from openpyxl import load_workbook
 
 
@@ -116,6 +117,34 @@ app = Flask(
     static_folder=os.path.join(SCRIPT_DIR, "static"),
 )
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+
+CACHE_TTL_SECONDS = int(os.getenv("DEBUTADE_CACHE_TTL_SECONDS", "20"))
+BENCHMARK_ENABLED = os.getenv("DEBUTADE_BENCHMARK", "1") == "1"
+RUNTIME_CACHE: dict[tuple[Any, ...], dict[str, Any]] = {}
+
+
+def _file_signature(file_path: str) -> tuple[int, int] | None:
+    if not file_path or not os.path.exists(file_path):
+        return None
+    stat = os.stat(file_path)
+    return (stat.st_mtime_ns, stat.st_size)
+
+
+def _cache_get(key: tuple[Any, ...]) -> Any:
+    entry = RUNTIME_CACHE.get(key)
+    if not entry:
+        return None
+
+    if time.time() - entry["ts"] > CACHE_TTL_SECONDS:
+        RUNTIME_CACHE.pop(key, None)
+        return None
+
+    return entry["value"]
+
+
+def _cache_set(key: tuple[Any, ...], value: Any) -> Any:
+    RUNTIME_CACHE[key] = {"ts": time.time(), "value": value}
+    return value
 
 
 def normalize_text(value: Any) -> str:
@@ -247,14 +276,26 @@ def read_transactions_from_sheet(file_path: str, sheet_name: str, is_kas: bool =
 
 
 def load_all_transactions() -> tuple[list[dict[str, Any]], list[str]]:
-    all_records: list[dict[str, Any]] = []
-    warnings: list[str] = []
-
     bank_file = config.get("bank_excel_path", "")
     kas_file = config.get("kas_excel_path", "")
-
-    bank_sheets = config.get("bank_sheets", [])
+    bank_sheets = tuple(config.get("bank_sheets", []))
     kas_sheet_name = config.get("kas_sheet_name", "Kas")
+
+    cache_key = (
+        "all_transactions",
+        bank_file,
+        _file_signature(bank_file),
+        kas_file,
+        _file_signature(kas_file),
+        bank_sheets,
+        kas_sheet_name,
+    )
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    all_records: list[dict[str, Any]] = []
+    warnings: list[str] = []
 
     if not bank_file or not os.path.exists(bank_file):
         warnings.append("Bank Excel bestand niet gevonden of niet ingesteld.")
@@ -267,12 +308,54 @@ def load_all_transactions() -> tuple[list[dict[str, Any]], list[str]]:
     all_records.extend(read_transactions_from_sheet(kas_file, kas_sheet_name, is_kas=True))
 
     all_records.sort(key=lambda item: (item["date"], item["description"]), reverse=True)
-    return all_records, warnings
+    return _cache_set(cache_key, (all_records, warnings))
+
+
+def get_report_payload_cached() -> dict[str, Any]:
+    records, warnings = load_all_transactions()
+    bank_file = config.get("bank_excel_path", "")
+    kas_file = config.get("kas_excel_path", "")
+
+    cache_key = (
+        "report_payload",
+        bank_file,
+        _file_signature(bank_file),
+        kas_file,
+        _file_signature(kas_file),
+    )
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    months = sorted({row["month"] for row in records if row["month"] and row["month"] != "Onbekend"})
+    tags = sorted({row["tag"] for row in records if row["tag"]})
+    sources = sorted({row["source"] for row in records if row["source"]})
+
+    payload = {
+        "transactions": records,
+        "filters": {
+            "months": months,
+            "tags": tags,
+            "sources": sources,
+        },
+        "warnings": warnings,
+    }
+    return _cache_set(cache_key, payload)
 
 
 @app.before_request
 def log_request() -> None:
     logging.info("REQUEST %s %s %s", request.remote_addr, request.method, request.path)
+    if BENCHMARK_ENABLED:
+        g._start_time = time.perf_counter()
+
+
+@app.after_request
+def benchmark_request(response):
+    if BENCHMARK_ENABLED and hasattr(g, "_start_time"):
+        elapsed_ms = (time.perf_counter() - g._start_time) * 1000
+        logging.info("PERF %s %s %s %.1fms", request.method, request.path, response.status_code, elapsed_ms)
+    return response
 
 
 @app.route("/")
@@ -287,23 +370,7 @@ def index():
 
 @app.route("/api/report-data")
 def report_data():
-    records, warnings = load_all_transactions()
-
-    months = sorted({row["month"] for row in records if row["month"] and row["month"] != "Onbekend"})
-    tags = sorted({row["tag"] for row in records if row["tag"]})
-    sources = sorted({row["source"] for row in records if row["source"]})
-
-    return jsonify(
-        {
-            "transactions": records,
-            "filters": {
-                "months": months,
-                "tags": tags,
-                "sources": sources,
-            },
-            "warnings": warnings,
-        }
-    )
+    return jsonify(get_report_payload_cached())
 
 
 @app.route("/quit", methods=["POST"])

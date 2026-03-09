@@ -601,6 +601,7 @@
                     <th>Ontvangen bedrag</th>
                     <th>Opmerking</th>
                     <th>Status</th>
+                    <th>Actie</th>
                 </tr>
             </thead>
             <tbody>
@@ -615,6 +616,17 @@
                     <td title="{{ record.status_label }}">
                         <span class="status-icon {{ record.status_class }}">{{ record.status_icon }}</span>
                         <span>{{ record.status_label }}</span>
+                    </td>
+                    <td>
+                        {% if record.status_label == 'Nog niets ontvangen' %}
+                        <button
+                            type="button"
+                            onclick="toggleManualPaidOverride('{{ record.member_id }}', true)"
+                            style="padding: 6px 10px; background-color: #16a34a; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;"
+                        >
+                            Handmatige verwerking
+                        </button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -742,6 +754,46 @@
                     alert('Fout bij opslaan: ' + error.message);
                     button.disabled = false;
                     button.textContent = 'Opslaan';
+                });
+        }
+
+        function toggleManualPaidOverride(memberId, markPaid) {
+            let reason = "";
+            if (markPaid) {
+                reason = prompt("Geef reden van handmatige betaald-markering:", "Betaald in vorig boekjaar");
+                if (reason === null) {
+                    return;
+                }
+                reason = reason.trim();
+                if (!reason) {
+                    alert("Reden is verplicht.");
+                    return;
+                }
+            }
+
+            fetch('/save_paid_override', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    member_id: memberId,
+                    marked_paid: markPaid,
+                    reason: reason,
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message + '. De pagina wordt ververst.');
+                        window.location.reload();
+                    } else {
+                        alert('Fout: ' + (data.error || 'Onbekende fout'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Fout bij opslaan: ' + error.message);
                 });
         }
 
