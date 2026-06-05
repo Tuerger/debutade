@@ -298,16 +298,6 @@
             background-color: #f5f5f5;
         }
         
-        .amount-positive {
-            color: #27ae60;
-            font-weight: bold;
-        }
-        
-        .amount-negative {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-        
         .settings-link {
             text-align: right;
             margin-top: 30px;
@@ -1101,7 +1091,8 @@
                         <th class="date-col">Datum</th>
                         <th>Mededeling</th>
                         <th>Categorie</th>
-                        <th class="amount-col">Bedrag</th>
+                        <th class="amount-col">Debet</th>
+                        <th class="amount-col">Credit</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1110,11 +1101,8 @@
                         <td class="date-col">{{ transaction.datum }}</td>
                         <td>{{ transaction.mededelingen }}</td>
                         <td>{{ transaction.tag }}</td>
-                        <td class="amount-col">
-                            {% set bedrag_class = 'amount-positive' if transaction.af_bij == 'Bij' else 'amount-negative' %}
-                            {% set bedrag_prefix = '+' if transaction.af_bij == 'Bij' else '-' %}
-                            <span class="{{ bedrag_class }}">€ {{ bedrag_prefix }}{{ transaction.bedrag }}</span>
-                        </td>
+                        <td class="amount-col">{% if transaction.af_bij == 'Af' %}€ {{ transaction.bedrag }}{% endif %}</td>
+                        <td class="amount-col">{% if transaction.af_bij == 'Bij' %}€ {{ transaction.bedrag }}{% endif %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -1354,18 +1342,20 @@
                        '<th class="date-col">Datum</th>' +
                        '<th>Mededeling</th>' +
                        '<th>Categorie</th>' +
-                       '<th class="amount-col">Bedrag</th>' +
+                       '<th class="amount-col">Debet</th>' +
+                       '<th class="amount-col">Credit</th>' +
                        '<th class="amount-col">Nieuw saldo (€)</th>' +
                        '</tr></thead><tbody>';
 
             sessionTransactions.forEach(t => {
-                const afBijClass = t.afBij === 'Bij' ? 'amount-positive' : 'amount-negative';
-                const bedragPrefix = t.afBij === 'Bij' ? '+' : '-';
+                const debet = t.afBij === 'Af' ? t.bedrag : '';
+                const credit = t.afBij === 'Bij' ? t.bedrag : '';
                 html += `<tr>
                     <td class="date-col">${t.datum}</td>
                     <td>${t.mededelingen}</td>
                     <td>${t.tag || '-'}</td>
-                    <td class="amount-col"><span class="${afBijClass}">€ ${bedragPrefix}${t.bedrag}</span></td>
+                    <td class="amount-col">${debet}</td>
+                    <td class="amount-col">${credit}</td>
                     <td class="amount-col">${t.nieuwSaldo}</td>
                 </tr>`;
             });

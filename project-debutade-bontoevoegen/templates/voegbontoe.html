@@ -1028,7 +1028,8 @@
                     <th>Datum</th>
                     <th>Mededelingen</th>
                     <th>Naam / Omschrijving</th>
-                    <th>Bedrag (EUR)</th>
+                    <th>Debet</th>
+                    <th>Credit</th>
                     <th>Bon</th>
                     <th>Acties</th>
                 </tr>
@@ -1056,7 +1057,8 @@
                         </td>
                     <td>{{ record['Mededelingen'] if record.get('Mededelingen') else '' }}</td>
                     <td>{{ record['Naam / Omschrijving'] if record['Naam / Omschrijving'] else '' }}</td>
-                    <td>{% if record['Bedrag (EUR)'] %}€ {{ "%.2f"|format(record['Bedrag (EUR)']) }}{% else %}-{% endif %}</td>
+                    <td>{% if record.get('Af Bij') == 'Af' and record['Bedrag (EUR)'] %}€ {{ "%.2f"|format(record['Bedrag (EUR)']) }}{% endif %}</td>
+                    <td>{% if record.get('Af Bij') == 'Bij' and record['Bedrag (EUR)'] %}€ {{ "%.2f"|format(record['Bedrag (EUR)']) }}{% endif %}</td>
                     <td class="bon-cell">
                         {% if record.get('Bon') %}
                             <a href="{{ record['Bon'] }}" target="_blank" class="bon-link">{{ record['Bon'][:50] }}...</a>

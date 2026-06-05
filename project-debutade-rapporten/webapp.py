@@ -19,6 +19,12 @@ import sys
 import time
 from typing import Any
 
+from docx import Document
+from docx.enum.section import WD_ORIENT
+from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_TABLE_ALIGNMENT
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.shared import Cm, Pt
 from flask import Flask, jsonify, redirect, render_template, request, g
 from openpyxl import load_workbook
 
@@ -84,6 +90,7 @@ def load_config(config_path: str) -> dict[str, Any]:
     return {
         "bank_excel_path": build_path(bank_excel_file_name),
         "kas_excel_path": build_path(kas_excel_file_name),
+        "grootboek_directory": grootboek_directory,
         "bank_sheets": bank_sheets,
         "kas_sheet_name": kas_sheet_name,
         "log_directory": shared.get("log_directory", os.path.join(SCRIPT_DIR, "logs")),
@@ -99,6 +106,7 @@ except (FileNotFoundError, KeyError, json.JSONDecodeError) as exc:
     config = {
         "bank_excel_path": "",
         "kas_excel_path": "",
+        "grootboek_directory": "",
         "bank_sheets": ["Bankrekening", "Spaarrekening 1", "Spaarrekening 2"],
         "kas_sheet_name": "Kas",
         "log_directory": os.path.join(SCRIPT_DIR, "logs"),
@@ -343,6 +351,215 @@ def get_report_payload_cached() -> dict[str, Any]:
     return _cache_set(cache_key, payload)
 
 
+def get_export_directory() -> str:
+    export_dir = normalize_text(config.get("grootboek_directory", ""))
+    return export_dir or SCRIPT_DIR
+
+
+def _set_docx_cell_text(cell, value: Any, *, bold: bool = False) -> None:
+    cell.text = ""
+    paragraph = cell.paragraphs[0]
+    run = paragraph.add_run(str(value or ""))
+    run.bold = bold
+    run.font.size = Pt(9)
+    cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+
+
+def _add_docx_hyperlink(document, paragraph, url: str, text: str) -> None:
+    """Add a hyperlink to a paragraph in a Word document with proper relationship."""
+    from docx.oxml import parse_xml
+    from docx.shared import RGBColor
+    
+    if not url or not text:
+        run = paragraph.add_run(text or url or "")
+        run.font.size = Pt(9)
+        return
+    
+    # Add relationship to document for the hyperlink
+    try:
+        rel_id = document.part.relate_to(url, 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink', is_external=True)
+    except:
+        # Fallback if relationship fails
+        run = paragraph.add_run(text)
+        run.font.size = Pt(9)
+        return
+    
+    # Create hyperlink XML with the relationship ID
+    hyperlink_xml = (
+        f'<w:hyperlink xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
+        f'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '
+        f'r:id="{rel_id}">'
+        f'<w:r>'
+        f'<w:rPr>'
+        f'<w:rStyle w:val="Hyperlink"/>'
+        f'<w:u w:val="single"/>'
+        f'<w:color w:val="0563C1"/>'
+        f'</w:rPr>'
+        f'<w:t>{text}</w:t>'
+        f'</w:r>'
+        f'</w:hyperlink>'
+    )
+    
+    try:
+        hyperlink_element = parse_xml(hyperlink_xml)
+        paragraph._element.append(hyperlink_element)
+        
+        # Format the text
+        for run in paragraph.runs:
+            if text in run.text or run.text == text:
+                run.font.size = Pt(9)
+                run.underline = True
+                run.font.color.rgb = RGBColor(5, 99, 193)  # Blue color
+                break
+    except Exception as e:
+        # Fallback: just add plain text if hyperlink fails
+        run = paragraph.add_run(text)
+        run.font.size = Pt(9)
+
+
+def _set_repeat_table_header(table) -> None:
+    """Set the first row of a table to repeat on each page."""
+    tbl = table._element
+    tblPr = tbl.tblPr
+    if tblPr is None:
+        tblPr = OxmlElement('w:tblPr')
+        tbl.insert(0, tblPr)
+    
+    # Add repeat header rows property
+    tblPrChange = OxmlElement('w:tblHeader')
+    tblPr.append(tblPrChange)
+    
+    # Set first row as header
+    if len(table.rows) > 0:
+        tr = table.rows[0]._element
+        trPr = tr.trPr
+        if trPr is None:
+            trPr = OxmlElement('w:trPr')
+            tr.insert(0, trPr)
+        
+        repeat_header = OxmlElement('w:tblHeader')
+        trPr.append(repeat_header)
+
+
+def write_transactions_docx(file_path: str, payload: dict[str, Any]) -> None:
+    document = Document()
+    section = document.sections[0]
+    section.orientation = WD_ORIENT.PORTRAIT
+    section.top_margin = Cm(1.25)
+    section.bottom_margin = Cm(1.25)
+    section.left_margin = Cm(1.25)
+    section.right_margin = Cm(1.25)
+
+    normal_style = document.styles["Normal"]
+    normal_style.font.name = "Calibri"
+    normal_style.font.size = Pt(9)
+
+    document.add_heading("Rapportage Kasboek & Bankrekening - Tabelexport", level=1)
+
+    generated_at = normalize_text(payload.get("generatedAt")) or datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+    total_transactions = int(payload.get("totalTransactions") or 0)
+    filters = payload.get("filters") if isinstance(payload.get("filters"), dict) else {}
+
+    meta_paragraph = document.add_paragraph()
+    meta_paragraph.add_run(f"Gegenereerd op {generated_at} | Totaal transacties: {total_transactions}").bold = True
+
+    filter_lines = [
+        f"Maand: {normalize_text(filters.get('month')) or 'Alle maanden'}",
+        f"Tag filter: {normalize_text(filters.get('tag')) or 'Alle tags'}",
+        f"Bron filter: {normalize_text(filters.get('source')) or 'Alle bronnen'}",
+        f"Zoeken mededelingen: {normalize_text(filters.get('mededelingen')) or '-'}",
+    ]
+    for line in filter_lines:
+        document.add_paragraph(line)
+
+    document.add_paragraph("")
+
+    # Set column widths for portrait format
+    column_widths = [Cm(1.4), Cm(1.2), Cm(1.2), Cm(1.2), Cm(2.8), Cm(2.0), Cm(0.9)]
+    headers = ["Datum", "Bron", "Debet", "Credit", "Omschrijving", "Mededelingen", "Bon"]
+
+    groups = payload.get("groups") if isinstance(payload.get("groups"), list) else []
+    if not groups:
+        # Create a single table for the "no transactions" message
+        table = document.add_table(rows=1, cols=7)
+        table.style = "Table Grid"
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+        for idx, width in enumerate(column_widths):
+            for row in table.rows:
+                row.cells[idx].width = width
+        
+        empty_cells = table.rows[0].cells
+        merged_cell = empty_cells[0].merge(empty_cells[6])
+        _set_docx_cell_text(merged_cell, "Geen transacties gevonden.")
+    else:
+        # Create a separate table for each category/tag
+        for group in groups:
+            tag = normalize_text(group.get("tag")) or "(Geen tag)"
+            rows = group.get("rows") if isinstance(group.get("rows"), list) else []
+
+            # Add category heading
+            category_heading = document.add_paragraph()
+            category_heading.add_run(f"Categorie: {tag} ({len(rows)} transacties)").bold = True
+
+            # Create table for this category
+            table = document.add_table(rows=1, cols=7)
+            table.style = "Table Grid"
+            table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+            # Set column widths
+            for idx, width in enumerate(column_widths):
+                for row in table.rows:
+                    row.cells[idx].width = width
+
+            # Add headers
+            header_cells = table.rows[0].cells
+            for index, header in enumerate(headers):
+                _set_docx_cell_text(header_cells[index], header, bold=True)
+
+            # Set header to repeat on each page
+            _set_repeat_table_header(table)
+
+            # Add transaction rows for this category
+            for row in rows:
+                row_cells = table.add_row().cells
+                _set_docx_cell_text(row_cells[0], row.get("date"))
+                _set_docx_cell_text(row_cells[1], row.get("source"))
+                _set_docx_cell_text(row_cells[2], row.get("debet"))
+                _set_docx_cell_text(row_cells[3], row.get("credit"))
+                _set_docx_cell_text(row_cells[4], row.get("description"))
+                _set_docx_cell_text(row_cells[5], row.get("mededelingen"))
+                
+                # Handle bon column - only show as link if bon URL is available
+                bon_url = normalize_text(row.get("bon"))
+                bon_cell = row_cells[6]
+                bon_cell.text = ""
+                bon_paragraph = bon_cell.paragraphs[0]
+                bon_paragraph.alignment = 1  # Center alignment
+                
+                if bon_url and bon_url.startswith("http"):
+                    _add_docx_hyperlink(document, bon_paragraph, bon_url, "BON")
+                else:
+                    # Leave empty if no bon URL
+                    _set_docx_cell_text(bon_cell, "")
+                
+                bon_cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+
+            # Add subtotal row
+            subtotal_cells = table.add_row().cells
+            subtotal_label_cell = subtotal_cells[0].merge(subtotal_cells[1])
+            _set_docx_cell_text(subtotal_label_cell, f"Subtotaal {tag}", bold=True)
+            _set_docx_cell_text(subtotal_cells[2], group.get("subtotalDebet"), bold=True)
+            _set_docx_cell_text(subtotal_cells[3], group.get("subtotalCredit"), bold=True)
+            _set_docx_cell_text(subtotal_cells[4], "")
+            _set_docx_cell_text(subtotal_cells[5], "")
+            _set_docx_cell_text(subtotal_cells[6], "")
+
+            # Add spacing between tables
+            document.add_paragraph("")
+
+    document.save(file_path)
+
+
 @app.before_request
 def log_request() -> None:
     logging.info("REQUEST %s %s %s", request.remote_addr, request.method, request.path)
@@ -371,6 +588,37 @@ def index():
 @app.route("/api/report-data")
 def report_data():
     return jsonify(get_report_payload_cached())
+
+
+@app.route("/api/export-table-docx", methods=["POST"])
+def export_table_docx():
+    payload = request.get_json(silent=True) or {}
+    groups = payload.get("groups")
+
+    if not isinstance(groups, list):
+        return jsonify({"success": False, "message": "Ongeldige exportdata ontvangen."}), 400
+
+    export_dir = get_export_directory()
+
+    try:
+        os.makedirs(export_dir, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"transacties debutade {timestamp}.docx"
+        file_path = os.path.join(export_dir, file_name)
+
+        write_transactions_docx(file_path, payload)
+        logging.info("DOCX export aangemaakt: %s", file_path)
+        return jsonify(
+            {
+                "success": True,
+                "message": "Word-document aangemaakt.",
+                "file_name": file_name,
+                "file_path": file_path,
+            }
+        )
+    except Exception as exc:
+        logging.exception("Fout bij DOCX export: %s", exc)
+        return jsonify({"success": False, "message": f"DOCX export mislukt: {exc}"}), 500
 
 
 @app.route("/quit", methods=["POST"])

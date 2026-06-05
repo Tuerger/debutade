@@ -314,6 +314,34 @@
             padding: 12px;
         }
 
+        .table-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .table-export-btn {
+            border: 1px solid var(--border);
+            background: #ffffff;
+            color: #1d2f45;
+            border-radius: 8px;
+            padding: 7px 11px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .table-export-btn:hover {
+            background: #eef3f8;
+        }
+
+        .table-export-btn:disabled {
+            cursor: wait;
+            opacity: 0.7;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -364,6 +392,18 @@
         .amount-neg {
             color: var(--danger);
             font-weight: 700;
+        }
+
+        tr.tag-group-header td {
+            background: #f6f9fc;
+            font-weight: 700;
+            border-top: 2px solid #d9e4ef;
+        }
+
+        tr.tag-group-subtotal td {
+            background: #fafcff;
+            font-weight: 700;
+            border-top: 1px dashed #d9e4ef;
         }
 
         .table-wrapper {
@@ -591,16 +631,18 @@
         </section>
 
         <section id="tableView" class="table-card view-panel view-panel-hidden">
-            <h3>Transacties</h3>
+            <div class="table-title-row">
+                <h3>Transacties</h3>
+                <button type="button" id="exportTableBtn" class="table-export-btn">Exporteer tabel naar Word</button>
+            </div>
             <div class="table-wrapper">
                 <table>
                     <thead>
                         <tr>
-                            <th class="col-date">Datum</th>
+                            <th class="col-date" title="Gesorteerd op datum (nieuwste eerst)">Datum v</th>
                             <th>Bron</th>
-                            <th>Af/Bij</th>
-                            <th>Bedrag</th>
-                            <th>Tag</th>
+                            <th>Debet</th>
+                            <th>Credit</th>
                             <th>Omschrijving</th>
                             <th>Mededelingen</th>
                             <th class="col-bon">Bon</th>
@@ -628,6 +670,7 @@
     const tableView = document.getElementById("tableView");
     const viewChartsBtn = document.getElementById("viewChartsBtn");
     const viewTableBtn = document.getElementById("viewTableBtn");
+    const exportTableBtn = document.getElementById("exportTableBtn");
 
     const saldoSpaar1 = document.getElementById("saldoSpaar1");
     const saldoSpaar2 = document.getElementById("saldoSpaar2");
@@ -1284,13 +1327,110 @@
         });
     }
 
-    function renderTable(filtered) {
-        transactionsBody.innerHTML = "";
+    function extractTagNumericValue(tag) {
+        const raw = String(tag || "").trim();
+        const prefix = raw.split(";")[0].trim();
+        const value = Number.parseInt(prefix, 10);
+        return Number.isFinite(value) ? value : Number.POSITIVE_INFINITY;
+    }
+
+    function getGroupedTransactions(filtered, orderMode = "latest") {
+        const groupedByTag = new Map();
 
         filtered.forEach(tx => {
+            const tagKey = String(tx.tag || "(Geen tag)").trim() || "(Geen tag)";
+            if (!groupedByTag.has(tagKey)) {
+                groupedByTag.set(tagKey, []);
+            }
+            groupedByTag.get(tagKey).push(tx);
+        });
+
+        const groupedEntries = [...groupedByTag.entries()].sort((a, b) => {
+            if (orderMode === "numeric-tag") {
+                const numA = extractTagNumericValue(a[0]);
+                const numB = extractTagNumericValue(b[0]);
+                if (numA !== numB) {
+                    return numA - numB;
+                }
+                return a[0].localeCompare(b[0], "nl");
+            }
+
+            const latestA = [...a[1]].sort((x, y) => String(y.date || "").localeCompare(String(x.date || "")))[0];
+            const latestB = [...b[1]].sort((x, y) => String(y.date || "").localeCompare(String(x.date || "")))[0];
+            const latestDateA = String(latestA?.date || "");
+            const latestDateB = String(latestB?.date || "");
+
+            if (latestDateA !== latestDateB) {
+                return latestDateB.localeCompare(latestDateA);
+            }
+            return a[0].localeCompare(b[0], "nl");
+        });
+
+        return groupedEntries.map(([tag, rows]) => {
+            const sortedRows = [...rows].sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+            let subtotalDebet = 0;
+            let subtotalCredit = 0;
+
+            const normalizedRows = sortedRows.map(tx => {
+                const signedAmount = Number(tx.signed_amount || 0);
+                const absoluteAmount = Number(tx.amount || Math.abs(signedAmount) || 0);
+                const isDebet = tx.af_bij === "Af" || signedAmount < 0;
+                const isCredit = tx.af_bij === "Bij" || signedAmount > 0;
+
+                if (isDebet) subtotalDebet += absoluteAmount;
+                if (isCredit) subtotalCredit += absoluteAmount;
+
+                return {
+                    tx,
+                    isDebet,
+                    isCredit,
+                    debetDisplay: isDebet ? toEuro(absoluteAmount) : "",
+                    creditDisplay: isCredit ? toEuro(absoluteAmount) : "",
+                };
+            });
+
+            return {
+                tag,
+                rows: normalizedRows,
+                subtotalDebet,
+                subtotalCredit,
+            };
+        });
+    }
+
+    function getTransactionsSortedByDate(filtered) {
+        return [...filtered].sort((a, b) => {
+            const dateA = String(a.date || "");
+            const dateB = String(b.date || "");
+
+            if (dateA !== dateB) {
+                return dateB.localeCompare(dateA);
+            }
+
+            const sourceA = String(a.source || "");
+            const sourceB = String(b.source || "");
+            if (sourceA !== sourceB) {
+                return sourceA.localeCompare(sourceB, "nl");
+            }
+
+            return String(a.description || "").localeCompare(String(b.description || ""), "nl");
+        });
+    }
+
+    function renderTable(filtered) {
+        transactionsBody.innerHTML = "";
+        const sortedTransactions = getTransactionsSortedByDate(filtered);
+
+        sortedTransactions.forEach(tx => {
             const tr = document.createElement("tr");
             const signedAmount = Number(tx.signed_amount || 0);
-            const amountClass = signedAmount >= 0 ? "amount-pos" : "amount-neg";
+            const absoluteAmount = Number(tx.amount || Math.abs(signedAmount) || 0);
+            const isDebet = tx.af_bij === "Af" || signedAmount < 0;
+            const isCredit = tx.af_bij === "Bij" || signedAmount > 0;
+
+            const debetDisplay = isDebet ? toEuro(absoluteAmount) : "";
+            const creditDisplay = isCredit ? toEuro(absoluteAmount) : "";
+
             const bonUrl = normalizeUrl(tx.bon);
             const bonCell = bonUrl
                 ? `<a class="bon-link" href="${escapeHtml(bonUrl)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(bonUrl)}">Open</a>`
@@ -1299,9 +1439,8 @@
             tr.innerHTML = `
                 <td class="col-date">${escapeHtml(tx.date || "")}</td>
                 <td>${escapeHtml(tx.source || "")}</td>
-                <td>${escapeHtml(tx.af_bij || "")}</td>
-                <td class="${amountClass}">${toEuro(signedAmount)}</td>
-                <td>${escapeHtml(tx.tag || "")}</td>
+                <td>${debetDisplay}</td>
+                <td>${creditDisplay}</td>
                 <td>${escapeHtml(tx.description || "")}</td>
                 <td>${escapeHtml(tx.mededelingen || "")}</td>
                 <td class="col-bon">${bonCell}</td>
@@ -1310,7 +1449,76 @@
             transactionsBody.appendChild(tr);
         });
 
-        rowCount.textContent = `${filtered.length} transacties`;
+        rowCount.textContent = `${sortedTransactions.length} transacties`;
+    }
+
+    function buildWordExportPayload(grouped, filtered) {
+        const generatedAt = new Date().toLocaleString("nl-NL");
+        const monthLabelText = monthFilter.value ? `${monthShortLabel(monthFilter.value)} ${monthFilter.value.slice(0, 4)}` : "Alle maanden";
+        const tagLabelText = tagFilter.value || "Alle tags";
+        const sourceLabelText = sourceFilter.value || "Alle bronnen";
+        const mededelingenText = mededelingenFilter.value.trim() || "-";
+
+        return {
+            generatedAt,
+            totalTransactions: filtered.length,
+            filters: {
+                month: monthLabelText,
+                tag: tagLabelText,
+                source: sourceLabelText,
+                mededelingen: mededelingenText,
+            },
+            groups: grouped.map(group => ({
+                tag: group.tag,
+                subtotalDebet: toEuro(group.subtotalDebet),
+                subtotalCredit: toEuro(group.subtotalCredit),
+                rows: group.rows.map(item => ({
+                    date: item.tx.date || "",
+                    source: item.tx.source || "",
+                    debet: item.debetDisplay || "",
+                    credit: item.creditDisplay || "",
+                    description: item.tx.description || "",
+                    mededelingen: item.tx.mededelingen || "",
+                    bon: normalizeUrl(item.tx.bon),
+                })),
+            })),
+        };
+    }
+
+    async function exportTableToWord() {
+        const filtered = getFilteredTransactions();
+        const grouped = getGroupedTransactions(filtered, "numeric-tag");
+        const payload = buildWordExportPayload(grouped, filtered);
+        const originalLabel = exportTableBtn?.textContent || "Exporteer tabel naar Word";
+
+        if (exportTableBtn) {
+            exportTableBtn.disabled = true;
+            exportTableBtn.textContent = "Bezig met exporteren...";
+        }
+
+        try {
+            const response = await fetch("/api/export-table-docx", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || "Onbekende fout tijdens export.");
+            }
+
+            alert(`Word-document opgeslagen in:\n${data.file_path}`);
+        } catch (error) {
+            alert(`Export mislukt:\n${error.message || error}`);
+        } finally {
+            if (exportTableBtn) {
+                exportTableBtn.disabled = false;
+                exportTableBtn.textContent = originalLabel;
+            }
+        }
     }
 
     function applyFiltersAndRender() {
@@ -1359,6 +1567,7 @@
     mededelingenFilter.addEventListener("input", applyFiltersAndRender);
     viewChartsBtn?.addEventListener("click", () => setView("charts"));
     viewTableBtn?.addEventListener("click", () => setView("table"));
+    exportTableBtn?.addEventListener("click", exportTableToWord);
 
     const MAIN_APP_URL = "{{ main_app_url|default('') }}";
 

@@ -27,6 +27,31 @@ DUTCH_STOP_WORDS = ENGLISH_STOP_WORDS | {
 }
 
 
+def _normalize_tag_key(value: str) -> str:
+    return str(value or "").strip().casefold()
+
+
+def _extract_tag_code(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+
+    for delimiter in (";", ":", "-", "|"):
+        if delimiter in text:
+            candidate = text.split(delimiter, 1)[0].strip()
+            if candidate:
+                return candidate
+
+    # Fallback: pak numeriek prefix als code (bijv. "8700 Koffie")
+    prefix_digits = []
+    for ch in text:
+        if ch.isdigit():
+            prefix_digits.append(ch)
+        else:
+            break
+    return "".join(prefix_digits)
+
+
 def _create_bedrag_bin(bedrag: float) -> str:
     """Verdeel bedrag in bins voor betere feature engineering."""
     if bedrag < 0:
@@ -51,7 +76,8 @@ class TagRecommender:
     def __init__(self, training_path: str, allowed_tags: List[str] | None = None, additional_data_path: str | None = None, confidence_threshold: float = 0.15):
         self.training_path = training_path
         self.additional_data_path = additional_data_path  # Bijv. werkbestand met al ingevulde tags
-        self.allowed_tags = set(allowed_tags or [])
+        self.allowed_tags = set(str(tag).strip() for tag in (allowed_tags or []) if str(tag).strip())
+        self.allowed_tag_lookup = self._build_allowed_tag_lookup(self.allowed_tags)
         self.tag_token_freq: defaultdict[str, Counter[str]] = defaultdict(Counter)
         self.token_doc_freq: Counter[str] = Counter()
         self.tag_totals: Counter[str] = Counter()
@@ -61,6 +87,45 @@ class TagRecommender:
         self.model = None
         self.confidence_threshold = confidence_threshold  # Min. confidence voor ML-suggestie
         self.class_weights = None  # Voor class-balancing
+
+    @staticmethod
+    def _build_allowed_tag_lookup(allowed_tags: set[str]) -> dict[str, str]:
+        lookup: dict[str, str] = {}
+
+        for canonical in allowed_tags:
+            normalized = _normalize_tag_key(canonical)
+            if normalized:
+                lookup[normalized] = canonical
+
+            code = _extract_tag_code(canonical)
+            code_key = _normalize_tag_key(code)
+            if code_key and code_key not in lookup:
+                lookup[code_key] = canonical
+
+            if ";" in canonical:
+                description = canonical.split(";", 1)[1].strip()
+                desc_key = _normalize_tag_key(description)
+                if desc_key and desc_key not in lookup:
+                    lookup[desc_key] = canonical
+
+        return lookup
+
+    def _canonicalize_allowed_tag(self, value: str) -> str | None:
+        raw = str(value or "").strip()
+        if not raw:
+            return None
+        if not self.allowed_tags:
+            return raw
+
+        direct = self.allowed_tag_lookup.get(_normalize_tag_key(raw))
+        if direct:
+            return direct
+
+        code = _extract_tag_code(raw)
+        if code:
+            return self.allowed_tag_lookup.get(_normalize_tag_key(code))
+
+        return None
 
     @staticmethod
     def _tokenize(text: str) -> List[str]:
@@ -177,10 +242,12 @@ class TagRecommender:
                 for row in sheet.iter_rows(min_row=2, values_only=True):
                     if not row or len(row) <= tag_col:
                         continue
-                    tag_val = str(row[tag_col] or "").strip()
-                    if not tag_val:
+                    raw_tag_val = str(row[tag_col] or "").strip()
+                    if not raw_tag_val:
                         continue
-                    if self.allowed_tags and tag_val not in self.allowed_tags:
+
+                    tag_val = self._canonicalize_allowed_tag(raw_tag_val)
+                    if not tag_val:
                         continue
 
                     # Bouw feature string met gewichten
@@ -408,8 +475,11 @@ class TagRecommender:
                 # Filter op confidence threshold
                 confident_results = []
                 for tag, score in paired:
+                    canonical_tag = self._canonicalize_allowed_tag(tag)
+                    if not canonical_tag:
+                        continue
                     if score >= self.confidence_threshold:
-                        confident_results.append({"tag": tag, "score": round(float(score), 4)})
+                        confident_results.append({"tag": canonical_tag, "score": round(float(score), 4)})
                     if len(confident_results) >= top_k:
                         break
                 
@@ -418,9 +488,12 @@ class TagRecommender:
                 
                 # Fallback: geen scores boven threshold, retourneer top-1 wel (beter dan niets)
                 if paired:
+                    canonical_top = self._canonicalize_allowed_tag(paired[0][0])
+                    if not canonical_top:
+                        return []
                     logging.debug("Laag vertrouwen (%f) voor suggestie, maar retourneer top-1: %s (score: %f)", 
                                  paired[0][1], paired[0][0], paired[0][1])
-                    return [{"tag": paired[0][0], "score": round(float(paired[0][1]), 4)}]
+                    return [{"tag": canonical_top, "score": round(float(paired[0][1]), 4)}]
                 
             except Exception as exc:  # noqa: BLE001
                 logging.debug("Fout bij ML aanbeveling (val terug op heuristics): %s", exc)

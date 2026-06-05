@@ -171,6 +171,23 @@
             border-radius: 8px;
             padding: 12px;
             text-align: center;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .stat-card.is-filter {
+            cursor: pointer;
+        }
+
+        .stat-card.is-filter:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 22px rgba(15, 27, 43, 0.08);
+            border-color: #b9d7e6;
+        }
+
+        .stat-card.is-active {
+            border-color: #33abd5;
+            box-shadow: 0 0 0 3px rgba(51, 171, 213, 0.16);
+            background: linear-gradient(180deg, #ffffff 0%, #f4fbfe 100%);
         }
 
         .stat-card h3 {
@@ -192,6 +209,7 @@
             border-collapse: collapse;
             background-color: #fff;
             margin-top: 20px;
+            table-layout: fixed;
         }
 
         th, td {
@@ -199,6 +217,8 @@
             text-align: left;
             border-bottom: 1px solid #ecf0f1;
             font-size: 12px;
+            vertical-align: top;
+            overflow-wrap: anywhere;
         }
 
         th {
@@ -237,6 +257,7 @@
         .amount {
             font-weight: 600;
             color: #1b2b45;
+            white-space: nowrap;
         }
 
         .amount.zero {
@@ -398,10 +419,37 @@
             color: #7f8c8d;
         }
 
+        .search-wrap {
+            margin-top: 14px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .search-input {
+            width: min(460px, 100%);
+            padding: 10px 12px;
+            border: 1px solid #cfd9e6;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #1a2433;
+            background-color: #ffffff;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #33abd5;
+            box-shadow: 0 0 0 3px rgba(51, 171, 213, 0.18);
+        }
+
         .status-icon {
             font-size: 18px;
             line-height: 1;
             display: inline-block;
+        }
+
+        .status-cell {
+            text-align: center;
+            white-space: nowrap;
         }
 
         .status-ok {
@@ -445,6 +493,59 @@
 
         .insight-details[open] summary::before {
             content: "v";
+        }
+
+        .tx-list {
+            margin-top: 8px;
+            padding-left: 16px;
+        }
+
+        .tx-list li {
+            margin-bottom: 4px;
+            font-size: 11px;
+            color: #334155;
+            line-height: 1.35;
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .col-member {
+            width: 8%;
+        }
+
+        .col-name {
+            width: 12%;
+        }
+
+        .col-against {
+            width: 16%;
+        }
+
+        .col-email {
+            width: 16%;
+        }
+
+        .col-due {
+            width: 10%;
+        }
+
+        .col-received {
+            width: 10%;
+        }
+
+        .col-note {
+            width: 17%;
+        }
+
+        .col-status {
+            width: 7%;
+        }
+
+        .col-action {
+            width: 14%;
         }
 
         @media (max-width: 768px) {
@@ -552,19 +653,19 @@
                     <h3>Totaal leden</h3>
                     <span>{{ stats.get('total', 0) }}</span>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card is-filter" data-status-filter="status-ok">
                     <h3>Volledig</h3>
                     <span>{{ stats.get('exact', 0) }}</span>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card is-filter" data-status-filter="status-partial">
                     <h3>Gedeeltelijk</h3>
                     <span>{{ stats.get('partial', 0) }}</span>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card is-filter" data-status-filter="status-none">
                     <h3>Nog niets</h3>
                     <span>{{ stats.get('none', 0) }}</span>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card is-filter" data-status-filter="status-neutral">
                     <h3>N.v.t. (0/0)</h3>
                     <span>{{ stats.get('neutral', 0) }}</span>
                 </div>
@@ -589,13 +690,36 @@
             </p>
         </div>
 
-        <div class="records-count">Aantal records: {{ records|length }}</div>
+        <div class="search-wrap">
+            <input
+                id="memberSearch"
+                class="search-input"
+                type="text"
+                placeholder="Zoek op naam, lidnummer of tegenrekening"
+                autocomplete="off"
+            >
+        </div>
 
+        <div class="records-count" id="recordsCount">Aantal records: {{ records|length }}</div>
+
+        <div class="table-wrap">
         <table>
+            <colgroup>
+                <col class="col-member">
+                <col class="col-name">
+                <col class="col-against">
+                <col class="col-email">
+                <col class="col-due">
+                <col class="col-received">
+                <col class="col-note">
+                <col class="col-status">
+                <col class="col-action">
+            </colgroup>
             <thead>
                 <tr>
                     <th>ID-lid</th>
                     <th>Achternaam</th>
+                    <th>Tegenrekening</th>
                     <th>Email</th>
                     <th>Te innen bedrag</th>
                     <th>Ontvangen bedrag</th>
@@ -606,16 +730,30 @@
             </thead>
             <tbody>
                 {% for record in records %}
-                <tr>
+                <tr data-search="{{ (record.member_id ~ ' ' ~ record.achternaam ~ ' ' ~ record.tegenrekening)|lower }}" data-status="{{ record.status_class }}">
                     <td>{{ record.member_id }}</td>
                     <td>{{ record.achternaam }}</td>
+                    <td>{{ record.tegenrekening or '-' }}</td>
                     <td>{{ record.email }}</td>
                     <td class="amount">€ {{ "%.2f"|format(record.due_amount) }}</td>
                     <td class="amount {% if record.received_amount == 0 %}zero{% endif %}">€ {{ "%.2f"|format(record.received_amount) }}</td>
-                    <td>{{ record.opmerking }}</td>
-                    <td title="{{ record.status_label }}">
+                    <td>
+                        <div>{{ record.opmerking }}</div>
+                        {% if record.matched_transactions %}
+                        <details class="insight-details" {% if record.status_label == 'Gedeeltelijk ontvangen' %}open{% endif %}>
+                            <summary>{{ record.matched_transactions|length }} transactie(s) gekoppeld</summary>
+                            <ul class="tx-list">
+                                {% for tx in record.matched_transactions %}
+                                <li>
+                                    € {{ "%.2f"|format(tx.amount) }} - {{ tx.mededelingen }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </details>
+                        {% endif %}
+                    </td>
+                    <td class="status-cell" title="{{ record.status_label }}">
                         <span class="status-icon {{ record.status_class }}">{{ record.status_icon }}</span>
-                        <span>{{ record.status_label }}</span>
                     </td>
                     <td>
                         {% if record.status_label == 'Nog niets ontvangen' %}
@@ -632,6 +770,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
 
         {% if unmatched_transactions %}
         <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e1e6ed;">
@@ -823,8 +962,61 @@
             }
         }
 
-            updateHeaderDateTime();
-            setInterval(updateHeaderDateTime, 1000);
+        function initializeMemberSearch() {
+            const input = document.getElementById('memberSearch');
+            const rows = Array.from(document.querySelectorAll('tbody tr[data-search]'));
+            const countEl = document.getElementById('recordsCount');
+            const filterCards = Array.from(document.querySelectorAll('.stat-card[data-status-filter]'));
+            let activeStatusFilter = '';
+
+            if (!input || rows.length === 0 || !countEl) {
+                return;
+            }
+
+            const renderCount = (count) => {
+                countEl.textContent = `Aantal records: ${count}`;
+            };
+
+            const applyFilter = () => {
+                const query = input.value.trim().toLowerCase();
+                let visibleCount = 0;
+
+                rows.forEach((row) => {
+                    const haystack = (row.getAttribute('data-search') || '').toLowerCase();
+                    const rowStatus = row.getAttribute('data-status') || '';
+                    const searchMatch = !query || haystack.includes(query);
+                    const statusMatch = !activeStatusFilter || rowStatus === activeStatusFilter;
+                    const match = searchMatch && statusMatch;
+                    row.style.display = match ? '' : 'none';
+                    if (match) {
+                        visibleCount += 1;
+                    }
+                });
+
+                renderCount(visibleCount);
+            };
+
+            filterCards.forEach((card) => {
+                card.addEventListener('click', () => {
+                    const nextFilter = card.getAttribute('data-status-filter') || '';
+                    activeStatusFilter = activeStatusFilter === nextFilter ? '' : nextFilter;
+
+                    filterCards.forEach((candidate) => {
+                        const isActive = candidate.getAttribute('data-status-filter') === activeStatusFilter;
+                        candidate.classList.toggle('is-active', isActive);
+                    });
+
+                    applyFilter();
+                });
+            });
+
+            input.addEventListener('input', applyFilter);
+            applyFilter();
+        }
+
+        updateHeaderDateTime();
+        setInterval(updateHeaderDateTime, 1000);
+        initializeMemberSearch();
     </script>
 </body>
 </html>

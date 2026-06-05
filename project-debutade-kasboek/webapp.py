@@ -192,19 +192,26 @@ def build_tag_lookup(tags):
 
         lookup[normalize_tag_key(canonical)] = canonical
 
-        if ";" in canonical:
-            code, description = canonical.split(";", 1)
-            code_key = normalize_tag_key(code)
-            description_key = normalize_tag_key(description)
+        code = canonical
+        description = ""
+        for delimiter in (";", ":", "-", "|"):
+            if delimiter in canonical:
+                code, description = canonical.split(delimiter, 1)
+                code = code.strip()
+                description = description.strip()
+                break
 
-            if code_key and code_key not in lookup:
-                lookup[code_key] = canonical
+        code_key = normalize_tag_key(code)
+        description_key = normalize_tag_key(description)
 
-            if description_key:
-                if description_key not in description_keys:
-                    description_keys[description_key] = canonical
-                else:
-                    description_keys[description_key] = None
+        if code_key and code_key not in lookup:
+            lookup[code_key] = canonical
+
+        if description_key:
+            if description_key not in description_keys:
+                description_keys[description_key] = canonical
+            else:
+                description_keys[description_key] = None
 
     for description_key, canonical in description_keys.items():
         if canonical and description_key not in lookup:
@@ -555,19 +562,54 @@ def recommend_category():
             logging.warning("Category test set niet gevonden")
             return jsonify({'recommendations': []})
         
-        wb = load_workbook(test_set_path)
+        wb = load_workbook(test_set_path, read_only=True, data_only=True)
         sheet = wb.active
+
+        header_row = next(sheet.iter_rows(min_row=1, max_row=1, values_only=True), ())
+        headers = [str(col or "").strip().lower() for col in header_row]
+        header_lookup = {name: idx for idx, name in enumerate(headers)}
+
+        description_col = None
+        for candidate in (
+            'mededelingen',
+            'mededeling',
+            'naam / omschrijving',
+            'naam/omschrijving',
+            'omschrijving',
+            'description',
+            'memo',
+        ):
+            if candidate in header_lookup:
+                description_col = header_lookup[candidate]
+                break
+
+        tag_col = None
+        for candidate in ('tag', 'tags', 'categorie', 'category'):
+            if candidate in header_lookup:
+                tag_col = header_lookup[candidate]
+                break
+
+        if description_col is None or tag_col is None:
+            logging.warning("Category test set mist vereiste kolommen. Headers: %s", headers)
+            wb.close()
+            return jsonify({'recommendations': []})
         
         # Verzamel alle mededelingen en categorieën
         training_data = []
         for row in sheet.iter_rows(min_row=2, values_only=True):
-            if row[2] and row[3]:  # Mededelingen en Tag kolommen
-                canonical_category = canonicalize_tag(row[3])
+            if len(row) <= max(description_col, tag_col):
+                continue
+
+            description_value = row[description_col]
+            tag_value = row[tag_col]
+
+            if description_value and tag_value:
+                canonical_category = canonicalize_tag(tag_value)
                 if not canonical_category:
                     continue
 
                 training_data.append({
-                    'description': str(row[2]).lower(),
+                    'description': str(description_value).lower(),
                     'category': canonical_category
                 })
         

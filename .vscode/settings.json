@@ -1,3 +1,10 @@
 {
-    "python-envs.defaultEnvManager": "ms-python.python:system"
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "chat.tools.terminal.autoApprove": {
+        "/^C:/Debutade/\\.venv-main/Scripts/python\\.exe -m pip install python-docx>=1\\.1\\.2$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "git -C C:\\Debutade": true
+    }
 }

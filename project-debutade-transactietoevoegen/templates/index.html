@@ -677,8 +677,8 @@
                             <th style="width: 165px;">Rekening</th>
                             <th style="width: 165px;">Tegenrekening</th>
                             <th style="width: 90px;">Code</th>
-                            <th style="width: 65px;">Af/Bij</th>
-                            <th style="width: 95px;">Bedrag</th>
+                            <th style="width: 95px;">Debet</th>
+                            <th style="width: 95px;">Credit</th>
                             <th>Mededelingen</th>
                             <th style="width: 150px;">Tag</th>
                         </tr>
@@ -713,8 +713,8 @@
                             <th style="width: 165px;">Rekening</th>
                             <th style="width: 165px;">Tegenrekening</th>
                             <th style="width: 90px;">Code</th>
-                            <th style="width: 65px;">Af/Bij</th>
-                            <th style="width: 95px;">Bedrag</th>
+                            <th style="width: 95px;">Debet</th>
+                            <th style="width: 95px;">Credit</th>
                             <th>Mededelingen</th>
                             <th style="width: 150px;">Tag</th>
                         </tr>
@@ -928,6 +928,21 @@
         document.getElementById("txnCount").textContent = `${total} records${suffix}`;
     }
 
+    function formatTransactionAmount(amount) {
+        return `€ ${Number(amount || 0).toFixed(2)}`;
+    }
+
+    function getDebitCreditDisplay(txn) {
+        const amountDisplay = formatTransactionAmount(txn.bedrag);
+        if (txn.af_bij === "Af") {
+            return { debet: amountDisplay, credit: "" };
+        }
+        if (txn.af_bij === "Bij") {
+            return { debet: "", credit: amountDisplay };
+        }
+        return { debet: "", credit: "" };
+    }
+
     function renderTransactions(transactions, showPreview) {
         const tbody = document.getElementById("transactionsBody");
         tbody.innerHTML = "";
@@ -950,8 +965,7 @@
                 row.classList.add("preview-row");
             }
 
-            const amountClass = txn.af_bij === "Bij" ? "amount-pos" : "amount-neg";
-            const amountDisplay = `€ ${txn.bedrag.toFixed(2)}`;
+            const amounts = getDebitCreditDisplay(txn);
 
             row.innerHTML = `
                 <td>${txn.date}</td>
@@ -960,8 +974,8 @@
                 <td>${txn.rekening || ""}</td>
                 <td>${txn.tegenrekening || ""}</td>
                 <td>${txn.code || ""}</td>
-                <td>${txn.af_bij}</td>
-                <td class="${amountClass}">${amountDisplay}</td>
+                <td>${amounts.debet}</td>
+                <td>${amounts.credit}</td>
                 <td>${txn.mededelingen || ""}</td>
                 <td>${txn.tag || ""}</td>
             `;
@@ -1071,8 +1085,7 @@
             const row = document.createElement("tr");
             row.classList.add("preview-row");
 
-            const amountClass = txn.af_bij === "Bij" ? "amount-pos" : "amount-neg";
-            const amountDisplay = `€ ${txn.bedrag.toFixed(2)}`;
+            const amounts = getDebitCreditDisplay(txn);
 
             row.innerHTML = `
                 <td>${txn.date}</td>
@@ -1081,8 +1094,8 @@
                 <td>${txn.rekening || ""}</td>
                 <td>${txn.tegenrekening || ""}</td>
                 <td>${txn.code || ""}</td>
-                <td>${txn.af_bij}</td>
-                <td class="${amountClass}">${amountDisplay}</td>
+                <td>${amounts.debet}</td>
+                <td>${amounts.credit}</td>
                 <td>${txn.mededelingen || ""}</td>
                 <td>${txn.tag || ""}</td>
             `;

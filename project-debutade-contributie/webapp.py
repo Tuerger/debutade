@@ -343,6 +343,14 @@ def load_ledenbestand():
         member_id = get_cell_value(row, header_map, "ID-lid", "ID lid", "ID")
         achternaam = get_cell_value(row, header_map, "Achternaam")
         email = get_cell_value(row, header_map, "Email", "E-mail", "Mail")
+        rekeningnummer = get_cell_value(
+            row,
+            header_map,
+            "Rekeningnummer",
+            "Rekening nummer",
+            "IBAN",
+            "Bankrekening",
+        )
         te_innen_bedrag = get_cell_value(
             row,
             header_map,
@@ -354,6 +362,7 @@ def load_ledenbestand():
         member_id = str(member_id).strip() if member_id is not None else ""
         achternaam = str(achternaam or "").strip()
         email = str(email or "").strip()
+        rekeningnummer = normalize_account(rekeningnummer)
         due_amount = parse_amount(te_innen_bedrag)
 
         if not member_id and not achternaam and not email and due_amount == 0:
@@ -368,8 +377,10 @@ def load_ledenbestand():
                 "member_id_4digit": normalize_member_id_4digit(member_id),
                 "achternaam": achternaam,
                 "email": email,
+                "rekeningnummer": rekeningnummer,
                 "due_amount": due_amount,
                 "received_amount": 0.0,
+                "matched_transactions": [],
                 "opmerking": "",
                 "status_icon": "❌",
                 "status_label": "Nog niets ontvangen",
@@ -401,6 +412,14 @@ def load_bank_transactions():
             "Omschrijving",
             "Beschrijving",
         )
+        tegenrekening = get_cell_value(
+            row,
+            header_map,
+            "Tegenrekening",
+            "Tegen rekening",
+            "Rekening",
+            "IBAN",
+        )
         bedrag = get_cell_value(row, header_map, "Bedrag", "Bedrag (EUR)", "BedragEUR")
         af_bij = get_cell_value(row, header_map, "Af Bij", "Af/Bij")
 
@@ -415,6 +434,7 @@ def load_bank_transactions():
             {
                 "mededelingen": str(mededelingen or ""),
                 "amount": amount_value,
+                "tegenrekening": normalize_account(tegenrekening),
             }
         )
 
@@ -468,6 +488,47 @@ def calculate_received_by_name_fallback(achternaam, transactions):
             matched_count += 1
 
     return round(fallback_amount, 2), found, matched_count
+
+
+def collect_matched_transaction_indexes(record, transactions):
+    """Collect matching transaction indexes for a member."""
+    member_id = str(record.get("member_id", "")).strip()
+    member_id_4digit = str(record.get("member_id_4digit", "")).strip()
+    achternaam = str(record.get("achternaam", "")).strip()
+
+    matched_by_id = set()
+    matched_by_manual = set()
+    matched_by_fallback = set()
+
+    for i, tx in enumerate(transactions):
+        mededelingen = str(tx.get("mededelingen", ""))
+
+        if member_id_4digit and member_id_4digit in extract_4digit_tokens(mededelingen):
+            matched_by_id.add(i)
+
+        if find_manual_mapping_for_transaction(mededelingen) == member_id:
+            matched_by_manual.add(i)
+
+    all_matches = set()
+    all_matches.update(matched_by_id)
+    all_matches.update(matched_by_manual)
+
+    # Use name fallback only when no ID/manual matches are found.
+    if not all_matches:
+        pattern = build_name_pattern(achternaam)
+        if pattern:
+            for i, tx in enumerate(transactions):
+                mededelingen = str(tx.get("mededelingen", ""))
+                if mededelingen and pattern.search(mededelingen):
+                    matched_by_fallback.add(i)
+            all_matches.update(matched_by_fallback)
+
+    return {
+        "all": all_matches,
+        "id": matched_by_id,
+        "manual": matched_by_manual,
+        "fallback": matched_by_fallback,
+    }
 
 
 def resolve_bank_excel_path():
@@ -524,15 +585,6 @@ def build_overview():
     records, errors = load_ledenbestand()
     transactions, bank_errors = load_bank_transactions()
     errors.extend(bank_errors)
-    transaction_totals_by_4digit = build_transaction_totals_by_member_id_4digit(transactions)
-
-    transaction_totals_by_manual = {}
-    for tx in transactions:
-        manual_member_id = find_manual_mapping_for_transaction(tx.get("mededelingen", ""))
-        if manual_member_id:
-            transaction_totals_by_manual[manual_member_id] = (
-                transaction_totals_by_manual.get(manual_member_id, 0.0) + tx.get("amount", 0.0)
-            )
 
     matched_transaction_keys = set()
 
@@ -544,20 +596,12 @@ def build_overview():
     for record in records:
         member_id = str(record.get("member_id", "")).strip()
         member_id_4digit = record.get("member_id_4digit", "")
-        achternaam = record.get("achternaam", "")
         due_amount = record.get("due_amount", 0.0)
-        received_amount = transaction_totals_by_4digit.get(member_id_4digit, 0.0)
-
-        if abs(received_amount) < 0.005:
-            received_amount = transaction_totals_by_manual.get(record.get("member_id"), 0.0)
-
-        received_amount = round(received_amount, 2)
-        record["received_amount"] = received_amount
+        record["received_amount"] = 0.0
+        record["matched_transactions"] = []
+        record["tegenrekening"] = ""
         record["opmerking"] = ""
         record["manual_paid_override"] = False
-
-        tx_matched_by_id = set()
-        tx_matched_by_fallback = set()
 
         override_entry = MANUAL_PAID_OVERRIDES.get(member_id)
         if isinstance(override_entry, dict) and override_entry.get("marked_paid"):
@@ -584,6 +628,43 @@ def build_overview():
             none_count += 1
             continue
 
+        match_indexes = collect_matched_transaction_indexes(record, transactions)
+        all_indexes = sorted(match_indexes["all"])
+        matched_transactions = [transactions[i] for i in all_indexes]
+        received_amount = round(sum(tx.get("amount", 0.0) for tx in matched_transactions), 2)
+        record["received_amount"] = received_amount
+        record["matched_transactions"] = [
+            {
+                "amount": round(float(tx.get("amount", 0.0)), 2),
+                "mededelingen": str(tx.get("mededelingen", "")),
+                "tegenrekening": str(tx.get("tegenrekening", "")),
+            }
+            for tx in matched_transactions
+        ]
+
+        tegenrekeningen = []
+        seen_tegenrekeningen = set()
+        for tx in matched_transactions:
+            tr = normalize_account(tx.get("tegenrekening", ""))
+            if tr and tr not in seen_tegenrekeningen:
+                seen_tegenrekeningen.add(tr)
+                tegenrekeningen.append(tr)
+        record["tegenrekening"] = " | ".join(tegenrekeningen)
+
+        if match_indexes["manual"]:
+            record["opmerking"] = "Handmatig gematched via config"
+
+        if match_indexes["fallback"]:
+            fallback_count = len(match_indexes["fallback"])
+            tx_label = "transactie" if fallback_count == 1 else "transacties"
+            achternaam = record.get("achternaam", "")
+            record["opmerking"] = (
+                f"Geen 4-cijferig ID ({member_id_4digit}) gevonden; "
+                f"backup match op achternaam '{achternaam}' ({fallback_count} {tx_label})"
+            )
+
+        matched_transaction_keys.update(all_indexes)
+
         if abs(due_amount) < 0.005 and abs(received_amount) < 0.005:
             record["opmerking"] = "Geen contributie verschuldigd"
             record["status_icon"] = "🟣"
@@ -593,48 +674,13 @@ def build_overview():
             continue
 
         if abs(received_amount) < 0.005:
-            fallback_amount, fallback_found, fallback_count = calculate_received_by_name_fallback(
-                achternaam,
-                transactions,
-            )
-            if fallback_found and abs(fallback_amount) >= 0.005:
-                received_amount = fallback_amount
-                record["received_amount"] = received_amount
-                tx_label = "transactie" if fallback_count == 1 else "transacties"
-                record["opmerking"] = (
-                    f"Geen 4-cijferig ID ({member_id_4digit}) gevonden; "
-                    f"backup match op achternaam '{achternaam}' ({fallback_count} {tx_label})"
-                )
-
-                for i, tx in enumerate(transactions):
-                    pattern = build_name_pattern(achternaam)
-                    if pattern and pattern.search(str(tx.get("mededelingen", ""))):
-                        tx_matched_by_fallback.add(i)
-            else:
+            if not match_indexes["fallback"]:
                 record["opmerking"] = f"Geen 4-cijferig ID ({member_id_4digit}) gevonden in mededelingen"
                 record["status_icon"] = "❌"
                 record["status_label"] = "Nog niets ontvangen"
                 record["status_class"] = "status-none"
                 none_count += 1
                 continue
-
-        if abs(received_amount) >= 0.005:
-            for i, tx in enumerate(transactions):
-                if member_id_4digit in extract_4digit_tokens(tx.get("mededelingen", "")):
-                    tx_matched_by_id.add(i)
-
-        # Track manual mappings
-        tx_matched_by_manual = set()
-        if record.get("member_id") in transaction_totals_by_manual and abs(received_amount - transaction_totals_by_manual[record.get("member_id")]) < 0.005:
-            for i, tx in enumerate(transactions):
-                if find_manual_mapping_for_transaction(tx.get("mededelingen", "")) == record.get("member_id"):
-                    tx_matched_by_manual.add(i)
-            if tx_matched_by_manual and not record["opmerking"]:
-                record["opmerking"] = "Handmatig gematched via config"
-
-        matched_transaction_keys.update(tx_matched_by_id)
-        matched_transaction_keys.update(tx_matched_by_fallback)
-        matched_transaction_keys.update(tx_matched_by_manual)
 
         if abs(received_amount - due_amount) <= 0.009:
             record["status_icon"] = "✅"

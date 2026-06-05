@@ -18,6 +18,7 @@ Deze webapp toont gecombineerde rapportage van **kasboek** en **bankrekening/spa
   - Verticale bar chart per **tag** met totaal positief en totaal negatief
   - Horizontale bar chart per **maand** met totaal positief en totaal negatief
 - Tabel met transacties onderaan
+- Export van de zichtbare tabel naar een **Word-document** (`.docx`) in `shared.grootboek_directory`
 - Alle onderdelen reageren op dezelfde filters (kaarten, grafieken en tabel)
 
 ## Databronnen
@@ -61,12 +62,15 @@ Standaard draait de app op de poort uit `DEBUTADE_APP_PORT` (fallback: `5004`).
 De frontend haalt data op via:
 
 - `GET /api/report-data`
+- `POST /api/export-table-docx`
 
 Response bevat:
 
 - `transactions`: genormaliseerde transacties
 - `filters`: beschikbare maanden/tags/bronnen
 - `warnings`: waarschuwingen (bijv. als Excel-bestand ontbreekt)
+
+De exportroute schrijft een Word-document weg in de map uit `shared.grootboek_directory` met een bestandsnaam in de vorm `transacties debutade <timestamp>.docx`.
 
 ## Bestanden
 
