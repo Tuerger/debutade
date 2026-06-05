@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2026-06-05
+
+- Synced multiple Debutade apps to GitHub in one update, including bankrekening, contributie, kasboek, rapporten, and transactietoevoegen.
+- Improved the bankrekening AI recommender and refreshed its UI template.
+- Expanded contributie and kasboek workflows with backend and template updates.
+- Added a fuller rapporten webapp implementation plus documentation and dependency updates.
+- Updated the transactietoevoegen flow and related form rendering.
+
 ## 2026-01-09
 
 - Added documented build via PyInstaller `.spec` (preferred) using "Debutade Apps Starter.spec" and noted Python/PyInstaller versions used.
