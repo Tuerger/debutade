@@ -106,7 +106,8 @@
             "1061": "Naam: HCM WALSTRA DEGELING Omschrijving: Contributie 2e helft 2026 IBAN: NL41ABNA0493186913 Datum/Tijd: 27-05-2026 09:09:41 Valutadatum: 27-05-2026",
             "1097": "Naam: Mw C Schoemaker-V Meggelen e/o Hr J H Schoemaker IBAN: NL25INGB0004150491 Datum/Tijd: 22-05-2026 14:34:59 Valutadatum: 22-05-2026",
             "1058": "Naam: NYVANN C Omschrijving: 2026 tweede betaling IBAN: NL07ABNA0818729031 Datum/Tijd: 26-05-2026 21:37:18 Valutadatum: 26-05-2026",
-            "1119": "Naam: H. Wen Omschrijving: Zihao en Zihan IBAN: NL18RABO0333569636 Datum/Tijd: 26-05-2026 16:27:30 Valutadatum: 26-05-2026"
+            "1119": "Naam: H. Wen Omschrijving: Zihao en Zihan IBAN: NL18RABO0333569636 Datum/Tijd: 26-05-2026 16:27:30 Valutadatum: 26-05-2026",
+            "1006": "Naam: Hr S R Walda en Mw C M Walda-vt Hoff Omschrijving: Contributie 2006 lidnr 1006 IBAN: NL56INGB0004483322 Datum/Tijd: 24-05-2026 20:28:12 Valutadatum: 24-05-2026"
         },
         "manual_paid_overrides": {
             "1069": {
@@ -123,6 +124,15 @@
                 "marked_paid": true,
                 "reason": "Na overleg met secretaris besloten om lidmaatschap tijdelijk op pauze te zetten",
                 "updated_at": "2026-04-13 16:33:59"
+            }
+        },
+        "manual_split_decisions": {
+            "Naam: C.P.T. Grapendaal eo W.M.A. Grapendaal-Huijbregts Omschrijving: Contributie 2026 nr. 1042 Thea Grapendaal en. Cees Grapendaal 1138 IBAN: NL77RABO0333014510 Datum/Tijd: 04-06-2026 10:17:36 Valutadatum: 04-06-2026": {
+                "mode": "split"
+            },
+            "Naam: Hr S R Walda en Mw C M Walda-vt Hoff Omschrijving: Contributie 2006 lidnr 1006 IBAN: NL56INGB0004483322 Datum/Tijd: 24-05-2026 20:28:12 Valutadatum: 24-05-2026": {
+                "mode": "single_member",
+                "member_id": "1006"
             }
         }
     }

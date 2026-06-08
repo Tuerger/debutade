@@ -821,6 +821,61 @@
         </div>
         {% endif %}
 
+        {% if pending_ambiguous_transactions %}
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e1e6ed;">
+            <h3 style="font-size: 16px; color: #1a2433; margin-bottom: 12px;">Transacties met meerdere lidnummers ({{ pending_ambiguous_transactions|length }})</h3>
+            <p style="font-size: 12px; color: #7f8c8d; margin-bottom: 12px;">
+                Kies per transactie of je wilt splitsen. Je keuze wordt opgeslagen en de volgende keer automatisch toegepast.
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bedrag</th>
+                        <th>Mededelingen</th>
+                        <th>Kandidaten</th>
+                        <th style="width: 240px;">Actie</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in pending_ambiguous_transactions %}
+                    <tr>
+                        <td style="text-align: right; font-weight: 600;">€ {{ "%.2f"|format(tx.amount) }}</td>
+                        <td style="font-size: 11px; color: #475569;">{{ tx.mededelingen }}</td>
+                        <td style="font-size: 12px; color: #334155;">
+                            {% for candidate in tx.candidates %}
+                                {{ candidate.member_id }} - {{ candidate.achternaam }}{% if not loop.last %}<br>{% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <button
+                                type="button"
+                                onclick="saveSplitDecision(this, 'split')"
+                                data-mededelingen="{{ tx.mededelingen }}"
+                                style="padding: 6px 10px; background-color: #2563eb; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 6px;"
+                            >
+                                Bevestig splitsen
+                            </button>
+                            {% for candidate in tx.candidates %}
+                            <button
+                                type="button"
+                                onclick="saveSplitDecision(this, 'single_member', '{{ candidate.member_id }}')"
+                                data-mededelingen="{{ tx.mededelingen }}"
+                                style="padding: 6px 10px; background-color: #475569; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 6px; margin-right: 6px;"
+                            >
+                                Niet splitsen: {{ candidate.member_id }}
+                            </button>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p style="margin-top: 8px; font-size: 12px; color: #7f8c8d;">
+                Totaal ambigue transacties: <strong>€ {{ "%.2f"|format(stats.get('ambiguous_total', 0)) }}</strong>
+            </p>
+        </div>
+        {% endif %}
+
         <div class="page-footer">© Eric Greuter - Debutade</div>
     </div>
     <script>
@@ -933,6 +988,47 @@
                 .catch(error => {
                     console.error('Error:', error);
                     alert('Fout bij opslaan: ' + error.message);
+                });
+        }
+
+        function saveSplitDecision(button, mode, memberId = '') {
+            const mededelingen = button.dataset.mededelingen;
+            if (!mededelingen) {
+                alert('Kan transactie niet bepalen.');
+                return;
+            }
+
+            button.disabled = true;
+            const originalText = button.textContent;
+            button.textContent = 'Bezig...';
+
+            fetch('/save_split_decision', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    mededelingen: mededelingen,
+                    mode: mode,
+                    member_id: memberId
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Keuze opgeslagen. De pagina wordt ververst.');
+                        window.location.reload();
+                    } else {
+                        alert('Fout: ' + (data.error || 'Onbekende fout'));
+                        button.disabled = false;
+                        button.textContent = originalText;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Fout bij opslaan: ' + error.message);
+                    button.disabled = false;
+                    button.textContent = originalText;
                 });
         }
 

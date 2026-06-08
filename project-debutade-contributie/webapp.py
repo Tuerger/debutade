@@ -109,6 +109,7 @@ BANK_EXCEL_PATH = config.get("bank_excel_file_path") or config.get("bank_excel_f
 BANK_SHEET_NAME = config["bank_sheet_name"]
 MANUAL_TRANSACTION_MAPPINGS = config.get("manual_transaction_mappings", {})
 MANUAL_PAID_OVERRIDES = config.get("manual_paid_overrides", {})
+MANUAL_SPLIT_DECISIONS = config.get("manual_split_decisions", {})
 BANK_EXCEL_FALLBACK_BASENAMES = [
     "Debutade boekjaar 2026 Bank",
     "Debutade boekjaar bank 2026",
@@ -260,6 +261,46 @@ def find_manual_mapping_for_transaction(mededelingen):
             return member_id
 
     return None
+
+
+def find_manual_split_decision(mededelingen):
+    if not mededelingen:
+        return None
+
+    mededelingen_lower = str(mededelingen).lower()
+    best_match = None
+    best_match_length = -1
+
+    for fragment, decision in MANUAL_SPLIT_DECISIONS.items():
+        fragment_text = str(fragment or "").strip()
+        if not fragment_text:
+            continue
+
+        fragment_lower = fragment_text.lower()
+        if fragment_lower not in mededelingen_lower:
+            continue
+
+        if len(fragment_lower) <= best_match_length:
+            continue
+
+        if isinstance(decision, str):
+            normalized = {"mode": decision}
+        elif isinstance(decision, dict):
+            normalized = dict(decision)
+        else:
+            continue
+
+        mode = str(normalized.get("mode", "")).strip().lower()
+        if mode not in {"split", "single_member"}:
+            continue
+
+        if mode == "single_member" and not str(normalized.get("member_id", "")).strip():
+            continue
+
+        best_match = normalized
+        best_match_length = len(fragment_lower)
+
+    return best_match
 
 
 def extract_tag_code(value):
@@ -455,6 +496,94 @@ def build_transaction_totals_by_member_id_4digit(transactions):
     return totals_by_member_id_4digit
 
 
+def split_amount_equally(amount, parts):
+    if parts <= 0:
+        return []
+
+    amount_cents = int(round(float(amount) * 100))
+    sign = -1 if amount_cents < 0 else 1
+    abs_cents = abs(amount_cents)
+    base = abs_cents // parts
+    remainder = abs_cents % parts
+
+    shares = []
+    for idx in range(parts):
+        cents = (base + (1 if idx < remainder else 0)) * sign
+        shares.append(cents / 100.0)
+    return shares
+
+
+def build_id_split_allocations(transactions, member_lookup_by_4digit):
+    allocations_by_member = {}
+    transaction_has_known_member_id = {}
+    pending_ambiguous_transactions = []
+
+    for idx, transaction in enumerate(transactions):
+        mededelingen = transaction.get("mededelingen", "")
+        tokens = extract_4digit_tokens(mededelingen)
+        matched_tokens = sorted(token for token in tokens if token in member_lookup_by_4digit)
+
+        if not matched_tokens:
+            transaction_has_known_member_id[idx] = False
+            continue
+
+        transaction_has_known_member_id[idx] = True
+
+        if len(matched_tokens) == 1:
+            token = matched_tokens[0]
+            allocations_by_member.setdefault(token, []).append(
+                {
+                    "index": idx,
+                    "amount": round(float(transaction.get("amount", 0.0)), 2),
+                    "split_count": 1,
+                }
+            )
+            continue
+
+        decision = find_manual_split_decision(mededelingen)
+        if decision and decision.get("mode") == "split":
+            shares = split_amount_equally(transaction.get("amount", 0.0), len(matched_tokens))
+            for token, share in zip(matched_tokens, shares):
+                allocations_by_member.setdefault(token, []).append(
+                    {
+                        "index": idx,
+                        "amount": round(float(share), 2),
+                        "split_count": len(matched_tokens),
+                    }
+                )
+            continue
+
+        if decision and decision.get("mode") == "single_member":
+            selected_member_id = str(decision.get("member_id", "")).strip()
+            selected_member_id_4digit = normalize_member_id_4digit(selected_member_id)
+            if selected_member_id_4digit in matched_tokens:
+                allocations_by_member.setdefault(selected_member_id_4digit, []).append(
+                    {
+                        "index": idx,
+                        "amount": round(float(transaction.get("amount", 0.0)), 2),
+                        "split_count": 1,
+                    }
+                )
+                continue
+
+        pending_ambiguous_transactions.append(
+            {
+                "index": idx,
+                "amount": round(float(transaction.get("amount", 0.0)), 2),
+                "mededelingen": str(mededelingen or ""),
+                "candidates": [
+                    {
+                        "member_id": str(member_lookup_by_4digit[token].get("member_id", "")),
+                        "achternaam": str(member_lookup_by_4digit[token].get("achternaam", "")),
+                    }
+                    for token in matched_tokens
+                ],
+            }
+        )
+
+    return allocations_by_member, transaction_has_known_member_id, pending_ambiguous_transactions
+
+
 def build_name_pattern(name_value):
     achternaam = str(name_value or "").strip()
     if not achternaam:
@@ -586,6 +715,19 @@ def build_overview():
     transactions, bank_errors = load_bank_transactions()
     errors.extend(bank_errors)
 
+    member_lookup_by_4digit = {
+        str(record.get("member_id_4digit", "")).strip(): {
+            "member_id": str(record.get("member_id", "")).strip(),
+            "achternaam": str(record.get("achternaam", "")).strip(),
+        }
+        for record in records
+        if str(record.get("member_id_4digit", "")).strip()
+    }
+    id_split_allocations, transaction_has_known_member_id, pending_ambiguous_transactions = build_id_split_allocations(
+        transactions,
+        member_lookup_by_4digit,
+    )
+
     matched_transaction_keys = set()
 
     exact_count = 0
@@ -628,31 +770,98 @@ def build_overview():
             none_count += 1
             continue
 
-        match_indexes = collect_matched_transaction_indexes(record, transactions)
-        all_indexes = sorted(match_indexes["all"])
-        matched_transactions = [transactions[i] for i in all_indexes]
-        received_amount = round(sum(tx.get("amount", 0.0) for tx in matched_transactions), 2)
-        record["received_amount"] = received_amount
-        record["matched_transactions"] = [
-            {
+        matched_by_id = set()
+        matched_by_manual = set()
+        matched_by_fallback = set()
+        matched_entries = {}
+
+        for allocation in id_split_allocations.get(member_id_4digit, []):
+            tx_index = allocation["index"]
+            matched_by_id.add(tx_index)
+            tx = transactions[tx_index]
+            matched_entries[tx_index] = {
+                "amount": round(float(allocation.get("amount", 0.0)), 2),
+                "mededelingen": str(tx.get("mededelingen", "")),
+                "tegenrekening": str(tx.get("tegenrekening", "")),
+                "split_count": int(allocation.get("split_count", 1)),
+            }
+
+        for i, tx in enumerate(transactions):
+            if i in matched_by_id:
+                continue
+
+            mededelingen = str(tx.get("mededelingen", ""))
+            if find_manual_mapping_for_transaction(mededelingen) != member_id:
+                continue
+
+            # Manual mapping is fallback: do not override transactions with known IDs.
+            if transaction_has_known_member_id.get(i, False):
+                continue
+
+            matched_by_manual.add(i)
+            matched_entries[i] = {
                 "amount": round(float(tx.get("amount", 0.0)), 2),
                 "mededelingen": str(tx.get("mededelingen", "")),
                 "tegenrekening": str(tx.get("tegenrekening", "")),
+                "split_count": 1,
             }
-            for tx in matched_transactions
-        ]
+
+        all_matches = set()
+        all_matches.update(matched_by_id)
+        all_matches.update(matched_by_manual)
+
+        if not all_matches:
+            pattern = build_name_pattern(record.get("achternaam", ""))
+            if pattern:
+                for i, tx in enumerate(transactions):
+                    if transaction_has_known_member_id.get(i, False):
+                        continue
+                    mededelingen = str(tx.get("mededelingen", ""))
+                    if mededelingen and pattern.search(mededelingen):
+                        matched_by_fallback.add(i)
+                        matched_entries[i] = {
+                            "amount": round(float(tx.get("amount", 0.0)), 2),
+                            "mededelingen": mededelingen,
+                            "tegenrekening": str(tx.get("tegenrekening", "")),
+                            "split_count": 1,
+                        }
+                all_matches.update(matched_by_fallback)
+
+        all_indexes = sorted(all_matches)
+        matched_items = [matched_entries[i] for i in all_indexes if i in matched_entries]
+        received_amount = round(sum(item.get("amount", 0.0) for item in matched_items), 2)
+        record["received_amount"] = received_amount
+        record["matched_transactions"] = matched_items
 
         tegenrekeningen = []
         seen_tegenrekeningen = set()
-        for tx in matched_transactions:
-            tr = normalize_account(tx.get("tegenrekening", ""))
+        for item in matched_items:
+            tr = normalize_account(item.get("tegenrekening", ""))
             if tr and tr not in seen_tegenrekeningen:
                 seen_tegenrekeningen.add(tr)
                 tegenrekeningen.append(tr)
         record["tegenrekening"] = " | ".join(tegenrekeningen)
 
+        match_indexes = {
+            "all": all_matches,
+            "id": matched_by_id,
+            "manual": matched_by_manual,
+            "fallback": matched_by_fallback,
+        }
+
         if match_indexes["manual"]:
             record["opmerking"] = "Handmatig gematched via config"
+
+        split_transactions_count = sum(
+            1
+            for item in matched_items
+            if int(item.get("split_count", 1)) > 1
+        )
+        if split_transactions_count > 0:
+            tx_label = "transactie" if split_transactions_count == 1 else "transacties"
+            record["opmerking"] = (
+                f"Bedrag verdeeld over meerdere lidnummers in {split_transactions_count} {tx_label}"
+            )
 
         if match_indexes["fallback"]:
             fallback_count = len(match_indexes["fallback"])
@@ -730,14 +939,16 @@ def build_overview():
         "total_received": sum(item.get("received_amount", 0.0) for item in records),
         "unmatched_count": len(unmatched_transactions),
         "unmatched_total": round(sum(tx.get("amount", 0.0) for tx in unmatched_transactions), 2),
+        "ambiguous_count": len(pending_ambiguous_transactions),
+        "ambiguous_total": round(sum(tx.get("amount", 0.0) for tx in pending_ambiguous_transactions), 2),
     }
 
-    return _cache_set(cache_key, (records, stats, errors, unmatched_transactions))
+    return _cache_set(cache_key, (records, stats, errors, unmatched_transactions, pending_ambiguous_transactions))
 
 
 @app.route("/")
 def index():
-    records, stats, errors, unmatched_transactions = build_overview()
+    records, stats, errors, unmatched_transactions, pending_ambiguous_transactions = build_overview()
     current_date = datetime.now().strftime("%d-%m-%Y")
     current_user = os.getlogin()
     return render_template(
@@ -746,6 +957,7 @@ def index():
         stats=stats,
         errors=errors,
         unmatched_transactions=unmatched_transactions,
+        pending_ambiguous_transactions=pending_ambiguous_transactions,
         current_date=current_date,
         current_user=current_user,
         main_app_url=MAIN_APP_URL,
@@ -863,6 +1075,51 @@ def save_paid_override():
 
     except Exception as exc:
         logging.error("Fout bij opslaan paid override: %s", str(exc))
+        return jsonify({"success": False, "error": f"Fout: {str(exc)}"}), 500
+
+
+@app.route("/save_split_decision", methods=["POST"])
+def save_split_decision():
+    """Sla handmatig besluit op voor transacties met meerdere lidnummers."""
+    try:
+        data = request.get_json() or {}
+        mededelingen = str(data.get("mededelingen", "")).strip()
+        mode = str(data.get("mode", "")).strip().lower()
+        member_id = str(data.get("member_id", "")).strip()
+
+        if not mededelingen:
+            return jsonify({"success": False, "error": "Mededelingen zijn verplicht"}), 400
+
+        if mode not in {"split", "single_member"}:
+            return jsonify({"success": False, "error": "Ongeldige keuze"}), 400
+
+        if mode == "single_member" and not member_id:
+            return jsonify({"success": False, "error": "Lid nummer is verplicht bij niet splitsen"}), 400
+
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            config_data = json.load(f)
+
+        if "contributie" not in config_data:
+            config_data["contributie"] = {}
+        if "manual_split_decisions" not in config_data["contributie"]:
+            config_data["contributie"]["manual_split_decisions"] = {}
+
+        decision_payload = {"mode": mode}
+        if mode == "single_member":
+            decision_payload["member_id"] = member_id
+
+        config_data["contributie"]["manual_split_decisions"][mededelingen] = decision_payload
+        MANUAL_SPLIT_DECISIONS[mededelingen] = decision_payload
+
+        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(config_data, f, indent=4, ensure_ascii=False)
+
+        invalidate_runtime_cache()
+        logging.info("Split-besluit opgeslagen: mode=%s member_id=%s", mode, member_id)
+        return jsonify({"success": True, "message": "Besluit opgeslagen"}), 200
+
+    except Exception as exc:
+        logging.error("Fout bij opslaan split-besluit: %s", str(exc))
         return jsonify({"success": False, "error": f"Fout: {str(exc)}"}), 500
 
 
