@@ -644,6 +644,7 @@
                             <th>Debet</th>
                             <th>Credit</th>
                             <th>Omschrijving</th>
+                            <th>Tag</th>
                             <th>Mededelingen</th>
                             <th class="col-bon">Bon</th>
                         </tr>
@@ -1442,6 +1443,7 @@
                 <td>${debetDisplay}</td>
                 <td>${creditDisplay}</td>
                 <td>${escapeHtml(tx.description || "")}</td>
+                <td>${escapeHtml(tx.tag || "")}</td>
                 <td>${escapeHtml(tx.mededelingen || "")}</td>
                 <td class="col-bon">${bonCell}</td>
             `;

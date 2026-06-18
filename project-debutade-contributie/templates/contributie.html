@@ -209,7 +209,7 @@
             border-collapse: collapse;
             background-color: #fff;
             margin-top: 20px;
-            table-layout: fixed;
+            table-layout: auto;
         }
 
         th, td {
@@ -228,6 +228,8 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            padding: 8px 10px;
+            line-height: 1.2;
         }
 
         tr:hover {
@@ -468,6 +470,10 @@
             color: #7c3aed;
         }
 
+        .status-overpaid {
+            color: #f59e0b;
+        }
+
         .insight-details {
             margin-top: 8px;
             font-size: 10px;
@@ -507,45 +513,61 @@
             line-height: 1.35;
         }
 
+        table button {
+            max-width: 100%;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            line-height: 1.2;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .table-wrap {
             width: 100%;
             overflow-x: auto;
         }
 
         .col-member {
-            width: 8%;
-        }
-
-        .col-name {
-            width: 12%;
-        }
-
-        .col-against {
-            width: 16%;
-        }
-
-        .col-email {
-            width: 16%;
-        }
-
-        .col-due {
-            width: 10%;
-        }
-
-        .col-received {
-            width: 10%;
-        }
-
-        .col-note {
-            width: 17%;
-        }
-
-        .col-status {
             width: 7%;
         }
 
-        .col-action {
+        .col-name {
+            width: 10%;
+        }
+
+        .col-against {
+            width: 12%;
+        }
+
+        .col-email {
             width: 14%;
+        }
+
+        .col-due {
+            width: 8%;
+        }
+
+        .col-received {
+            width: 8%;
+        }
+
+        .col-refunded {
+            width: 8%;
+        }
+
+        .col-note {
+            width: 14%;
+        }
+
+        .col-status {
+            width: 5%;
+        }
+
+        .col-action {
+            width: 10%;
         }
 
         @media (max-width: 768px) {
@@ -677,6 +699,14 @@
                     <h3>Totaal ontvangen</h3>
                     <span>€ {{ "%.2f"|format(stats.get('total_received', 0)) }}</span>
                 </div>
+                <div class="stat-card">
+                    <h3>Totaal teruggestort</h3>
+                    <span>€ {{ "%.2f"|format(stats.get('total_refunded', 0)) }}</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Netto ontvangen</h3>
+                    <span>€ {{ "%.2f"|format(stats.get('total_net_received', 0)) }}</span>
+                </div>
             </div>
 
             <div class="legend" style="margin-top: 14px;">
@@ -686,7 +716,8 @@
                 <div class="legend-item">Niet van toepassing (te innen 0 en ontvangen 0)</div>
             </div>
             <p style="margin-top: 8px; font-size: 12px; color: #475569;">
-                Alleen transacties met tag 8000;Contributies - Volwassenen of 8001;Contributies - Jeugd worden verwerkt.
+                Contributies: transacties met tag 8000;Contributies - Volwassenen of 8001;Contributies - Jeugd<br>
+                Terugstortingen: transacties met tag 4990 of 4991 (te veel betaalde contributie)
             </p>
         </div>
 
@@ -704,6 +735,7 @@
 
         <div class="table-wrap">
         <table>
+            {% set has_any_refunds = records|selectattr('has_refund_transactions')|list|length > 0 %}
             <colgroup>
                 <col class="col-member">
                 <col class="col-name">
@@ -711,6 +743,7 @@
                 <col class="col-email">
                 <col class="col-due">
                 <col class="col-received">
+                {% if has_any_refunds %}<col class="col-refunded">{% endif %}
                 <col class="col-note">
                 <col class="col-status">
                 <col class="col-action">
@@ -723,6 +756,7 @@
                     <th>Email</th>
                     <th>Te innen bedrag</th>
                     <th>Ontvangen bedrag</th>
+                    {% if has_any_refunds %}<th>Teruggestort bedrag</th>{% endif %}
                     <th>Opmerking</th>
                     <th>Status</th>
                     <th>Actie</th>
@@ -737,13 +771,29 @@
                     <td>{{ record.email }}</td>
                     <td class="amount">€ {{ "%.2f"|format(record.due_amount) }}</td>
                     <td class="amount {% if record.received_amount == 0 %}zero{% endif %}">€ {{ "%.2f"|format(record.received_amount) }}</td>
+                    {% if has_any_refunds %}<td class="amount {% if record.refunded_amount == 0 %}zero{% endif %}">€ {{ "%.2f"|format(record.refunded_amount) }}</td>{% endif %}
                     <td>
                         <div>{{ record.opmerking }}</div>
+                        {% if record.penningmeester_opmerking %}
+                        <div style="margin-top: 6px; font-size: 11px; color: #334155;">{{ record.penningmeester_opmerking }}</div>
+                        {% endif %}
                         {% if record.matched_transactions %}
-                        <details class="insight-details" {% if record.status_label == 'Gedeeltelijk ontvangen' %}open{% endif %}>
-                            <summary>{{ record.matched_transactions|length }} transactie(s) gekoppeld</summary>
+                        <details class="insight-details">
+                            <summary>{{ record.matched_transactions|length }} ontvangen transactie(s)</summary>
                             <ul class="tx-list">
                                 {% for tx in record.matched_transactions %}
+                                <li>
+                                    € {{ "%.2f"|format(tx.amount) }} - {{ tx.mededelingen }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </details>
+                        {% endif %}
+                        {% if record.matched_refunds %}
+                        <details class="insight-details">
+                            <summary>{{ record.matched_refunds|length }} teruggestorte transactie(s)</summary>
+                            <ul class="tx-list">
+                                {% for tx in record.matched_refunds %}
                                 <li>
                                     € {{ "%.2f"|format(tx.amount) }} - {{ tx.mededelingen }}
                                 </li>
@@ -760,9 +810,18 @@
                         <button
                             type="button"
                             onclick="toggleManualPaidOverride('{{ record.member_id }}', true)"
-                            style="padding: 6px 10px; background-color: #16a34a; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;"
+                            style="padding: 6px 10px; background-color: #16a34a; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; margin-right: 4px;"
                         >
-                            Handmatige verwerking
+                            Betaald
+                        </button>
+                        {% endif %}
+                        {% if record.has_refund_transactions %}
+                        <button
+                            type="button"
+                            onclick="toggleManualRefundOverride('{{ record.member_id }}')"
+                            style="padding: 6px 10px; background-color: #e74c3c; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;"
+                        >
+                            Teruggestort
                         </button>
                         {% endif %}
                     </td>
@@ -784,7 +843,7 @@
                         <th>Bedrag</th>
                         <th>Mededelingen</th>
                         <th style="width: 150px;">Lid nummer</th>
-                        <th style="width: 80px;">Actie</th>
+                        <th style="width: 100px;">Actie</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -807,7 +866,7 @@
                                     data-index="{{ loop.index0 }}"
                                     data-mededelingen="{{ tx.mededelingen }}"
                                     onclick="saveMemberMapping(this)"
-                                    style="padding: 6px 12px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500;">
+                                    style="width: 100%; min-width: 78px; padding: 6px 8px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; white-space: nowrap;">
                                 Opslaan
                             </button>
                         </td>
@@ -817,6 +876,80 @@
             </table>
             <p style="margin-top: 8px; font-size: 12px; color: #7f8c8d;">
                 Totaal niet gematcht: <strong>€ {{ "%.2f"|format(stats.get('unmatched_total', 0)) }}</strong>
+            </p>
+        </div>
+        {% endif %}
+
+        {% if orphaned_refunds %}
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e1e6ed;">
+            <h3 style="font-size: 16px; color: #1a2433; margin-bottom: 12px;">Terugstortingen voor niet-bestaande leden ({{ orphaned_refunds|length }})</h3>
+            <p style="font-size: 12px; color: #7f8c8d; margin-bottom: 12px;">
+                Terugstortingen (tag 4990/4991) die niet aan een bestaand lid konden worden gekoppeld. Dit kunnen leden zijn die zijn overleden of het lidmaatschap hebben opgezegd.
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bedrag</th>
+                        <th>Mededelingen</th>
+                        <th>Tegenrekening</th>
+                        <th style="width: 200px;">Actie</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for refund in orphaned_refunds %}
+                    <tr>
+                        <td style="text-align: right; font-weight: 600;">€ {{ "%.2f"|format(refund.amount) }}</td>
+                        <td style="font-size: 11px; color: #475569;">{{ refund.mededelingen }}</td>
+                        <td style="font-size: 11px; color: #475569;">{{ refund.tegenrekening or '-' }}</td>
+                        <td>
+                            <button type="button" 
+                                    class="mark-refund-btn"
+                                    data-index="{{ loop.index0 }}"
+                                    data-mededelingen="{{ refund.mededelingen }}"
+                                    data-amount="{{ refund.amount }}"
+                                    onclick="markRefundAsProcessed(this)"
+                                    style="padding: 6px 12px; background-color: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500;">
+                                Teruggestort
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p style="margin-top: 8px; font-size: 12px; color: #7f8c8d;">
+                Totaal teruggestort: <strong>€ {{ "%.2f"|format(stats.get('orphaned_refund_total', 0)) }}</strong>
+            </p>
+        </div>
+        {% endif %}
+
+        {% if processed_orphaned_refunds %}
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e1e6ed;">
+            <h3 style="font-size: 16px; color: #1a2433; margin-bottom: 12px;">Verwerkte terugstortingen penningmeester ({{ processed_orphaned_refunds|length }})</h3>
+            <p style="font-size: 12px; color: #7f8c8d; margin-bottom: 12px;">
+                Overzicht van vastgelegde terugstortingen uit config.json inclusief reden.
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bedrag</th>
+                        <th>Mededelingen</th>
+                        <th>Opmerking</th>
+                        <th>Verwerkt op</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for refund in processed_orphaned_refunds %}
+                    <tr>
+                        <td style="text-align: right; font-weight: 600;">€ {{ "%.2f"|format(refund.amount) }}</td>
+                        <td style="font-size: 11px; color: #475569;">{{ refund.mededelingen }}</td>
+                        <td style="font-size: 11px; color: #334155;">{{ refund.penningmeester_opmerking }}</td>
+                        <td style="font-size: 11px; color: #64748b;">{{ refund.processed_at or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p style="margin-top: 8px; font-size: 12px; color: #7f8c8d;">
+                Totaal verwerkt teruggestort: <strong>€ {{ "%.2f"|format(stats.get('processed_orphaned_refund_total', 0)) }}</strong>
             </p>
         </div>
         {% endif %}
@@ -951,6 +1084,66 @@
                 });
         }
 
+        function saveRefundMapping(button) {
+            const index = button.dataset.index;
+            const mededelingen = button.dataset.mededelingen;
+            const amount = parseFloat(button.dataset.amount);
+            const inputId = `refund_member_id_${index}`;
+            const memberIdInput = document.getElementById(inputId);
+            const memberId = memberIdInput.value.trim();
+
+            if (!memberId) {
+                alert('Voer alstublieft een lid nummer in.');
+                memberIdInput.focus();
+                return;
+            }
+
+            const reason = prompt("Voer de reden in voor deze terugstorting:", "Overledene/Opzegger");
+            if (reason === null) {
+                return;
+            }
+
+            if (!reason.trim()) {
+                alert("Reden is verplicht.");
+                return;
+            }
+
+            // Disable button during save
+            button.disabled = true;
+            button.textContent = 'Bezig...';
+
+            fetch('/save_refund_override', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    member_id: memberId,
+                    amount: amount,
+                    reason: reason.trim()
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Terugstorting opgeslagen! Ververs de pagina om de wijzigingen te zien.');
+                        memberIdInput.style.backgroundColor = '#d4edda';
+                        button.textContent = 'Opgeslagen';
+                        button.style.backgroundColor = '#28a745';
+                    } else {
+                        alert('Fout: ' + (data.error || 'Onbekende fout'));
+                        button.disabled = false;
+                        button.textContent = 'Opslaan';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Fout bij opslaan: ' + error.message);
+                    button.disabled = false;
+                    button.textContent = 'Opslaan';
+                });
+        }
+
         function toggleManualPaidOverride(memberId, markPaid) {
             let reason = "";
             if (markPaid) {
@@ -988,6 +1181,114 @@
                 .catch(error => {
                     console.error('Error:', error);
                     alert('Fout bij opslaan: ' + error.message);
+                });
+        }
+
+        function toggleManualRefundOverride(memberId) {
+            const amountStr = prompt("Voer het teruggestorte bedrag in (bijv. 25.50):", "");
+            if (amountStr === null) {
+                return;
+            }
+            
+            const amount = parseFloat(amountStr.replace(',', '.').trim());
+            if (isNaN(amount) || amount <= 0) {
+                alert("Voer alstublieft een geldig bedrag in (groter dan 0).");
+                return;
+            }
+
+            const reason = prompt("Voer de reden van terugstorting in:", "Te veel betaald");
+            if (reason === null) {
+                return;
+            }
+            
+            if (!reason.trim()) {
+                alert("Reden is verplicht.");
+                return;
+            }
+
+            fetch('/save_refund_override', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    member_id: memberId,
+                    amount: amount,
+                    reason: reason.trim(),
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message + '. De pagina wordt ververst.');
+                        window.location.reload();
+                    } else {
+                        alert('Fout: ' + (data.error || 'Onbekende fout'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Fout bij opslaan: ' + error.message);
+                });
+        }
+
+        function markRefundAsProcessed(button) {
+            const mededelingen = button.dataset.mededelingen;
+            const defaultAmountRaw = String(button.dataset.amount || '').trim();
+            const defaultAmount = defaultAmountRaw ? String(Math.abs(parseFloat(defaultAmountRaw) || 0)).replace('.', ',') : '';
+
+            const amountStr = prompt("Voer het teruggestorte bedrag in:", defaultAmount);
+            if (amountStr === null) {
+                return;
+            }
+
+            const amount = parseFloat(amountStr.replace(',', '.').trim());
+            if (isNaN(amount) || amount <= 0) {
+                alert("Voer alstublieft een geldig bedrag in (groter dan 0).");
+                return;
+            }
+            
+            const reason = prompt("Voer de reden van terugstorting in:", "Overledene / Opzegger");
+            if (reason === null) {
+                return;
+            }
+            
+            if (!reason.trim()) {
+                alert("Reden is verplicht.");
+                return;
+            }
+
+            // Disable button during save
+            button.disabled = true;
+            button.textContent = 'Bezig...';
+
+            fetch('/save_orphaned_refund', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    mededelingen: mededelingen,
+                    amount: amount,
+                    reason: reason.trim()
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Terugstorting verwerkt. De pagina wordt ververst.');
+                        window.location.reload();
+                    } else {
+                        alert('Fout: ' + (data.error || 'Onbekende fout'));
+                        button.disabled = false;
+                        button.textContent = 'Teruggestort';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Fout bij opslaan: ' + error.message);
+                    button.disabled = false;
+                    button.textContent = 'Teruggestort';
                 });
         }
 

@@ -44,6 +44,7 @@
             "4940;Contributies Kunst en Cultuur",
             "4980;Bankkosten",
             "4990;Retourboekingen Contributies",
+            "4991;Retourboekingen Contributies Jeugd",
             "500;Vermogen Debutade",
             "510;Reserveringen",
             "8000;Ontvangen Contributies - Volwassenen",
@@ -107,7 +108,11 @@
             "1097": "Naam: Mw C Schoemaker-V Meggelen e/o Hr J H Schoemaker IBAN: NL25INGB0004150491 Datum/Tijd: 22-05-2026 14:34:59 Valutadatum: 22-05-2026",
             "1058": "Naam: NYVANN C Omschrijving: 2026 tweede betaling IBAN: NL07ABNA0818729031 Datum/Tijd: 26-05-2026 21:37:18 Valutadatum: 26-05-2026",
             "1119": "Naam: H. Wen Omschrijving: Zihao en Zihan IBAN: NL18RABO0333569636 Datum/Tijd: 26-05-2026 16:27:30 Valutadatum: 26-05-2026",
-            "1006": "Naam: Hr S R Walda en Mw C M Walda-vt Hoff Omschrijving: Contributie 2006 lidnr 1006 IBAN: NL56INGB0004483322 Datum/Tijd: 24-05-2026 20:28:12 Valutadatum: 24-05-2026"
+            "1006": "Naam: Hr S R Walda en Mw C M Walda-vt Hoff Omschrijving: Contributie 2006 lidnr 1006 IBAN: NL56INGB0004483322 Datum/Tijd: 24-05-2026 20:28:12 Valutadatum: 24-05-2026",
+            "1017": "Naam: M VD BERGH VAN SPRUNDEL Omschrijving: contributie 2026 lidnr 1017 IBAN: NL04ABNA0550030549 Datum/Tijd: 09-06-2026 19:00:29 Valutadatum: 09-06-2026",
+            "1056": "Naam: HAAKMA M Omschrijving: contributie 2026 IBAN: NL52ABNA0637845919 Datum/Tijd: 09-06-2026 13:27:18 Valutadatum: 09-06-2026",
+            "1055": "Naam: Mw LJJ van Winsen Omschrijving: 2e deel contributie l. Forrer- van Winsen IBAN: NL06INGB0006083752 Datum/Tijd: 09-06-2026 11:12:31 Valutadatum: 09-06-2026",
+            "1052": "Naam: BEST W DE CJ Omschrijving: 2e deel contributie 2026 IBAN: NL95ABNA0841713537 Datum/Tijd: 30-05-2026 01:09:18 Valutadatum: 30-05-2026"
         },
         "manual_paid_overrides": {
             "1069": {
@@ -133,6 +138,23 @@
             "Naam: Hr S R Walda en Mw C M Walda-vt Hoff Omschrijving: Contributie 2006 lidnr 1006 IBAN: NL56INGB0004483322 Datum/Tijd: 24-05-2026 20:28:12 Valutadatum: 24-05-2026": {
                 "mode": "single_member",
                 "member_id": "1006"
+            }
+        },
+        "processed_orphaned_refunds": {
+            "Naam: de heer J Groen en Mevr H Groen-Los Omschrijving: restitutie contributie lidmaatschap Debutade 2026 IBAN: NL34INGB0002733935 Datum/Tijd: 15-05-2026 16:23:30 Valutadatum: 15-05-2026|290.0": {
+                "amount": 290.0,
+                "reason": "Overledene / Opzegger",
+                "processed_at": "2026-06-11 20:02:16"
+            },
+            "Naam: M. van den Bergh van Sprundel Omschrijving: terug gestort ivm te veel betaalde contributie 2026 IBAN: NL04ABNA0550030549 Datum/Tijd: 11-06-2026 19:29:59 Valutadatum: 11-06-2026|290.00": {
+                "amount": 290.0,
+                "reason": "Heeft in vorig boekjaar al betaald",
+                "processed_at": "2026-06-17 19:48:32"
+            },
+            "Naam: Best W De C J Omschrijving: te veel betaalde contributie voor 2026 IBAN: NL95ABNA0841713537 Datum/Tijd: 11-06-2026 19:23:21 Valutadatum: 11-06-2026|145.00": {
+                "amount": 145.0,
+                "reason": "Heeft 3 x een half jaar betaald",
+                "processed_at": "2026-06-17 19:50:04"
             }
         }
     }
