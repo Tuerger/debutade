@@ -249,15 +249,15 @@
         }
 
         .saldo-positive {
-            color: #1a1a1a;
+            color: #122234;
         }
 
         .saldo-zero {
-            color: #2f6ea8;
+            color: #122234;
         }
 
         .saldo-negative {
-            color: var(--danger);
+            color: #122234;
         }
 
         .split {
@@ -309,14 +309,14 @@
         }
 
         .amount-pos {
-            color: var(--good);
+            color: #122234;
             font-weight: 700;
             text-align: right;
             white-space: nowrap;
         }
 
         .amount-neg {
-            color: var(--danger);
+            color: #122234;
             font-weight: 700;
             text-align: right;
             white-space: nowrap;
@@ -329,6 +329,10 @@
             white-space: nowrap;
         }
 
+        .amount-risk {
+            color: var(--danger) !important;
+        }
+
         .diff-wrap {
             display: flex;
             align-items: center;
@@ -337,27 +341,59 @@
         }
 
         .diff-track {
+            position: relative;
             flex: 1;
             height: 10px;
             background: #e8eef5;
+            border: 1px solid #d2dbe7;
             border-radius: 999px;
             overflow: hidden;
+        }
+
+        .diff-track.is-risk {
+            background: #fae8e8;
+            border-color: rgba(240, 93, 94, 0.6);
         }
 
         .diff-fill {
             width: 0;
             height: 100%;
-            opacity: 0.4;
+            opacity: 0.72;
             border-radius: 999px;
             transition: width 650ms ease-out, opacity 380ms ease-out;
         }
 
         .diff-fill.pos {
-            background: rgba(47, 168, 137, 0.9);
+            background: #253447;
         }
 
         .diff-fill.neg {
-            background: rgba(240, 93, 94, 0.9);
+            background: #253447;
+        }
+
+        .diff-missing {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            opacity: 0;
+            background: repeating-linear-gradient(
+                -45deg,
+                rgba(240, 93, 94, 0.95),
+                rgba(240, 93, 94, 0.95) 4px,
+                rgba(240, 93, 94, 0.75) 4px,
+                rgba(240, 93, 94, 0.75) 8px
+            );
+            transition: width 650ms ease-out, opacity 380ms ease-out;
+        }
+
+        .diff-overrun-badge {
+            min-width: 54px;
+            text-align: right;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--danger);
         }
 
         .diff-value {
@@ -379,11 +415,11 @@
         }
 
         .group-header td.amount-pos {
-            color: var(--good);
+            color: #122234;
         }
 
         .group-header td.amount-neg {
-            color: var(--danger);
+            color: #122234;
         }
 
         .group-header td.amount-neutral {
@@ -644,14 +680,37 @@
             return `${percent(pct)} actueel t.o.v. begroot`;
         }
 
-        function amountClass(value) {
-            if (value > 0) {
-                return "amount-pos";
+        function getRiskState(side, actualValue, budgetValue) {
+            const actual = Number(actualValue || 0);
+            const budget = Number(budgetValue || 0);
+            const ratio = budget > 0 ? (actual / budget) * 100 : (actual === 0 ? 0 : 100);
+
+            if (budget <= 0) {
+                return {
+                    isRisk: false,
+                    ratio,
+                    missingPct: 0,
+                    overPct: 0,
+                };
             }
-            if (value < 0) {
-                return "amount-neg";
+
+            if (side === "Bij") {
+                const missingPct = Math.max(0, 100 - ratio);
+                return {
+                    isRisk: actual < budget,
+                    ratio,
+                    missingPct,
+                    overPct: 0,
+                };
             }
-            return "amount-neutral";
+
+            const overPct = Math.max(0, ratio - 100);
+            return {
+                isRisk: actual > budget,
+                ratio,
+                missingPct: 0,
+                overPct,
+            };
         }
 
         function renderHeader(headElement, includeActual) {
@@ -694,48 +753,62 @@
 
             let barIndex = 0;
 
-            function getActualVsBudgetWidth(actualValue, budgetValue) {
-                const actual = Number(actualValue || 0);
-                const budget = Number(budgetValue || 0);
-
-                if (budget === 0) {
-                    return actual === 0 ? 0 : 100;
-                }
-
-                const raw = (actual / budget) * 100;
-                return Math.max(0, Math.min(100, raw));
-            }
-
             function createDifferenceCell(value, actualValue, budgetValue) {
                 const diffTd = document.createElement("td");
+                const risk = getRiskState(side, actualValue, budgetValue);
 
                 const diffWrap = document.createElement("div");
                 diffWrap.className = "diff-wrap";
 
                 const track = document.createElement("div");
                 track.className = "diff-track";
+                if (risk.isRisk) {
+                    track.classList.add("is-risk");
+                }
 
                 const fill = document.createElement("div");
                 fill.className = `diff-fill ${side === "Bij" ? "pos" : "neg"}`;
                 fill.style.transitionDelay = `${Math.min(barIndex * 70, 1000)}ms`;
                 track.appendChild(fill);
 
+                const missing = document.createElement("div");
+                missing.className = "diff-missing";
+                track.appendChild(missing);
+
                 const valueSpan = document.createElement("span");
-                valueSpan.className = `diff-value ${side === "Bij" ? "amount-pos" : "amount-neg"}`;
+                valueSpan.className = `diff-value amount-neutral${risk.isRisk ? " amount-risk" : ""}`;
                 valueSpan.textContent = euro(value || 0);
 
                 diffWrap.appendChild(track);
                 diffWrap.appendChild(valueSpan);
+
+                let overBadge = null;
+                if (side === "Af" && risk.overPct > 0) {
+                    overBadge = document.createElement("span");
+                    overBadge.className = "diff-overrun-badge";
+                    overBadge.textContent = `+${percent(risk.overPct)}`;
+                    diffWrap.appendChild(overBadge);
+                }
+
                 diffTd.appendChild(diffWrap);
 
-                const pct = getActualVsBudgetWidth(actualValue, budgetValue);
+                const pct = Math.max(0, Math.min(100, risk.ratio));
                 const ratioLabel = actualVsBudgetLabel(actualValue, budgetValue);
                 track.title = ratioLabel;
                 fill.title = ratioLabel;
                 valueSpan.title = ratioLabel;
+                if (overBadge) {
+                    overBadge.title = ratioLabel;
+                }
                 requestAnimationFrame(() => {
                     fill.style.width = `${pct}%`;
                     fill.style.opacity = "1";
+
+                    if (side === "Bij" && risk.missingPct > 0) {
+                        const missingPct = Math.max(0, Math.min(100, risk.missingPct));
+                        missing.style.width = `${missingPct}%`;
+                        missing.style.opacity = "1";
+                    }
                 });
 
                 barIndex += 1;
@@ -768,13 +841,14 @@
                 tr.appendChild(categorieTd);
 
                 const budgetTd = document.createElement("td");
-                budgetTd.className = side === "Bij" ? "amount-pos" : "amount-neg";
+                budgetTd.className = "amount-neutral";
                 budgetTd.textContent = euro(row.budget);
                 tr.appendChild(budgetTd);
 
                 if (includeActual) {
+                    const risk = getRiskState(side, row.actual || 0, row.budget || 0);
                     const actualTd = document.createElement("td");
-                    actualTd.className = row.actual === null ? "amount-neutral" : (side === "Bij" ? "amount-pos" : "amount-neg");
+                    actualTd.className = `amount-neutral${risk.isRisk ? " amount-risk" : ""}`;
                     actualTd.textContent = euro(row.actual);
                     tr.appendChild(actualTd);
 
@@ -826,13 +900,14 @@
                 groupHeader.appendChild(categorieTd);
 
                 const budgetTd = document.createElement("td");
-                budgetTd.className = side === "Bij" ? "amount-pos" : "amount-neg";
+                budgetTd.className = "amount-neutral";
                 budgetTd.textContent = euro(budgetTotal);
                 groupHeader.appendChild(budgetTd);
 
                 if (includeActual) {
+                    const risk = getRiskState(side, actualTotal, budgetTotal);
                     const actualTd = document.createElement("td");
-                    actualTd.className = side === "Bij" ? "amount-pos" : "amount-neg";
+                    actualTd.className = `amount-neutral${risk.isRisk ? " amount-risk" : ""}`;
                     actualTd.textContent = euro(actualTotal);
                     groupHeader.appendChild(actualTd);
 
@@ -953,9 +1028,10 @@
                             ${sub ? `<div class="cat-sub">${sub}</div>` : ""}
                         `;
 
-                        const budgetClass = side === "Bij" ? "amount-pos" : "amount-neg";
-                        const actualClass = side === "Bij" ? "amount-pos" : "amount-neg";
-                        const diffClass = side === "Bij" ? "amount-pos" : "amount-neg";
+                        const risk = getRiskState(side, row.actual || 0, row.budget || 0);
+                        const budgetClass = "amount-neutral";
+                        const actualClass = `amount-neutral${risk.isRisk ? " amount-risk" : ""}`;
+                        const diffClass = `amount-neutral${risk.isRisk ? " amount-risk" : ""}`;
 
                         if (!includeActual) {
                             return `
@@ -1026,8 +1102,8 @@
         table { width: 100%; border-collapse: collapse; font-size: 10px; table-layout: fixed; }
         th, td { border: 1px solid #dce6f1; padding: 3px 4px; vertical-align: top; }
         th { background: #eef3f8; text-align: left; }
-        .amount-pos { color: #2fa889; font-weight: 700; text-align: right; white-space: nowrap; }
-        .amount-neg { color: #f05d5e; font-weight: 700; text-align: right; white-space: nowrap; }
+        .amount-neutral { color: #122234; font-weight: 700; text-align: right; white-space: nowrap; }
+        .amount-risk { color: #f05d5e; font-weight: 700; text-align: right; white-space: nowrap; }
         .small { font-size: 9px; color: #5c6f86; }
         .cat-main { color: #3f536b; font-weight: 600; font-size: 10px; }
         .cat-sub { color: #6f7f92; font-size: 9px; margin-top: 1px; padding-left: 12px; }

@@ -33,6 +33,14 @@ def normalize_text(value: Any) -> str:
     return str(value or "").strip()
 
 
+def normalize_tag_key(value: Any) -> str:
+    """Gebruik altijd het tagnummer (deel voor ';') als match-sleutel."""
+    raw = normalize_text(value)
+    if not raw:
+        return "(Geen tag)"
+    return normalize_text(raw.split(";", 1)[0]) or raw
+
+
 def parse_amount(value: Any) -> float | None:
     if isinstance(value, (int, float)):
         return float(value)
@@ -263,6 +271,7 @@ def parse_financial_rows(file_path: str, sheet_name: str, fallback_tag_idx: int 
             rows.append(
                 {
                     "tag": tag,
+                    "tag_key": normalize_tag_key(tag),
                     "af_bij": af_bij,
                     "amount": round(float(amount), 2),
                     "date": parse_date(
@@ -349,6 +358,7 @@ def parse_budget_rows(file_path: str, sheet_name: str) -> tuple[list[dict[str, A
                     "hoofdcategorie": hoofdcategorie,
                     "subcategorie": subcategorie,
                     "tag": tag,
+                    "tag_key": normalize_tag_key(tag),
                     "af_bij": af_bij,
                     "budget": round(float(budget_amount), 2),
                 }
@@ -368,7 +378,7 @@ def summarize_by_side(rows: list[dict[str, Any]]) -> dict[str, dict[str, float]]
 
     for item in rows:
         side = item["af_bij"]
-        tag = item["tag"]
+        tag = item.get("tag_key") or normalize_tag_key(item.get("tag"))
         amount = item["amount"]
         result[side][tag] = round(result[side].get(tag, 0.0) + amount, 2)
 
@@ -378,7 +388,7 @@ def summarize_by_side(rows: list[dict[str, Any]]) -> dict[str, dict[str, float]]
 def summarize_actual_by_tag(rows: list[dict[str, Any]]) -> dict[str, float]:
     result: dict[str, float] = {}
     for item in rows:
-        tag = item.get("tag") or "(Geen tag)"
+        tag = item.get("tag_key") or normalize_tag_key(item.get("tag"))
         amount = float(item.get("amount") or 0.0)
         result[tag] = round(result.get(tag, 0.0) + amount, 2)
     return result
@@ -393,7 +403,8 @@ def build_rows_for_ui(
 
     for item in budget_rows:
         budget_value = round(float(item.get("budget") or 0.0), 2)
-        actual_value = round(actual_by_tag.get(item.get("tag") or "", 0.0), 2)
+        tag_key = item.get("tag_key") or normalize_tag_key(item.get("tag"))
+        actual_value = round(actual_by_tag.get(tag_key, 0.0), 2)
         result.append(
             {
                 "hoofdcategorie": item.get("hoofdcategorie") or "(Geen hoofdcategorie)",
@@ -406,6 +417,60 @@ def build_rows_for_ui(
         )
 
     return result
+
+
+def build_actual_label_by_side(rows: list[dict[str, Any]]) -> dict[str, dict[str, str]]:
+    result: dict[str, dict[str, str]] = {"Bij": {}, "Af": {}}
+
+    for item in rows:
+        side = item.get("af_bij")
+        if side not in result:
+            continue
+
+        tag_key = item.get("tag_key") or normalize_tag_key(item.get("tag"))
+        tag_text = normalize_text(item.get("tag")) or tag_key
+        existing = result[side].get(tag_key)
+
+        # Geef voorkeur aan labels die naast het tagnummer ook een omschrijving hebben.
+        if not existing or (";" in tag_text and ";" not in existing):
+            result[side][tag_key] = tag_text
+
+    return result
+
+
+def append_unmatched_actual_rows(
+    rows_for_ui: list[dict[str, Any]],
+    budget_rows: list[dict[str, Any]],
+    actual_by_tag: dict[str, float],
+    actual_labels_by_tag: dict[str, str],
+    include_actual: bool,
+) -> None:
+    if not include_actual:
+        return
+
+    budget_keys = {
+        (row.get("tag_key") or normalize_tag_key(row.get("tag"))) for row in budget_rows
+    }
+
+    for tag_key in sorted(actual_by_tag.keys()):
+        if tag_key in budget_keys:
+            continue
+
+        actual_value = round(float(actual_by_tag.get(tag_key) or 0.0), 2)
+        if actual_value == 0:
+            continue
+
+        tag_label = actual_labels_by_tag.get(tag_key) or tag_key
+        rows_for_ui.append(
+            {
+                "hoofdcategorie": "Niet in begroting",
+                "subcategorie": tag_label,
+                "tag": tag_label,
+                "budget": 0.0,
+                "actual": actual_value,
+                "difference": actual_value,
+            }
+        )
 
 
 def load_budget_and_actual(include_actual: bool) -> tuple[dict[str, Any], list[str]]:
@@ -437,6 +502,8 @@ def load_budget_and_actual(include_actual: bool) -> tuple[dict[str, Any], list[s
 
     actual_tag_bij: dict[str, float] = {}
     actual_tag_af: dict[str, float] = {}
+    actual_labels_bij: dict[str, str] = {}
+    actual_labels_af: dict[str, str] = {}
     if include_actual:
         bank_rows, bank_warning = parse_financial_rows(
             config.get("bank_excel_path", ""),
@@ -458,12 +525,30 @@ def load_budget_and_actual(include_actual: bool) -> tuple[dict[str, Any], list[s
         if kas_warning:
             warnings.append(kas_warning)
 
-        actual_sides = summarize_by_side(bank_rows + kas_rows)
+        all_actual_rows = bank_rows + kas_rows
+        actual_sides = summarize_by_side(all_actual_rows)
+        actual_labels = build_actual_label_by_side(all_actual_rows)
         actual_tag_bij = actual_sides["Bij"]
         actual_tag_af = actual_sides["Af"]
+        actual_labels_bij = actual_labels["Bij"]
+        actual_labels_af = actual_labels["Af"]
 
     inkomsten_rows = build_rows_for_ui(budget_rows_bij, actual_tag_bij, include_actual)
     uitgaven_rows = build_rows_for_ui(budget_rows_af, actual_tag_af, include_actual)
+    append_unmatched_actual_rows(
+        inkomsten_rows,
+        budget_rows_bij,
+        actual_tag_bij,
+        actual_labels_bij,
+        include_actual,
+    )
+    append_unmatched_actual_rows(
+        uitgaven_rows,
+        budget_rows_af,
+        actual_tag_af,
+        actual_labels_af,
+        include_actual,
+    )
 
     totals = {
         "budget_inkomsten": round(sum(item["budget"] for item in inkomsten_rows), 2),
