@@ -1421,6 +1421,8 @@
     function renderTable(filtered) {
         transactionsBody.innerHTML = "";
         const sortedTransactions = getTransactionsSortedByDate(filtered);
+        let totalDebet = 0;
+        let totalCredit = 0;
 
         sortedTransactions.forEach(tx => {
             const tr = document.createElement("tr");
@@ -1428,6 +1430,13 @@
             const absoluteAmount = Number(tx.amount || Math.abs(signedAmount) || 0);
             const isDebet = tx.af_bij === "Af" || signedAmount < 0;
             const isCredit = tx.af_bij === "Bij" || signedAmount > 0;
+
+            if (isDebet) {
+                totalDebet += absoluteAmount;
+            }
+            if (isCredit) {
+                totalCredit += absoluteAmount;
+            }
 
             const debetDisplay = isDebet ? toEuro(absoluteAmount) : "";
             const creditDisplay = isCredit ? toEuro(absoluteAmount) : "";
@@ -1451,7 +1460,7 @@
             transactionsBody.appendChild(tr);
         });
 
-        rowCount.textContent = `${sortedTransactions.length} transacties`;
+        rowCount.textContent = `${sortedTransactions.length} transacties | Totaal debet: ${toEuro(totalDebet)} | Totaal credit: ${toEuro(totalCredit)}`;
     }
 
     function buildWordExportPayload(grouped, filtered) {
