@@ -474,6 +474,14 @@
             color: #f59e0b;
         }
 
+        .status-opgezegd {
+            color: #c0392b;
+        }
+
+        .status-geen-lid {
+            color: #0ea5a4;
+        }
+
         .insight-details {
             margin-top: 8px;
             font-size: 10px;
@@ -735,7 +743,7 @@
 
         <div class="table-wrap">
         <table>
-            {% set has_any_refunds = records|selectattr('has_refund_transactions')|list|length > 0 %}
+            {% set has_any_refunds = (records + opgezegd_records)|selectattr('has_refund_transactions')|list|length > 0 %}
             <colgroup>
                 <col class="col-member">
                 <col class="col-name">
@@ -876,6 +884,95 @@
             </table>
             <p style="margin-top: 8px; font-size: 12px; color: #7f8c8d;">
                 Totaal niet gematcht: <strong>€ {{ "%.2f"|format(stats.get('unmatched_total', 0)) }}</strong>
+            </p>
+        </div>
+        {% endif %}
+
+        {% if opgezegd_records %}
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e1e6ed;">
+            <h3 style="font-size: 16px; color: #1a2433; margin-bottom: 12px;">Transacties van opgezegde leden ({{ opgezegd_records|length }})</h3>
+            <p style="font-size: 12px; color: #7f8c8d; margin-bottom: 12px;">
+                Deze transacties konden niet automatisch aan een actief lid worden gekoppeld, maar horen bij een lid dat heeft opgezegd. Geen actie nodig.
+            </p>
+            <div class="table-wrap">
+            <table>
+                <colgroup>
+                    <col class="col-member">
+                    <col class="col-name">
+                    <col class="col-against">
+                    <col class="col-email">
+                    <col class="col-due">
+                    <col class="col-received">
+                    {% if has_any_refunds %}<col class="col-refunded">{% endif %}
+                    <col class="col-note">
+                    <col class="col-status">
+                    <col class="col-action">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>ID-lid</th>
+                        <th>Achternaam</th>
+                        <th>Tegenrekening</th>
+                        <th>Email</th>
+                        <th>Te innen bedrag</th>
+                        <th>Ontvangen bedrag</th>
+                        {% if has_any_refunds %}<th>Teruggestort bedrag</th>{% endif %}
+                        <th>Opmerking</th>
+                        <th>Status</th>
+                        <th>Actie</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in opgezegd_records %}
+                    <tr>
+                        <td>{{ record.member_id }}</td>
+                        <td>{{ record.achternaam }}</td>
+                        <td>{{ record.tegenrekening or '-' }}</td>
+                        <td>{{ record.email }}</td>
+                        <td class="amount">€ {{ "%.2f"|format(record.due_amount) }}</td>
+                        <td class="amount">€ {{ "%.2f"|format(record.received_amount) }}</td>
+                        {% if has_any_refunds %}<td class="amount {% if record.refunded_amount == 0 %}zero{% endif %}">€ {{ "%.2f"|format(record.refunded_amount) }}</td>{% endif %}
+                        <td>
+                            {% if record.penningmeester_opmerking %}
+                            <div>{{ record.penningmeester_opmerking }}</div>
+                            {% endif %}
+                            {% if record.matched_transactions %}
+                            <details class="insight-details">
+                                <summary>{{ record.matched_transactions|length }} ontvangen transactie(s)</summary>
+                                <ul class="tx-list">
+                                    {% for tx in record.matched_transactions %}
+                                    <li>
+                                        € {{ "%.2f"|format(tx.amount) }} - {{ tx.mededelingen }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </details>
+                            {% endif %}
+                            {% if record.matched_refunds %}
+                            <details class="insight-details">
+                                <summary>{{ record.matched_refunds|length }} teruggestorte transactie(s)</summary>
+                                <ul class="tx-list">
+                                    {% for tx in record.matched_refunds %}
+                                    <li>
+                                        € {{ "%.2f"|format(tx.amount) }} - {{ tx.mededelingen }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </details>
+                            {% endif %}
+                        </td>
+                        <td class="status-cell" title="{{ record.status_label }}">
+                            <span class="status-icon {{ record.status_class }}">{{ record.status_icon }}</span>
+                        </td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            <p style="margin-top: 8px; font-size: 12px; color: #7f8c8d;">
+                Totaal ontvangen van opgezegde leden: <strong>€ {{ "%.2f"|format(stats.get('opgezegd_transaction_total', 0)) }}</strong>
+                {% if stats.get('opgezegd_refunded_total', 0) %} &middot; Totaal teruggestort: <strong>€ {{ "%.2f"|format(stats.get('opgezegd_refunded_total', 0)) }}</strong>{% endif %}
             </p>
         </div>
         {% endif %}

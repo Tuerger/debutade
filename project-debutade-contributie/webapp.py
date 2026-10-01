@@ -46,6 +46,31 @@ CONFIG_PATH = os.getenv(
     "DEBUTADE_CONFIG",
     os.path.abspath(os.path.join(SCRIPT_DIR, "..", "config.json")),
 )
+LEDEN_DATA_PATH = os.getenv(
+    "DEBUTADE_LEDEN",
+    os.path.join(os.path.dirname(CONFIG_PATH), "leden.json"),
+)
+LEDEN_DATA_KEYS = (
+    "leden",
+    "transactie_afspraken",
+)
+
+
+def load_leden_data():
+    """Laad alle contributiegegevens die specifiek bij leden horen."""
+    if not os.path.exists(LEDEN_DATA_PATH):
+        return {}
+
+    with open(LEDEN_DATA_PATH, "r", encoding="utf-8") as leden_file:
+        leden_data = json.load(leden_file)
+    if not isinstance(leden_data, dict):
+        raise ValueError(f"Ongeldig ledenbestand: verwacht een JSON-object in {LEDEN_DATA_PATH}")
+    return leden_data
+
+
+def save_leden_data(leden_data):
+    with open(LEDEN_DATA_PATH, "w", encoding="utf-8") as leden_file:
+        json.dump(leden_data, leden_file, indent=4, ensure_ascii=False)
 
 
 def load_config(config_path, section_key="contributie"):
@@ -60,6 +85,23 @@ def load_config(config_path, section_key="contributie"):
         raise KeyError(f"Configuratiesectie ontbreekt: {section_key}")
 
     config = root_config[section_key]
+    if os.path.exists(LEDEN_DATA_PATH):
+        leden_data = load_leden_data()
+    else:
+        leden_data = {}
+
+    migrated_keys = []
+    for key in LEDEN_DATA_KEYS:
+        if key in config:
+            leden_data.setdefault(key, config[key])
+            config.pop(key)
+            migrated_keys.append(key)
+    if migrated_keys:
+        save_leden_data(leden_data)
+        with open(config_path, "w", encoding="utf-8") as config_file:
+            json.dump(root_config, config_file, indent=4, ensure_ascii=False)
+    config.update(leden_data)
+
     shared = root_config.get("shared", {})
     for key in ("backup_directory", "log_directory", "log_level"):
         if key in shared:
@@ -105,11 +147,12 @@ LEDEN_SHEET_NAME = (
     or config.get("leden_sheet_leden")
     or "leden"
 )
+OPGEZEGD_SHEET_NAME = config.get("opgezegd_sheet_name") or "opgezegd"
 BANK_EXCEL_PATH = config.get("bank_excel_file_path") or config.get("bank_excel_file_name")
 BANK_SHEET_NAME = config["bank_sheet_name"]
-MANUAL_TRANSACTION_MAPPINGS = config.get("manual_transaction_mappings", {})
-MANUAL_PAID_OVERRIDES = config.get("manual_paid_overrides", {})
-MANUAL_SPLIT_DECISIONS = config.get("manual_split_decisions", {})
+TRANSACTIE_AFSPRAKEN = config.get("transactie_afspraken", {})
+MANUAL_SPLIT_DECISIONS = TRANSACTIE_AFSPRAKEN.setdefault("split_beslissingen", {})
+NIET_GEKOPPELDE_TERUGSTORTINGEN = TRANSACTIE_AFSPRAKEN.setdefault("niet_gekoppelde_terugstortingen", [])
 BANK_EXCEL_FALLBACK_BASENAMES = [
     "Debutade boekjaar 2026 Bank",
     "Debutade boekjaar bank 2026",
@@ -117,8 +160,6 @@ BANK_EXCEL_FALLBACK_BASENAMES = [
 SHARED_BANK_EXCEL_FILE_NAME = config.get("bank_excel_file_name", "")
 ALLOWED_CONTRIBUTIE_TAG_CODES = {"8000", "8001"}
 ALLOWED_REFUND_TAG_CODES = {"4990", "4991"}
-MANUAL_REFUND_OVERRIDES = config.get("manual_refund_overrides", {})
-PROCESSED_ORPHANED_REFUNDS = config.get("processed_orphaned_refunds", {})
 BACKUP_DIRECTORY = config.get("backup_directory", os.path.join(SCRIPT_DIR, "backup"))
 LOG_DIRECTORY = config.get("log_directory", os.path.join(SCRIPT_DIR, "logs"))
 LOG_LEVEL = config.get("log_level", "INFO")
@@ -295,6 +336,29 @@ def extract_4digit_tokens(value):
     return set(re.findall(r"(?<!\d)\d{4}(?!\d)", text))
 
 
+def find_opgezegd_lid_for_transaction(tx):
+    """Zoek of een transactie hoort bij een lid dat heeft opgezegd (via id-lid of naam/roepnaam)."""
+    if not OPGEZEGDE_LEDEN:
+        return None
+
+    mededelingen = str(tx.get("mededelingen", ""))
+    tx_id_tokens = extract_4digit_tokens(mededelingen)
+    tx_name = normalize_name_for_match(extract_name_from_text(mededelingen)) or normalize_name_for_match(mededelingen)
+
+    for lid in OPGEZEGDE_LEDEN:
+        lid_id = normalize_member_id_4digit(lid.get("id", "")) if lid.get("id") else ""
+        lid_achternaam = normalize_name_for_match(lid.get("nm", ""))
+        lid_roepnaam = normalize_name_for_match(lid.get("rn", ""))
+
+        if lid_id and lid_id in tx_id_tokens:
+            return lid
+        if lid_achternaam and tx_name and lid_achternaam in tx_name:
+            if not lid_roepnaam or lid_roepnaam in tx_name:
+                return lid
+
+    return None
+
+
 def find_manual_mapping_for_transaction(mededelingen):
     if not mededelingen:
         return None
@@ -419,52 +483,27 @@ def read_sheet_rows(file_path, sheet_name):
 
 
 def load_ledenbestand():
+    if LEDEN_SYNC_ERROR:
+        return [], [LEDEN_SYNC_ERROR]
+
     records = []
-    result, error = read_sheet_rows(LEDENBESTAND_PATH, LEDEN_SHEET_NAME)
-    if error:
-        return [], [error]
-
-    rows, header_map = result
-    for row in rows:
-        member_id = get_cell_value(row, header_map, "ID-lid", "ID lid", "ID")
-        achternaam = get_cell_value(row, header_map, "Achternaam")
-        email = get_cell_value(row, header_map, "Email", "E-mail", "Mail")
-        rekeningnummer = get_cell_value(
-            row,
-            header_map,
-            "Rekeningnummer",
-            "Rekening nummer",
-            "IBAN",
-            "Bankrekening",
-        )
-        te_innen_bedrag = get_cell_value(
-            row,
-            header_map,
-            "bedrag",
-            "Te innen bedrag",
-            "Contributie",
-        )
-
-        member_id = str(member_id).strip() if member_id is not None else ""
-        achternaam = str(achternaam or "").strip()
-        email = str(email or "").strip()
-        rekeningnummer = normalize_account(rekeningnummer)
-        due_amount = parse_amount(te_innen_bedrag)
-
-        if not member_id and not achternaam and not email and due_amount == 0:
+    for member_id, lid in LEDEN.items():
+        if not member_id:
             continue
 
-        if not member_id:
+        # Opzegging is altijd leading: een lid dat heeft opgezegd krijgt geen normaal contributie-record,
+        # ook niet als er nog een (verouderde) rij in personen-sheet of een manuele mapping bestaat.
+        if lid.get("opgezegd"):
             continue
 
         records.append(
             {
                 "member_id": member_id,
                 "member_id_4digit": normalize_member_id_4digit(member_id),
-                "achternaam": achternaam,
-                "email": email,
-                "rekeningnummer": rekeningnummer,
-                "due_amount": due_amount,
+                "achternaam": str(lid.get("achternaam", "")).strip(),
+                "email": str(lid.get("email", "")).strip(),
+                "rekeningnummer": str(lid.get("rekeningnummer", "")).strip(),
+                "due_amount": lid.get("due_amount", 0.0),
                 "received_amount": 0.0,
                 "matched_transactions": [],
                 "opmerking": "",
@@ -475,6 +514,272 @@ def load_ledenbestand():
         )
 
     return records, []
+
+
+def parse_leden_row(row, header_map):
+    """Parseer een rij van de 'personen'-sheet naar leden-basisgegevens."""
+    member_id = get_cell_value(row, header_map, "ID-lid", "ID lid", "ID")
+    achternaam = get_cell_value(row, header_map, "Achternaam")
+    email = get_cell_value(row, header_map, "Email", "E-mail", "Mail")
+    rekeningnummer = get_cell_value(
+        row,
+        header_map,
+        "Rekeningnummer",
+        "Rekening nummer",
+        "IBAN",
+        "Bankrekening",
+    )
+    te_innen_bedrag = get_cell_value(
+        row,
+        header_map,
+        "bedrag",
+        "Te innen bedrag",
+        "Contributie",
+    )
+
+    member_id = str(member_id).strip() if member_id is not None else ""
+    achternaam = str(achternaam or "").strip()
+    email = str(email or "").strip()
+    rekeningnummer = normalize_account(rekeningnummer)
+    due_amount = parse_amount(te_innen_bedrag)
+
+    if not member_id and not achternaam and not email and due_amount == 0:
+        return None
+    if not member_id:
+        return None
+
+    return {
+        "id": member_id,
+        "achternaam": achternaam,
+        "email": email,
+        "rekeningnummer": rekeningnummer,
+        "due_amount": due_amount,
+    }
+
+
+def load_leden_basisgegevens_from_excel():
+    """Lees leden-basisgegevens uit tabblad 'personen' van het ledenbestand."""
+    result, error = read_sheet_rows(LEDENBESTAND_PATH, LEDEN_SHEET_NAME)
+    if error:
+        return None, error
+
+    rows, header_map = result
+    leden = []
+    for row in rows:
+        parsed = parse_leden_row(row, header_map)
+        if parsed:
+            leden.append(parsed)
+
+    return leden, None
+
+
+def find_or_create_leden_entry(leden_dict, member_id):
+    """Zoek een lid-record op id in de leden-dict, of maak een minimaal placeholder-record aan."""
+    return leden_dict.setdefault(
+        member_id,
+        {"achternaam": "", "email": "", "rekeningnummer": "", "due_amount": 0.0},
+    )
+
+
+def sync_leden_config():
+    """Controleer bij het opstarten of de leden-basisgegevens in leden.json overeenkomen met tabblad 'personen'.
+
+    Alle dynamische ledeninformatie (basisgegevens, opzegging, status, handmatige notities en
+    terugstortingen) staat per lid gebundeld onder leden.json -> "leden" -> "<id>". Handmatige
+    velden en eerder vastgelegde gegevens blijven behouden, ook voor leden die niet (meer) in
+    tabblad 'personen' voorkomen.
+    """
+    leden_from_excel, error = load_leden_basisgegevens_from_excel()
+    try:
+        leden_data = load_leden_data()
+    except Exception as exc:  # noqa: BLE001
+        logging.warning("Kon leden.json niet lezen om leden te synchroniseren: %s", exc)
+        leden_data = {}
+
+    leden_dict = leden_data.get("leden", {})
+
+    if error:
+        logging.warning("Kon leden-basisgegevens niet lezen uit ledenbestand: %s", error)
+        return leden_dict, error
+
+    changed = False
+    for parsed in leden_from_excel:
+        member_id = parsed["id"]
+        entry = find_or_create_leden_entry(leden_dict, member_id)
+        for field in ("achternaam", "email", "rekeningnummer", "due_amount"):
+            if entry.get(field) != parsed[field]:
+                entry[field] = parsed[field]
+                changed = True
+
+    if not changed:
+        return leden_dict, None
+
+    leden_data["leden"] = leden_dict
+    try:
+        save_leden_data(leden_data)
+        logging.info("Leden-basisgegevens bijgewerkt in leden.json (%d leden)", len(leden_dict))
+    except Exception as exc:  # noqa: BLE001
+        logging.error("Kon leden-basisgegevens niet opslaan in leden.json: %s", exc)
+
+    return leden_dict, None
+
+
+LEDEN, LEDEN_SYNC_ERROR = sync_leden_config()
+MANUAL_TRANSACTION_MAPPINGS = {
+    member_id: lid["manual_transaction_mapping"]
+    for member_id, lid in LEDEN.items()
+    if lid.get("manual_transaction_mapping")
+}
+MANUAL_PAID_OVERRIDES = {
+    member_id: lid["manual_paid_override"]
+    for member_id, lid in LEDEN.items()
+    if lid.get("manual_paid_override")
+}
+
+
+def sync_leden_status_config(records):
+    """Persisteer de berekende betaalstatus per lid in leden.json, genest onder het lid zelf."""
+    status_by_member = {}
+    for record in records:
+        if record.get("is_overledene_opzegger"):
+            continue
+        member_id = str(record.get("member_id", "")).strip()
+        if not member_id:
+            continue
+        status_by_member[member_id] = {
+            "due_amount": round(record.get("due_amount", 0.0), 2),
+            "received_amount": round(record.get("received_amount", 0.0), 2),
+            "refunded_amount": round(record.get("refunded_amount", 0.0), 2),
+            "status_label": record.get("status_label", ""),
+            "status_class": record.get("status_class", ""),
+            "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+
+    try:
+        leden_data = load_leden_data()
+    except Exception as exc:  # noqa: BLE001
+        logging.warning("Kon leden.json niet lezen om betaalstatus op te slaan: %s", exc)
+        return
+
+    leden_dict = leden_data.setdefault("leden", {})
+
+    changed = False
+    for member_id, new_status in status_by_member.items():
+        entry = find_or_create_leden_entry(leden_dict, member_id)
+        existing_status = entry.get("status", {})
+        existing_comparable = {k: v for k, v in existing_status.items() if k != "updated_at"}
+        new_comparable = {k: v for k, v in new_status.items() if k != "updated_at"}
+        if existing_comparable != new_comparable:
+            changed = True
+        entry["status"] = new_status
+        # Houd de in-memory LEDEN-structuur meteen gelijk, zodat een herstart niet nodig is.
+        LEDEN.setdefault(member_id, entry)["status"] = new_status
+
+    if not changed:
+        return
+
+    leden_data["leden"] = leden_dict
+    try:
+        save_leden_data(leden_data)
+        logging.info("Betaalstatus van %d leden opgeslagen in leden.json", len(status_by_member))
+    except Exception as exc:  # noqa: BLE001
+        logging.error("Kon betaalstatus niet opslaan in leden.json: %s", exc)
+
+
+def load_opgezegde_leden_from_excel():
+    """Lees leden die opgezegd hebben uit tabblad 'opgezegd' van het ledenbestand."""
+    result, error = read_sheet_rows(LEDENBESTAND_PATH, OPGEZEGD_SHEET_NAME)
+    if error:
+        return None, error
+
+    rows, header_map = result
+    leden = []
+    for row in rows:
+        member_id = get_cell_value(row, header_map, "id")
+        naam = get_cell_value(row, header_map, "nm")
+        roepnaam = get_cell_value(row, header_map, "rn")
+        email = get_cell_value(row, header_map, "e-mail", "email")
+
+        member_id = str(member_id).strip() if member_id is not None else ""
+        naam = str(naam or "").strip()
+        roepnaam = str(roepnaam or "").strip()
+        email = str(email or "").strip()
+
+        if not member_id and not naam and not roepnaam and not email:
+            continue
+
+        leden.append({"id": member_id, "nm": naam, "rn": roepnaam, "e-mail": email})
+
+    return leden, None
+
+
+def sync_opgezegde_leden_config(leden_dict):
+    """Controleer bij het opstarten of de opgezegde leden in leden.json overeenkomen met tabblad 'opgezegd'.
+
+    Opzeggingsgegevens worden genest onder het betreffende lid in leden_dict (leden.json -> "leden").
+    """
+    leden_from_excel, error = load_opgezegde_leden_from_excel()
+    if error:
+        logging.warning("Kon opgezegde leden niet lezen uit ledenbestand: %s", error)
+        return False
+
+    fresh_ids = set()
+    changed = False
+    for item in leden_from_excel:
+        member_id = str(item.get("id", "")).strip()
+        if not member_id:
+            continue
+        fresh_ids.add(member_id)
+        entry = find_or_create_leden_entry(leden_dict, member_id)
+        new_values = {
+            "opgezegd": True,
+            "opgezegd_achternaam": item.get("nm", ""),
+            "opgezegd_roepnaam": item.get("rn", ""),
+            "opgezegd_email": item.get("e-mail", ""),
+        }
+        for field, value in new_values.items():
+            if entry.get(field) != value:
+                entry[field] = value
+                changed = True
+
+    # Leden die niet meer in tabblad 'opgezegd' staan: opzeg-vlag en bijbehorende velden verwijderen.
+    for member_id, entry in leden_dict.items():
+        if entry.get("opgezegd") and member_id not in fresh_ids:
+            entry["opgezegd"] = False
+            entry.pop("opgezegd_achternaam", None)
+            entry.pop("opgezegd_roepnaam", None)
+            entry.pop("opgezegd_email", None)
+            changed = True
+
+    return changed
+
+
+_opgezegd_changed = sync_opgezegde_leden_config(LEDEN)
+if _opgezegd_changed:
+    try:
+        _leden_data_for_opgezegd = load_leden_data()
+        _leden_data_for_opgezegd["leden"] = LEDEN
+        save_leden_data(_leden_data_for_opgezegd)
+        logging.info("Opgezegde leden bijgewerkt in leden.json")
+    except Exception as exc:  # noqa: BLE001
+        logging.error("Kon opgezegde leden niet opslaan in leden.json: %s", exc)
+
+OPGEZEGDE_LEDEN = [
+    {
+        "id": member_id,
+        "nm": lid.get("opgezegd_achternaam", ""),
+        "rn": lid.get("opgezegd_roepnaam", ""),
+        "e-mail": lid.get("opgezegd_email", ""),
+    }
+    for member_id, lid in LEDEN.items()
+    if lid.get("opgezegd")
+]
+OPGEZEGDE_LEDEN_IDS = {lid["id"] for lid in OPGEZEGDE_LEDEN if lid.get("id")}
+MANUAL_REFUND_OVERRIDES = {
+    member_id: lid["manual_refund_override"]
+    for member_id, lid in LEDEN.items()
+    if lid.get("manual_refund_override")
+}
 
 
 def load_bank_transactions():
@@ -796,32 +1101,44 @@ def resolve_bank_excel_path():
 
 
 def load_processed_orphaned_refunds():
-    """Normalize processed orphaned refunds from config for matching/reporting."""
+    """Normalize verwerkte terugstortingen (per lid + niet-gekoppeld) voor matching/rapportage."""
     processed = []
-    for refund_key, payload in PROCESSED_ORPHANED_REFUNDS.items():
+
+    def _append(payload, owner_member_id=None):
         if not isinstance(payload, dict):
-            continue
+            return
 
         amount = round(abs(parse_amount(payload.get("amount", 0.0))), 2)
         if amount <= 0:
-            continue
+            return
+
+        mededelingen = str(payload.get("mededelingen", "")).strip()
+        if not mededelingen:
+            return
 
         reason = str(payload.get("reason", "")).strip()
         processed_at = str(payload.get("processed_at", "")).strip()
-        mededelingen = str(refund_key).split("|", 1)[0] if "|" in str(refund_key) else str(refund_key)
         refund_iban = extract_iban_from_text(mededelingen)
 
         processed.append(
             {
-                "refund_key": str(refund_key),
+                "refund_key": build_refund_key(mededelingen, amount),
                 "mededelingen": mededelingen,
                 "amount": amount,
                 "reason": reason,
                 "processed_at": processed_at,
                 "iban": refund_iban,
+                "owner_member_id": owner_member_id,
                 "penningmeester_opmerking": f"€ {amount:.2f} - {reason}" if reason else f"€ {amount:.2f}",
             }
         )
+
+    for member_id, lid in LEDEN.items():
+        for payload in lid.get("terugstortingen", []) or []:
+            _append(payload, owner_member_id=member_id)
+
+    for payload in NIET_GEKOPPELDE_TERUGSTORTINGEN:
+        _append(payload)
 
     return processed
 
@@ -833,6 +1150,7 @@ def build_overview():
         _file_signature(LEDENBESTAND_PATH),
         _file_signature(bank_excel_path),
         _file_signature(CONFIG_PATH),
+        _file_signature(LEDEN_DATA_PATH),
     )
     cached = _cache_get(cache_key)
     if cached is not None:
@@ -1277,16 +1595,7 @@ def build_overview():
         if i not in matched_transaction_keys:
             unmatched_transactions.append(tx)
 
-    normalized_processed_refund_keys = set()
-    for saved_key, saved_payload in PROCESSED_ORPHANED_REFUNDS.items():
-        key_text = str(saved_key or "")
-        if "|" in key_text:
-            key_note, key_amount = key_text.split("|", 1)
-            normalized_processed_refund_keys.add(build_refund_key(key_note, key_amount))
-        elif isinstance(saved_payload, dict):
-            normalized_processed_refund_keys.add(
-                build_refund_key(key_text, saved_payload.get("amount", 0.0))
-            )
+    normalized_processed_refund_keys = {entry["refund_key"] for entry in processed_orphaned_entries}
 
     # Build orphaned refunds (refunds that don't match any known member ID)
     orphaned_refunds = []
@@ -1327,6 +1636,8 @@ def build_overview():
         processed_orphaned_total += round(abs(parse_amount(processed_refund.get("amount", 0.0))), 2)
 
     # Pair unmatched payments with processed orphaned refunds by IBAN and move them to main records.
+    # Transacties van leden die al zijn opgezegd slaan we hier over: die worden verderop apart
+    # gekoppeld en getoond in de tabel "Transacties van opgezegde leden".
     unmatched_with_meta = []
     for tx in unmatched_transactions:
         tx_iban = normalize_account(tx.get("tegenrekening", "")) or extract_iban_from_text(tx.get("mededelingen", ""))
@@ -1336,6 +1647,7 @@ def build_overview():
                 "tx": tx,
                 "iban": tx_iban,
                 "name": normalize_name_for_match(tx_name),
+                "is_opgezegd": bool(find_opgezegd_lid_for_transaction(tx)),
                 "used": False,
             }
         )
@@ -1348,7 +1660,7 @@ def build_overview():
 
     for payment_entry in unmatched_with_meta:
         payment_iban = payment_entry.get("iban", "")
-        if not payment_iban or payment_entry["used"]:
+        if not payment_iban or payment_entry["used"] or payment_entry.get("is_opgezegd"):
             continue
 
         matched_refund_entry = None
@@ -1438,6 +1750,92 @@ def build_overview():
     processed_orphaned_refunds = [entry["refund"] for entry in processed_with_meta if not entry["used"]]
     processed_orphaned_total = round(sum(item.get("amount", 0.0) for item in processed_orphaned_refunds), 2)
 
+    for tx in unmatched_transactions:
+        opgezegd_lid = find_opgezegd_lid_for_transaction(tx)
+        if opgezegd_lid:
+            tx["is_opgezegd_lid"] = True
+            tx["opgezegd_id"] = str(opgezegd_lid.get("id", "")).strip()
+            tx["opgezegd_naam"] = " ".join(
+                part for part in (opgezegd_lid.get("rn", ""), opgezegd_lid.get("nm", "")) if part
+            ).strip()
+            tx["opgezegd_email"] = str(opgezegd_lid.get("e-mail", "")).strip()
+        else:
+            tx["is_opgezegd_lid"] = False
+            tx["opgezegd_id"] = ""
+            tx["opgezegd_naam"] = ""
+            tx["opgezegd_email"] = ""
+
+    # Transacties van leden die hebben opgezegd hoeven niet handmatig gekoppeld te worden.
+    opgezegd_transactions = [tx for tx in unmatched_transactions if tx["is_opgezegd_lid"]]
+    unmatched_transactions = [tx for tx in unmatched_transactions if not tx["is_opgezegd_lid"]]
+
+    # Koppel betalingen van opgezegde leden aan nog niet-gebruikte verwerkte terugstortingen
+    # op basis van IBAN (een naamcontrole is hier niet nodig: het lid is al herkend als opgezegd).
+    opgezegd_records = []
+    for tx in opgezegd_transactions:
+        tx_iban = normalize_account(tx.get("tegenrekening", "")) or extract_iban_from_text(tx.get("mededelingen", ""))
+        payment_amount = round(parse_amount(tx.get("amount", 0.0)), 2)
+        mededelingen = str(tx.get("mededelingen", ""))
+
+        matched_refund_entry = None
+        if tx_iban:
+            for refund_entry in processed_with_meta:
+                if refund_entry["used"]:
+                    continue
+                if refund_entry.get("iban", "") == tx_iban:
+                    matched_refund_entry = refund_entry
+                    break
+
+        matched_refunds = []
+        refunded_amount = 0.0
+        penningmeester_opmerking = ""
+        if matched_refund_entry:
+            refund = matched_refund_entry["refund"]
+            refunded_amount = round(abs(parse_amount(refund.get("amount", 0.0))), 2)
+            matched_refunds.append(
+                {
+                    "amount": refunded_amount,
+                    "mededelingen": str(refund.get("mededelingen", "")),
+                    "tegenrekening": tx_iban,
+                    "split_count": 1,
+                }
+            )
+            penningmeester_opmerking = str(refund.get("penningmeester_opmerking", "")).strip()
+            matched_refund_entry["used"] = True
+
+
+        opgezegd_records.append(
+            {
+                "member_id": tx.get("opgezegd_id") or "-",
+                "achternaam": tx.get("opgezegd_naam") or "-",
+                "email": tx.get("opgezegd_email", ""),
+                "tegenrekening": tx_iban or str(tx.get("tegenrekening", "")),
+                "due_amount": 0.0,
+                "received_amount": payment_amount,
+                "refunded_amount": refunded_amount,
+                "matched_transactions": [
+                    {
+                        "amount": payment_amount,
+                        "mededelingen": mededelingen,
+                        "tegenrekening": str(tx.get("tegenrekening", "")),
+                        "split_count": 1,
+                    }
+                ],
+                "matched_refunds": matched_refunds,
+                "opmerking": "",
+                "penningmeester_opmerking": penningmeester_opmerking,
+                "has_refund_transactions": bool(matched_refunds),
+                "status_icon": "👋",
+                "status_label": "Geen lid meer",
+                "status_class": "status-geen-lid",
+            }
+        )
+
+    processed_orphaned_refunds = [entry["refund"] for entry in processed_with_meta if not entry["used"]]
+    processed_orphaned_total = round(sum(item.get("amount", 0.0) for item in processed_orphaned_refunds), 2)
+
+    opgezegd_records.sort(key=lambda item: (item.get("achternaam", "").lower(), item.get("member_id", "")))
+
     status_sort_order = {
         "status-none": 0,
         "status-partial": 1,
@@ -1477,6 +1875,9 @@ def build_overview():
         ),
         "unmatched_count": len(unmatched_transactions),
         "unmatched_total": round(sum(tx.get("amount", 0.0) for tx in unmatched_transactions), 2),
+        "opgezegd_transaction_count": len(opgezegd_transactions),
+        "opgezegd_transaction_total": round(sum(tx.get("amount", 0.0) for tx in opgezegd_transactions), 2),
+        "opgezegd_refunded_total": round(sum(item.get("refunded_amount", 0.0) for item in opgezegd_records), 2),
         "ambiguous_count": len(pending_ambiguous_transactions),
         "ambiguous_total": round(sum(tx.get("amount", 0.0) for tx in pending_ambiguous_transactions), 2),
         "orphaned_refund_count": len(orphaned_refunds),
@@ -1484,6 +1885,8 @@ def build_overview():
         "processed_orphaned_refund_count": len(processed_orphaned_refunds),
         "processed_orphaned_refund_total": round(processed_orphaned_total, 2),
     }
+
+    sync_leden_status_config(records)
 
     return _cache_set(
         cache_key,
@@ -1495,6 +1898,8 @@ def build_overview():
             pending_ambiguous_transactions,
             orphaned_refunds,
             processed_orphaned_refunds,
+            opgezegd_transactions,
+            opgezegd_records,
         ),
     )
 
@@ -1509,6 +1914,8 @@ def index():
         pending_ambiguous_transactions,
         orphaned_refunds,
         processed_orphaned_refunds,
+        opgezegd_transactions,
+        opgezegd_records,
     ) = build_overview()
     current_date = datetime.now().strftime("%d-%m-%Y")
     current_user = os.getlogin()
@@ -1521,6 +1928,8 @@ def index():
         pending_ambiguous_transactions=pending_ambiguous_transactions,
         orphaned_refunds=orphaned_refunds,
         processed_orphaned_refunds=processed_orphaned_refunds,
+        opgezegd_transactions=opgezegd_transactions,
+        opgezegd_records=opgezegd_records,
         current_date=current_date,
         current_user=current_user,
         main_app_url=MAIN_APP_URL,
@@ -1563,25 +1972,16 @@ def save_manual_mapping():
         if not member_id or not mededelingen:
             return jsonify({"success": False, "error": "Lid nummer en mededelingen zijn verplicht"}), 400
 
-        # Laad config
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            config = json.load(f)
-
-        # Zorg ervoor dat de manual_transaction_mappings sectie bestaat
-        if "contributie" not in config:
-            config["contributie"] = {}
-        if "manual_transaction_mappings" not in config["contributie"]:
-            config["contributie"]["manual_transaction_mappings"] = {}
-
-        # Voeg de mapping toe
-        config["contributie"]["manual_transaction_mappings"][member_id] = mededelingen
+        leden_data = load_leden_data()
+        leden_dict = leden_data.setdefault("leden", {})
+        entry = find_or_create_leden_entry(leden_dict, member_id)
+        entry["manual_transaction_mapping"] = mededelingen
 
         # Update runtime mapping direct, zodat herstart niet nodig is.
         MANUAL_TRANSACTION_MAPPINGS[member_id] = mededelingen
+        find_or_create_leden_entry(LEDEN, member_id)["manual_transaction_mapping"] = mededelingen
 
-        # Schrijf config terug naar bestand
-        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-            json.dump(config, f, indent=4, ensure_ascii=False)
+        save_leden_data(leden_data)
 
         invalidate_runtime_cache()
 
@@ -1608,29 +2008,28 @@ def save_paid_override():
         if marked_paid and not reason:
             return jsonify({"success": False, "error": "Reden is verplicht bij handmatig betaald"}), 400
 
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            config_data = json.load(f)
+        leden_data = load_leden_data()
+        leden_dict = leden_data.setdefault("leden", {})
+        entry = find_or_create_leden_entry(leden_dict, member_id)
 
-        if "contributie" not in config_data:
-            config_data["contributie"] = {}
-        if "manual_paid_overrides" not in config_data["contributie"]:
-            config_data["contributie"]["manual_paid_overrides"] = {}
+        runtime_entry = find_or_create_leden_entry(LEDEN, member_id)
 
         if marked_paid:
-            config_data["contributie"]["manual_paid_overrides"][member_id] = {
+            entry["manual_paid_override"] = {
                 "marked_paid": True,
                 "reason": reason,
                 "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             }
-            MANUAL_PAID_OVERRIDES[member_id] = config_data["contributie"]["manual_paid_overrides"][member_id]
+            MANUAL_PAID_OVERRIDES[member_id] = entry["manual_paid_override"]
+            runtime_entry["manual_paid_override"] = entry["manual_paid_override"]
             message = "Lid handmatig als betaald gemarkeerd"
         else:
-            config_data["contributie"]["manual_paid_overrides"].pop(member_id, None)
+            entry.pop("manual_paid_override", None)
             MANUAL_PAID_OVERRIDES.pop(member_id, None)
+            runtime_entry.pop("manual_paid_override", None)
             message = "Handmatige betaald-markering verwijderd"
 
-        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-            json.dump(config_data, f, indent=4, ensure_ascii=False)
+        save_leden_data(leden_data)
 
         invalidate_runtime_cache()
         logging.info("Paid override bijgewerkt voor lid %s | marked_paid=%s", member_id, marked_paid)
@@ -1659,23 +2058,18 @@ def save_split_decision():
         if mode == "single_member" and not member_id:
             return jsonify({"success": False, "error": "Lid nummer is verplicht bij niet splitsen"}), 400
 
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            config_data = json.load(f)
-
-        if "contributie" not in config_data:
-            config_data["contributie"] = {}
-        if "manual_split_decisions" not in config_data["contributie"]:
-            config_data["contributie"]["manual_split_decisions"] = {}
+        leden_data = load_leden_data()
+        afspraken = leden_data.setdefault("transactie_afspraken", {})
+        split_beslissingen = afspraken.setdefault("split_beslissingen", {})
 
         decision_payload = {"mode": mode}
         if mode == "single_member":
             decision_payload["member_id"] = member_id
 
-        config_data["contributie"]["manual_split_decisions"][mededelingen] = decision_payload
+        split_beslissingen[mededelingen] = decision_payload
         MANUAL_SPLIT_DECISIONS[mededelingen] = decision_payload
 
-        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-            json.dump(config_data, f, indent=4, ensure_ascii=False)
+        save_leden_data(leden_data)
 
         invalidate_runtime_cache()
         logging.info("Split-besluit opgeslagen: mode=%s member_id=%s", mode, member_id)
@@ -1704,23 +2098,19 @@ def save_refund_override():
         if not reason:
             return jsonify({"success": False, "error": "Reden is verplicht"}), 400
 
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            config_data = json.load(f)
+        leden_data = load_leden_data()
+        leden_dict = leden_data.setdefault("leden", {})
+        entry = find_or_create_leden_entry(leden_dict, member_id)
 
-        if "contributie" not in config_data:
-            config_data["contributie"] = {}
-        if "manual_refund_overrides" not in config_data["contributie"]:
-            config_data["contributie"]["manual_refund_overrides"] = {}
-
-        config_data["contributie"]["manual_refund_overrides"][member_id] = {
+        entry["manual_refund_override"] = {
             "amount": round(amount, 2),
             "reason": reason,
             "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
-        MANUAL_REFUND_OVERRIDES[member_id] = config_data["contributie"]["manual_refund_overrides"][member_id]
+        MANUAL_REFUND_OVERRIDES[member_id] = entry["manual_refund_override"]
+        find_or_create_leden_entry(LEDEN, member_id)["manual_refund_override"] = entry["manual_refund_override"]
 
-        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-            json.dump(config_data, f, indent=4, ensure_ascii=False)
+        save_leden_data(leden_data)
 
         invalidate_runtime_cache()
         logging.info("Refund override bijgewerkt voor lid %s | amount=%.2f", member_id, amount)
@@ -1749,24 +2139,46 @@ def save_orphaned_refund():
         if not reason:
             return jsonify({"success": False, "error": "Reden is verplicht"}), 400
 
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            config_data = json.load(f)
+        leden_data = load_leden_data()
+        leden_dict = leden_data.setdefault("leden", {})
+        afspraken = leden_data.setdefault("transactie_afspraken", {})
+        niet_gekoppeld = afspraken.setdefault("niet_gekoppelde_terugstortingen", [])
 
-        if "contributie" not in config_data:
-            config_data["contributie"] = {}
-        if "processed_orphaned_refunds" not in config_data["contributie"]:
-            config_data["contributie"]["processed_orphaned_refunds"] = {}
-
-        refund_key = build_refund_key(mededelingen, amount)
-        config_data["contributie"]["processed_orphaned_refunds"][refund_key] = {
+        refund_entry = {
+            "mededelingen": mededelingen,
             "amount": round(amount, 2),
             "reason": reason,
             "processed_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
-        PROCESSED_ORPHANED_REFUNDS[refund_key] = config_data["contributie"]["processed_orphaned_refunds"][refund_key]
 
-        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-            json.dump(config_data, f, indent=4, ensure_ascii=False)
+        # Probeer de terugstorting direct aan een lid te koppelen op basis van het rekeningnummer in de tekst.
+        refund_iban = extract_iban_from_text(mededelingen)
+        owner_member_id = None
+        if refund_iban:
+            for candidate_id, candidate_lid in leden_dict.items():
+                candidate_ibans = set()
+                if candidate_lid.get("rekeningnummer"):
+                    candidate_ibans.add(normalize_account(candidate_lid.get("rekeningnummer", "")))
+                mapping_iban = extract_iban_from_text(candidate_lid.get("manual_transaction_mapping", ""))
+                if mapping_iban:
+                    candidate_ibans.add(mapping_iban)
+                for bestaande_refund in candidate_lid.get("terugstortingen", []) or []:
+                    bestaande_iban = extract_iban_from_text(bestaande_refund.get("mededelingen", ""))
+                    if bestaande_iban:
+                        candidate_ibans.add(bestaande_iban)
+                if refund_iban in candidate_ibans:
+                    owner_member_id = candidate_id
+                    break
+
+        if owner_member_id:
+            entry = find_or_create_leden_entry(leden_dict, owner_member_id)
+            entry.setdefault("terugstortingen", []).append(refund_entry)
+            find_or_create_leden_entry(LEDEN, owner_member_id).setdefault("terugstortingen", []).append(refund_entry)
+        else:
+            niet_gekoppeld.append(refund_entry)
+            NIET_GEKOPPELDE_TERUGSTORTINGEN.append(refund_entry)
+
+        save_leden_data(leden_data)
 
         invalidate_runtime_cache()
         logging.info("Orphaned refund verwerkt | bedrag=%.2f | reden=%s", amount, reason)

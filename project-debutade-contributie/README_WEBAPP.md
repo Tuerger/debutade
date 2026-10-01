@@ -48,7 +48,7 @@ De applicatie start op: **http://127.0.0.1:5004**
 
 ## 🔧 Configuratie
 
-De configuratie staat in `c:\Debutade\config.json` onder de sectie `contributie`.
+De applicatie-instellingen staan in `c:\Debutade\config.json` onder de sectie `contributie`. Leden- en betaalgegevens worden apart opgeslagen in `c:\Debutade\leden.json`.
 
 Voorbeeld:
 
@@ -64,6 +64,46 @@ Voorbeeld:
 ```
 
 De `bank_excel_file_name` wordt gecombineerd met de gedeelde `grootboek_directory` uit de `shared` sectie.
+
+Bij het opstarten worden bestaande dynamische ledengegevens uit `config.json` eenmalig naar `leden.json` verplaatst. Dit omvat ledenrecords, betaalstatussen, handmatige correcties en verwerkte transactiebesluiten. Daarna worden deze gegevens alleen in `leden.json` bijgehouden; `config.json` bevat de vaste applicatie-instellingen.
+
+### Opbouw van `leden.json`
+
+Alle dynamische informatie die bij een specifiek lid hoort, staat gebundeld onder `leden.json` -> `leden` -> `"<lidnummer>"`. Alleen informatie die niet aan één lid gekoppeld kan worden (zoals splitsingsbesluiten voor transacties met meerdere lidnummers) staat in de generieke sectie `transactie_afspraken`.
+
+```json
+{
+  "leden": {
+    "<lidnummer>": {
+      "achternaam": "...",
+      "email": "...",
+      "rekeningnummer": "...",
+      "due_amount": 290.0,
+      "manual_transaction_mapping": "... (optioneel)",
+      "manual_paid_override": { "marked_paid": true, "reason": "...", "updated_at": "..." },
+      "manual_refund_override": { "amount": 0.0, "reason": "...", "updated_at": "..." },
+      "opgezegd": true,
+      "opgezegd_achternaam": "... (alleen als opgezegd)",
+      "opgezegd_roepnaam": "... (alleen als opgezegd)",
+      "opgezegd_email": "... (alleen als opgezegd)",
+      "status": { "due_amount": 0.0, "received_amount": 0.0, "refunded_amount": 0.0, "status_label": "...", "status_class": "...", "updated_at": "..." },
+      "terugstortingen": [
+        { "mededelingen": "...", "amount": 145.0, "reason": "...", "processed_at": "..." }
+      ]
+    }
+  },
+  "transactie_afspraken": {
+    "split_beslissingen": {
+      "<mededelingen-tekst>": { "mode": "split | single_member", "member_id": "... (bij single_member)" }
+    },
+    "niet_gekoppelde_terugstortingen": [
+      { "mededelingen": "...", "amount": 0.0, "reason": "...", "processed_at": "..." }
+    ]
+  }
+}
+```
+
+Leden-basisgegevens (`achternaam`, `email`, `rekeningnummer`, `due_amount`) worden automatisch gesynchroniseerd vanuit tabblad `personen`, opzeggingsgegevens vanuit tabblad `opgezegd`. Handmatige velden, status en terugstortingen blijven per lid behouden, ook als een lid (tijdelijk) niet meer in het ledenbestand voorkomt. Wanneer het penningmeester-overzicht een "niet-gekoppelde" terugstorting verwerkt, probeert de applicatie deze automatisch aan een lid te koppelen op basis van het rekeningnummer in de banktekst; lukt dat niet, dan komt de terugstorting in `transactie_afspraken.niet_gekoppelde_terugstortingen` terecht.
 
 ## 📊 Excel vereisten
 
@@ -83,15 +123,17 @@ De `bank_excel_file_name` wordt gecombineerd met de gedeelde `grootboek_director
 
 ### Handmatige betaald-markering
 
-Een handmatige betaald-markering wordt opgeslagen in `config.json` onder:
+Een handmatige betaald-markering wordt opgeslagen in `leden.json`, genest bij het betreffende lid onder `leden`:
 
 ```json
-"contributie": {
-  "manual_paid_overrides": {
+{
+  "leden": {
     "<lidnummer>": {
-      "marked_paid": true,
-      "reason": "Betaald in vorig boekjaar",
-      "updated_at": "2026-03-09 21:10:00"
+      "manual_paid_override": {
+        "marked_paid": true,
+        "reason": "Betaald in vorig boekjaar",
+        "updated_at": "2026-03-09 21:10:00"
+      }
     }
   }
 }

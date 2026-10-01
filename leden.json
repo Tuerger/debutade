@@ -1,0 +1,2226 @@
+{
+    "leden": {
+        "2010": {
+            "achternaam": "Poortinga",
+            "email": "marikepoortinga@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "status": {
+                "due_amount": 0.0,
+                "received_amount": 0,
+                "refunded_amount": 0,
+                "status_label": "Niet van toepassing (0/0)",
+                "status_class": "status-neutral",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "2009": {
+            "achternaam": "Stoel",
+            "email": "Christa_stoel@ziggo.nl",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "status": {
+                "due_amount": 0.0,
+                "received_amount": 0,
+                "refunded_amount": 0,
+                "status_label": "Niet van toepassing (0/0)",
+                "status_class": "status-neutral",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "2008": {
+            "achternaam": "Veerbeek",
+            "email": "wendyveerbeek@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "status": {
+                "due_amount": 0.0,
+                "received_amount": 0,
+                "refunded_amount": 0,
+                "status_label": "Niet van toepassing (0/0)",
+                "status_class": "status-neutral",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "2007": {
+            "achternaam": "Zwijsen",
+            "email": "galeriezwijsen@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "status": {
+                "due_amount": 0.0,
+                "received_amount": 0,
+                "refunded_amount": 0,
+                "status_label": "Niet van toepassing (0/0)",
+                "status_class": "status-neutral",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "2006": {
+            "achternaam": "Couveld",
+            "email": "janna.couveld@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "status": {
+                "due_amount": 0.0,
+                "received_amount": 0,
+                "refunded_amount": 0,
+                "status_label": "Niet van toepassing (0/0)",
+                "status_class": "status-neutral",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "2004": {
+            "achternaam": "Meijer",
+            "email": "katja165@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "status": {
+                "due_amount": 0.0,
+                "received_amount": 0,
+                "refunded_amount": 0,
+                "status_label": "Niet van toepassing (0/0)",
+                "status_class": "status-neutral",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "2003": {
+            "achternaam": "Cordes",
+            "email": "violetta@live.nl",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "status": {
+                "due_amount": 0.0,
+                "received_amount": 0,
+                "refunded_amount": 0,
+                "status_label": "Niet van toepassing (0/0)",
+                "status_class": "status-neutral",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "2002": {
+            "achternaam": "Schoutsen",
+            "email": "margoschoutsen@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "status": {
+                "due_amount": 0.0,
+                "received_amount": 0,
+                "refunded_amount": 0,
+                "status_label": "Niet van toepassing (0/0)",
+                "status_class": "status-neutral",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "2001": {
+            "achternaam": "Kleinwee, van",
+            "email": "helmavk1402@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "status": {
+                "due_amount": 0.0,
+                "received_amount": 0,
+                "refunded_amount": 0,
+                "status_label": "Niet van toepassing (0/0)",
+                "status_class": "status-neutral",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1156": {
+            "achternaam": "Wester",
+            "email": "kmartineau62@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 60.13,
+            "status": {
+                "due_amount": 60.13,
+                "received_amount": 0,
+                "refunded_amount": 0,
+                "status_label": "Nog niets ontvangen",
+                "status_class": "status-none",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1155": {
+            "achternaam": "Kamstra",
+            "email": "j_kamstra@kpnmail.nl",
+            "rekeningnummer": "",
+            "due_amount": 87.0,
+            "status": {
+                "due_amount": 87.0,
+                "received_amount": 0,
+                "refunded_amount": 0,
+                "status_label": "Nog niets ontvangen",
+                "status_class": "status-none",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1154": {
+            "achternaam": "Gemert, van",
+            "email": "anne.van.gemert@ziggo.nl",
+            "rekeningnummer": "",
+            "due_amount": 107.0,
+            "status": {
+                "due_amount": 107.0,
+                "received_amount": 0,
+                "refunded_amount": 0,
+                "status_label": "Nog niets ontvangen",
+                "status_class": "status-none",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1153": {
+            "achternaam": "Meijland",
+            "email": "astridmeijland@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 94.25,
+            "status": {
+                "due_amount": 94.25,
+                "received_amount": 94.25,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1152": {
+            "achternaam": "Bouma-Tap",
+            "email": "a.bouma@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 101.5,
+            "status": {
+                "due_amount": 101.5,
+                "received_amount": 101.5,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1151": {
+            "achternaam": "Klok",
+            "email": "cm.klok@kpnplanet.nl",
+            "rekeningnummer": "",
+            "due_amount": 101.5,
+            "status": {
+                "due_amount": 101.5,
+                "received_amount": 101.5,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1150": {
+            "achternaam": "Kooij, van",
+            "email": "lisavankooij@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 87.0,
+            "status": {
+                "due_amount": 87.0,
+                "received_amount": 87.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1149": {
+            "achternaam": "Poppes",
+            "email": "agnespoppes@me.com",
+            "rekeningnummer": "",
+            "due_amount": 101.5,
+            "status": {
+                "due_amount": 101.5,
+                "received_amount": 101.5,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1148": {
+            "achternaam": "Frese",
+            "email": "samanthavanelteren@live.nl",
+            "rekeningnummer": "",
+            "due_amount": 101.75,
+            "status": {
+                "due_amount": 101.75,
+                "received_amount": 101.75,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1147": {
+            "achternaam": "Spelt",
+            "email": "spelteline1@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 185.0,
+            "status": {
+                "due_amount": 185.0,
+                "received_amount": 185.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1146": {
+            "achternaam": "Dulmen, van",
+            "email": "irenevandulmen@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1145": {
+            "achternaam": "Hagemann",
+            "email": "joke.hagemann@mailcom.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1144": {
+            "achternaam": "Snoeck",
+            "email": "m.snoeck@live.nl",
+            "rekeningnummer": "",
+            "due_amount": 217.0,
+            "status": {
+                "due_amount": 217.0,
+                "received_amount": 217.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1143": {
+            "achternaam": "Engh, van den",
+            "email": "tonvandenengh@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1141": {
+            "achternaam": "Alta",
+            "email": "josephinelimburg@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 185.0,
+            "status": {
+                "due_amount": 185.0,
+                "received_amount": 185.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1140": {
+            "achternaam": "Sijp",
+            "email": "annebethpeerdeman@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 185.0,
+            "status": {
+                "due_amount": 185.0,
+                "received_amount": 185.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1139": {
+            "achternaam": "Nederpelt",
+            "email": "2311joke@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1138": {
+            "achternaam": "Grapendaal",
+            "email": "grapendaal@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1137": {
+            "achternaam": "Jong",
+            "email": "c.s.pintotavares@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 185.0,
+            "status": {
+                "due_amount": 185.0,
+                "received_amount": 185.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1136": {
+            "achternaam": "Papa",
+            "email": "kortingmaya@hotmail.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1135": {
+            "achternaam": "Kuperus",
+            "email": "elskuperus@kpnmail.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1134": {
+            "achternaam": "Braas",
+            "email": "maartjevlaar@hotmail.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1132": {
+            "achternaam": "Geldorp, van",
+            "email": "tansav2012@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1128": {
+            "achternaam": "Zijlstra",
+            "email": "Ingridzijlstra52@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1119": {
+            "achternaam": "Ke",
+            "email": "452858832@qq.com",
+            "rekeningnummer": "",
+            "due_amount": 185.0,
+            "manual_transaction_mapping": "Naam: H. Wen Omschrijving: Zihao en Zihan IBAN: NL18RABO0333569636 Datum/Tijd: 26-05-2026 16:27:30 Valutadatum: 26-05-2026",
+            "status": {
+                "due_amount": 185.0,
+                "received_amount": 185.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1118": {
+            "achternaam": "Ke",
+            "email": "452858832@qq.com",
+            "rekeningnummer": "",
+            "due_amount": 185.0,
+            "manual_transaction_mapping": "Naam: H. Wen IBAN: NL18RABO0333569636 Datum/Tijd: 12-01-2026 23:54:44 Valutadatum: 12-01-2026",
+            "status": {
+                "due_amount": 185.0,
+                "received_amount": 185.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1116": {
+            "achternaam": "lutuynenko",
+            "email": "lytvydin@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 185.0,
+            "status": {
+                "due_amount": 185.0,
+                "received_amount": 185.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1115": {
+            "achternaam": "Hink",
+            "email": "basnoahhink@hotmail.com; sanborrmann@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 185.0,
+            "status": {
+                "due_amount": 185.0,
+                "received_amount": 185.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1114": {
+            "achternaam": "Slagter",
+            "email": "retgalsi@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 185.0,
+            "status": {
+                "due_amount": 185.0,
+                "received_amount": 185.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1111": {
+            "achternaam": "Nicoll",
+            "email": "pondweed@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 185.0,
+            "status": {
+                "due_amount": 185.0,
+                "received_amount": 185.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1108": {
+            "achternaam": "Lobacher",
+            "email": "vlobachev@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 185.0,
+            "status": {
+                "due_amount": 185.0,
+                "received_amount": 185.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1107": {
+            "achternaam": "Zaal",
+            "email": "guidozaal@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1106": {
+            "achternaam": "Wiersum",
+            "email": "zware.kees@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1105": {
+            "achternaam": "Visser de",
+            "email": "surayah.devisser@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1104": {
+            "achternaam": "Thor",
+            "email": "sylvia@4thor.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1103": {
+            "achternaam": "Poortinga",
+            "email": "marikepoortinga@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1102": {
+            "achternaam": "Kampen, van",
+            "email": "ecm.kampen@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1099": {
+            "achternaam": "Delft van",
+            "email": "vandelftanja@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1098": {
+            "achternaam": "Dekker",
+            "email": "reindekker@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1097": {
+            "achternaam": "Schoemaker",
+            "email": "lavendela@shumi.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "Naam: Mw C Schoemaker-V Meggelen e/o Hr J H Schoemaker IBAN: NL25INGB0004150491 Datum/Tijd: 22-05-2026 14:34:59 Valutadatum: 22-05-2026",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1096": {
+            "achternaam": "Ruiter",
+            "email": "am.ruiter@kpnplanet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1095": {
+            "achternaam": "Middelburg",
+            "email": "e.middelburg@planet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1093": {
+            "achternaam": "Willebrands",
+            "email": "jenl.willebrands@mailfence.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1092": {
+            "achternaam": "Reus-Jonker",
+            "email": "cam.reus@live.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.03,
+                "refunded_amount": 0,
+                "status_label": "Ontvangen (meer dan te innen)",
+                "status_class": "status-overpaid",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1090": {
+            "achternaam": "Hoed-Zeeman",
+            "email": "marianhoed@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "R. Hoed en/of A.M.A. Hoe Omschrijving: Teken cursus",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1089": {
+            "achternaam": "Groen",
+            "email": "ahm.groen@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1088": {
+            "achternaam": "Dekker",
+            "email": "arjan.dekker3@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1087": {
+            "achternaam": "Alebeek",
+            "email": "alekeet@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1086": {
+            "achternaam": "Geverts",
+            "email": "nelbeenhakker@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1085": {
+            "achternaam": "Wolf - den Tex",
+            "email": "abo.wolftex@xs4all.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1083": {
+            "achternaam": "Slot",
+            "email": "marinaslot@kpnmail.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1080": {
+            "achternaam": "Praamsma",
+            "email": "l.praamsma@kpnmail.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "Naam: Mw LC Praamsma IBAN: NL58INGB0001657773 Datum/Tijd: 21-05-2026 09:03:46 Valutadatum: 21-05-2026",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1077": {
+            "achternaam": "Mannes",
+            "email": "j.mannes@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1076": {
+            "achternaam": "Westenberg",
+            "email": "arlette@peterwestenberg.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1074": {
+            "achternaam": "Hagemann",
+            "email": "hagemann@mailcom.nl",
+            "rekeningnummer": "",
+            "due_amount": 217.0,
+            "status": {
+                "due_amount": 217.0,
+                "received_amount": 217.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1071": {
+            "achternaam": "Celie",
+            "email": "info@yildizcelie.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 145.0,
+                "refunded_amount": 145.0,
+                "status_label": "Gedeeltelijk ontvangen",
+                "status_class": "status-partial",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1070": {
+            "achternaam": "Stellingsma",
+            "email": "mstellingsma@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 174.0,
+            "status": {
+                "due_amount": 174.0,
+                "received_amount": 174.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1069": {
+            "achternaam": "Splinter",
+            "email": "tinek53@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_paid_override": {
+                "marked_paid": true,
+                "reason": "Betaald in vorig boekjaar",
+                "updated_at": "2026-03-09 16:20:26"
+            },
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Handmatig gemarkeerd als betaald",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1068": {
+            "achternaam": "Roozendaal",
+            "email": "jorovwt2b@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1067": {
+            "achternaam": "Laan van de",
+            "email": "tinekekulk1953@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1066": {
+            "achternaam": "Janssen",
+            "email": "anke-janssen1@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1065": {
+            "achternaam": "Hendriks",
+            "email": "ingrid_hendriks1@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 430.0,
+                "refunded_amount": 0,
+                "status_label": "Ontvangen (meer dan te innen)",
+                "status_class": "status-overpaid",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1064": {
+            "achternaam": "Hartog",
+            "email": "lhartog@hotmail.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1063": {
+            "achternaam": "Bekkers",
+            "email": "deborahharry@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1062": {
+            "achternaam": "Andrioli",
+            "email": "annemiekandrioli@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1061": {
+            "achternaam": "Walstra",
+            "email": "gonnywalstra@outlook.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "Naam: HCM WALSTRA DEGELING Omschrijving: Contributie 2e helft 2026 IBAN: NL41ABNA0493186913 Datum/Tijd: 27-05-2026 09:09:41 Valutadatum: 27-05-2026",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1060": {
+            "achternaam": "Smit",
+            "email": "michelsmit54@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1059": {
+            "achternaam": "Rive",
+            "email": "maaikerive@freedom.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1058": {
+            "achternaam": "Nyvann",
+            "email": "snyvann2@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "Naam: NYVANN C Omschrijving: 2026 tweede betaling IBAN: NL07ABNA0818729031 Datum/Tijd: 26-05-2026 21:37:18 Valutadatum: 26-05-2026",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 285.0,
+                "refunded_amount": 0,
+                "status_label": "Gedeeltelijk ontvangen",
+                "status_class": "status-partial",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1057": {
+            "achternaam": "Lee van de",
+            "email": "tinekels@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1056": {
+            "achternaam": "Haakma",
+            "email": "margohaakma@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "Naam: HAAKMA M Omschrijving: contributie 2026 IBAN: NL52ABNA0637845919 Datum/Tijd: 09-06-2026 13:27:18 Valutadatum: 09-06-2026",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1055": {
+            "achternaam": "Forrer",
+            "email": "lauforwin@yahoo.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "Naam: Mw LJJ van Winsen Omschrijving: 2e deel contributie l. Forrer- van Winsen IBAN: NL06INGB0006083752 Datum/Tijd: 09-06-2026 11:12:31 Valutadatum: 09-06-2026",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1054": {
+            "achternaam": "Driessen",
+            "email": "kcmadriessen@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1053": {
+            "achternaam": "Broersen",
+            "email": "veroniquezijlstra@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1052": {
+            "achternaam": "Best de",
+            "email": "idebest@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "Naam: BEST W DE CJ Omschrijving: 2e deel contributie 2026 IBAN: NL95ABNA0841713537 Datum/Tijd: 30-05-2026 01:09:18 Valutadatum: 30-05-2026",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 145.0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            },
+            "terugstortingen": [
+                {
+                    "mededelingen": "Naam: Best W De C J Omschrijving: te veel betaalde contributie voor 2026 IBAN: NL95ABNA0841713537 Datum/Tijd: 11-06-2026 19:23:21 Valutadatum: 11-06-2026",
+                    "amount": 145.0,
+                    "reason": "Heeft 3 x een half jaar betaald",
+                    "processed_at": "2026-06-17 19:50:04"
+                }
+            ]
+        },
+        "1051": {
+            "achternaam": "Appel",
+            "email": "hnm.appel@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1050": {
+            "achternaam": "Haas de- van Weelij",
+            "email": "famjdehaas68@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1049": {
+            "achternaam": "Rentenaar",
+            "email": "arentenaar@ziggo.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1048": {
+            "achternaam": "Verkleij",
+            "email": "lida.verkleij@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1046": {
+            "achternaam": "Pronk",
+            "email": "gjmpronk@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "Naam: Hr GJM Pronk Omschrijving: 2e termijn contributie 2026 IBAN: NL30INGB0001363882 Datum/Tijd: 05-05-2026 09:52:53 Valutadatum: 05-05-2026",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1043": {
+            "achternaam": "Mica",
+            "email": "gerry.mica@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1042": {
+            "achternaam": "Grapendaal",
+            "email": "grapendaal@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1041": {
+            "achternaam": "Gorter",
+            "email": "tongorter@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1039": {
+            "achternaam": "Deursen van",
+            "email": "francinevd@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1038": {
+            "achternaam": "Breen, van",
+            "email": "tuulavanbreen@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1037": {
+            "achternaam": "Bleeker",
+            "email": "leontienbleeker@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1036": {
+            "achternaam": "Baar van",
+            "email": "vanbaarbruin@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "Hr TJ van Baar Mw J Bruin-van Baar ",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1035": {
+            "achternaam": "Zeventer van",
+            "email": "jvanzeventer@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "van Zeventer eo M.H.J. van Zeventer-Ortelee",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1034": {
+            "achternaam": "Wiele van de",
+            "email": "jeudje@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1033": {
+            "achternaam": "Vijzelaar",
+            "email": "anneke@vijzelaar.eu",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1032": {
+            "achternaam": "Vries de",
+            "email": "marijke_tensen@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "Naam: Mw M de Vries-Tensen  Hr W de Vries IBAN: NL12INGB0002121970 Valutadatum: 26-01-2026",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1031": {
+            "achternaam": "Vreeker",
+            "email": "sj.vreeker@ziggo.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1030": {
+            "achternaam": "Stelling",
+            "email": "w.stelling@hetnet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1029": {
+            "achternaam": "Shulmeister",
+            "email": "annemiek_vanweerdenburg@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1028": {
+            "achternaam": "Punter",
+            "email": "anita.punter@quicknet.nl",
+            "rekeningnummer": "",
+            "due_amount": 217.5,
+            "status": {
+                "due_amount": 217.5,
+                "received_amount": 217.5,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1027": {
+            "achternaam": "Maas",
+            "email": "maassmitg@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1026": {
+            "achternaam": "Lindeman",
+            "email": "j.m.lindeman@ziggo.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1025": {
+            "achternaam": "Hartendorp",
+            "email": "mm.hartendorp@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1023": {
+            "achternaam": "Coester",
+            "email": "kimenpete@outlook.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1022": {
+            "achternaam": "Beentjes",
+            "email": "lejo.220@hetnet.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1021": {
+            "achternaam": "Aarst van",
+            "email": "mijntje@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "Naam: AARST TEN BOSCH H VAN Omschrijving: Contributie 2026 Mijntje van Aarst- ten Bosch IBAN: NL44ABNA0841771200 Datum/Tijd: 07-07-2026 19:21:39 Valutadatum: 07-07-2026",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 280.0,
+                "refunded_amount": 0,
+                "status_label": "Gedeeltelijk ontvangen",
+                "status_class": "status-partial",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1020": {
+            "achternaam": "IJkelenstam",
+            "email": "mlijkelenstam@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 185.0,
+            "status": {
+                "due_amount": 185.0,
+                "received_amount": 185.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1019": {
+            "achternaam": "Wever",
+            "email": "annetwever@live.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1017": {
+            "achternaam": "Sprundel van",
+            "email": "miekevansprundel@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "Naam: M VD BERGH VAN SPRUNDEL Omschrijving: contributie 2026 lidnr 1017 IBAN: NL04ABNA0550030549 Datum/Tijd: 09-06-2026 19:00:29 Valutadatum: 09-06-2026",
+            "manual_paid_override": {
+                "marked_paid": true,
+                "reason": "Betaald in vorig boekjaar",
+                "updated_at": "2026-03-09 16:20:37"
+            },
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 290.0,
+                "status_label": "Handmatig gemarkeerd als betaald",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            },
+            "terugstortingen": [
+                {
+                    "mededelingen": "Naam: M. van den Bergh van Sprundel Omschrijving: terug gestort ivm te veel betaalde contributie 2026 IBAN: NL04ABNA0550030549 Datum/Tijd: 11-06-2026 19:29:59 Valutadatum: 11-06-2026",
+                    "amount": 290.0,
+                    "reason": "Heeft in vorig boekjaar al betaald",
+                    "processed_at": "2026-06-17 19:48:32"
+                }
+            ]
+        },
+        "1016": {
+            "achternaam": "Pijper",
+            "email": "hannie.elout@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1015": {
+            "achternaam": "Hermary",
+            "email": "ellen.hermary@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 485.0,
+            "status": {
+                "due_amount": 485.0,
+                "received_amount": 485.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1014": {
+            "achternaam": "Groenestijn",
+            "email": "elsgroenestein@kpnmail.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1013": {
+            "achternaam": "Groen",
+            "email": "r.h.groen@kpnmail.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1012": {
+            "achternaam": "Greuter",
+            "email": "eric.greuter@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 108.75,
+            "status": {
+                "due_amount": 108.75,
+                "received_amount": 108.75,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1011": {
+            "achternaam": "Dupon",
+            "email": "tineke.dupon@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1010": {
+            "achternaam": "Bogaards",
+            "email": "liabogaards@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1009": {
+            "achternaam": "Bierman",
+            "email": "dickendineke1605@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1008": {
+            "achternaam": "Huisman",
+            "email": "karikaturen@sneltekenaarab.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1007": {
+            "achternaam": "Warnaar",
+            "email": "keesrita81@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 232.0,
+            "status": {
+                "due_amount": 232.0,
+                "received_amount": 232.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1006": {
+            "achternaam": "Walda - van 't Hoff",
+            "email": "carlawalda@hotmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "manual_transaction_mapping": "Naam: Hr S R Walda en Mw C M Walda-vt Hoff Omschrijving: Contributie 2006 lidnr 1006 IBAN: NL56INGB0004483322 Datum/Tijd: 24-05-2026 20:28:12 Valutadatum: 24-05-2026",
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1005": {
+            "achternaam": "Tesselaar",
+            "email": "g.rijs@kpnmail.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1003": {
+            "achternaam": "Schouten",
+            "email": "gerdaschouten.gs@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1002": {
+            "achternaam": "Luksenburg",
+            "email": "tanjaluksenburg@online.nl",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1001": {
+            "achternaam": "Arendse",
+            "email": "arendse1774@gmail.com",
+            "rekeningnummer": "",
+            "due_amount": 290.0,
+            "status": {
+                "due_amount": 290.0,
+                "received_amount": 290.0,
+                "refunded_amount": 0,
+                "status_label": "Volledig ontvangen",
+                "status_class": "status-ok",
+                "updated_at": "2026-10-01 14:42:08"
+            }
+        },
+        "1100": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "manual_transaction_mapping": "Naam: De heer J Groen en Mevr H Groen-Los Omschrijving: COTNR 2026 LID 1100 IBAN: NL34INGB0002733935 Kenmerk: 15126041000121470 Valutadatum: 11-02-2026",
+            "opgezegd": true,
+            "opgezegd_achternaam": "Groen",
+            "opgezegd_roepnaam": "Hermine",
+            "opgezegd_email": "jaapgroen1947@hotmail.nl",
+            "terugstortingen": [
+                {
+                    "mededelingen": "Naam: de heer J Groen en Mevr H Groen-Los Omschrijving: restitutie contributie lidmaatschap Debutade 2026 IBAN: NL34INGB0002733935 Datum/Tijd: 15-05-2026 16:23:30 Valutadatum: 15-05-2026",
+                    "amount": 290.0,
+                    "reason": "Overledene / Opzegger",
+                    "processed_at": "2026-06-11 20:02:16"
+                }
+            ]
+        },
+        "1072": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "manual_transaction_mapping": "Naam: E.D.R. Oosterom e/o F. Kahlman Omschrijving: Contributie 2026 lidnr 1072 IBAN: NL50ASNB0781162602 Datum/Tijd: 27-03-2026 06:57:52 Valutadatum: 27-03-2026",
+            "opgezegd": true,
+            "opgezegd_achternaam": "Oosterom-Kahlman",
+            "opgezegd_roepnaam": "Emily",
+            "opgezegd_email": "emilyoosterom@gmail.com"
+        },
+        "1129": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "manual_transaction_mapping": "Naam: MIDDELBEEK DE WEERD S Omschrijving: Contributie 2026 Lidnr.1129 IBAN: NL65ABNA0978691075 Datum/Tijd: 21-01-2026 16:23:39 Valutadatum: 21-01-2026",
+            "opgezegd": true,
+            "opgezegd_achternaam": "Middelbeek",
+            "opgezegd_roepnaam": "Stijnie",
+            "opgezegd_email": "deweerd41@gmail.com",
+            "terugstortingen": [
+                {
+                    "mededelingen": "Naam: S. Middelbeek Omschrijving: restitutie contributie 1/2 jaar ivm afwezigheid. reden bekend bij bestuur Debutade IBAN: NL65ABNA0978691075 Datum/Tijd: 30-07-2026 15:00:07 Valutadatum: 30-07-2026",
+                    "amount": 145.0,
+                    "reason": "ivm knie operatie en daarna herstel",
+                    "processed_at": "2026-08-21 16:59:34"
+                }
+            ]
+        },
+        "1081": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "manual_transaction_mapping": "Naam: RESINK M A M CJ Omschrijving: lidnr. 1081 IBAN: NL39ABNA0826407072 Datum/Tijd: 26-01-2026 11:31:30 Valutadatum: 26-01-2026",
+            "opgezegd": true,
+            "opgezegd_achternaam": "Resink",
+            "opgezegd_roepnaam": "Marga",
+            "opgezegd_email": "gjdewijs1948@kpnmail.nl"
+        },
+        "1040": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "manual_paid_override": {
+                "marked_paid": true,
+                "reason": "Na overleg met secretaris besloten om lidmaatschap tijdelijk op pauze te zetten",
+                "updated_at": "2026-04-13 16:33:59"
+            },
+            "opgezegd": true,
+            "opgezegd_achternaam": "Dusée",
+            "opgezegd_roepnaam": "Irene",
+            "opgezegd_email": "charlesdus2e@hetnet.nl"
+        },
+        "1004": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Smit",
+            "opgezegd_roepnaam": "Eva",
+            "opgezegd_email": "evasmit@me.com"
+        },
+        "1018": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Veldhoven van",
+            "opgezegd_roepnaam": "Tamara",
+            "opgezegd_email": "wireless@kpnmail.nl"
+        },
+        "1024": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Everdingen, van",
+            "opgezegd_roepnaam": "Esther",
+            "opgezegd_email": "esthervaneverdingen@hotmail.com"
+        },
+        "1045": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Patist",
+            "opgezegd_roepnaam": "Sander",
+            "opgezegd_email": "spatist@gmail.com"
+        },
+        "1047": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Tiepel",
+            "opgezegd_roepnaam": "Nel",
+            "opgezegd_email": "gmtiepel37@gmail.com"
+        },
+        "1073": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Baar van",
+            "opgezegd_roepnaam": "Vera",
+            "opgezegd_email": "veravanbaar@gmail.com"
+        },
+        "1079": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Ouwehand",
+            "opgezegd_roepnaam": "José",
+            "opgezegd_email": "a.osendarp@quicknet.nl"
+        },
+        "1082": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Schouten",
+            "opgezegd_roepnaam": "Antoinette",
+            "opgezegd_email": "amkuijt55@gmail.com"
+        },
+        "1084": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Velde van der",
+            "opgezegd_roepnaam": "Dinie",
+            "opgezegd_email": "dinivdv@gmail.com"
+        },
+        "1091": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Kooij, van",
+            "opgezegd_roepnaam": "Lisa",
+            "opgezegd_email": "lisavankooij@hotmail.com"
+        },
+        "1094": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "de Wit",
+            "opgezegd_roepnaam": "Carina",
+            "opgezegd_email": "carina.appelman@gmail.com"
+        },
+        "1109": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Hoffer",
+            "opgezegd_roepnaam": "Mw CPM Hoffer",
+            "opgezegd_email": ""
+        },
+        "1110": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Knop",
+            "opgezegd_roepnaam": "Wilma",
+            "opgezegd_email": "w.y.knop@ziggo.nl"
+        },
+        "1112": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Dudink",
+            "opgezegd_roepnaam": "Dorian",
+            "opgezegd_email": "joris.dudink@gmail.com"
+        },
+        "1113": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Schenk",
+            "opgezegd_roepnaam": "Elize",
+            "opgezegd_email": "antonenmargo@live.nl"
+        },
+        "1117": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Veerman",
+            "opgezegd_roepnaam": "Charlotte",
+            "opgezegd_email": "hillegonda33@hotmail.com"
+        },
+        "1120": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Gulik, van der",
+            "opgezegd_roepnaam": "Denley",
+            "opgezegd_email": "rickkoeleman@gmail.com"
+        },
+        "1121": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Vashchuk",
+            "opgezegd_roepnaam": "Anastasia",
+            "opgezegd_email": "natalivashchuky@gmail.com"
+        },
+        "1122": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Vashchuk",
+            "opgezegd_roepnaam": "Sophia",
+            "opgezegd_email": "natalivashchuky@gmail.com"
+        },
+        "1123": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Pieterse",
+            "opgezegd_roepnaam": "Norah",
+            "opgezegd_email": "sjors.pieterse@kpnmail.nl"
+        },
+        "1124": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Koeleman",
+            "opgezegd_roepnaam": "Mila",
+            "opgezegd_email": "rickkoeleman@gmail.com"
+        },
+        "1125": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Hu",
+            "opgezegd_roepnaam": "O-Yun",
+            "opgezegd_email": "jinlingliu8@gmail.com"
+        },
+        "1126": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Hu",
+            "opgezegd_roepnaam": "O-Ning",
+            "opgezegd_email": "jinlingliu8@gmail.com"
+        },
+        "1127": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Hendriksma",
+            "opgezegd_roepnaam": "Yinthe",
+            "opgezegd_email": "rickkoeleman@gmail.com"
+        },
+        "1130": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Puts",
+            "opgezegd_roepnaam": "Frank",
+            "opgezegd_email": "frank@decinq.nl"
+        },
+        "1131": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Berg",
+            "opgezegd_roepnaam": "Jazz-Lynn",
+            "opgezegd_email": "rickkoeleman@gmail.com"
+        },
+        "1133": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Keuch",
+            "opgezegd_roepnaam": "Mieke",
+            "opgezegd_email": "miekekeuch@hotmail.com"
+        },
+        "2005": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Verhoef",
+            "opgezegd_roepnaam": "Will",
+            "opgezegd_email": "w.verhoef12@kpnplanet.nl"
+        },
+        "1078": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Mol",
+            "opgezegd_roepnaam": "Nynke",
+            "opgezegd_email": "nynke.mol@gmail.com"
+        },
+        "1044": {
+            "achternaam": "",
+            "email": "",
+            "rekeningnummer": "",
+            "due_amount": 0.0,
+            "opgezegd": true,
+            "opgezegd_achternaam": "Mooren",
+            "opgezegd_roepnaam": "Wim",
+            "opgezegd_email": "w.h.h.mooren@gmail.com"
+        }
+    },
+    "transactie_afspraken": {
+        "split_beslissingen": {
+            "Naam: C.P.T. Grapendaal eo W.M.A. Grapendaal-Huijbregts Omschrijving: Contributie 2026 nr. 1042 Thea Grapendaal en. Cees Grapendaal 1138 IBAN: NL77RABO0333014510 Datum/Tijd: 04-06-2026 10:17:36 Valutadatum: 04-06-2026": {
+                "mode": "split"
+            },
+            "Naam: Hr S R Walda en Mw C M Walda-vt Hoff Omschrijving: Contributie 2006 lidnr 1006 IBAN: NL56INGB0004483322 Datum/Tijd: 24-05-2026 20:28:12 Valutadatum: 24-05-2026": {
+                "mode": "single_member",
+                "member_id": "1006"
+            }
+        },
+        "niet_gekoppelde_terugstortingen": []
+    }
+}
